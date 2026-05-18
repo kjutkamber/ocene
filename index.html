@@ -41,7 +41,7 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="user" class="w-4 h-4"></i>
             </span>
-            <input type="text" id="login-name" placeholder="Ime Prezime" required 
+            <input type="text" id="login-name" placeholder="npr. Stevan Gajinov" required 
               class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
@@ -52,7 +52,7 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="hash" class="w-4 h-4"></i>
             </span>
-            <input type="text" id="login-index" placeholder="" required 
+            <input type="text" id="login-index" placeholder="npr. 169/23" required 
               class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
@@ -77,8 +77,7 @@
     
     <!-- Kratka lista podrazumevanih naloga radi lakše orijentacije -->
     <p class="text-[11px] text-slate-400 mt-4 text-center">
-      
-    </p>
+          </p>
   </div>
 
   <!-- GLAVNA APLIKACIJA (Sakrivena dok se korisnik ne uloguje) -->
@@ -420,14 +419,56 @@
   </div>
 
   <script>
-    // Inicijalna baza korisnika
+    // =============================================
+    // JSONBIN CLOUD STORAGE KONFIGURACIJA
+    // =============================================
+    const JSONBIN_API_KEY = '$2a$10$gO/Ia2kHSPipLAkZk47VWuYmgmUpzaJjdGeW1MXORA4ohc0PtbmTG';
+    const JSONBIN_BIN_ID = '6a0b5f3cee5a733b12de0b42';
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
+    // Učitaj sve podatke iz JSONBin-a
+    async function cloudLoad() {
+      try {
+        const res = await fetch(JSONBIN_URL + '/latest', {
+          headers: { 'X-Master-Key': JSONBIN_API_KEY }
+        });
+        const data = await res.json();
+        return data.record || {};
+      } catch (e) {
+        console.error('Greška pri učitavanju iz oblaka:', e);
+        return {};
+      }
+    }
+
+    // Sačuvaj sve podatke u JSONBin
+    async function cloudSave(record) {
+      try {
+        await fetch(JSONBIN_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_API_KEY
+          },
+          body: JSON.stringify(record)
+        });
+      } catch (e) {
+        console.error('Greška pri čuvanju u oblak:', e);
+      }
+    }
+
+    // Globalni objekat koji drži sve podatke (učitan iz oblaka)
+    let cloudData = {};
+
+    // =============================================
+    // INICIJALNA BAZA KORISNIKA
+    // =============================================
     const defaultUsers = {
       "stevan gajinov": { index: "169/23", displayName: "Stevan Gajinov", isSystem: true },
       "katarina gajinov": { index: "209/21", displayName: "Katarina Gajinov", isSystem: true }
     };
 
-    // Učitaj korisnike iz localStorage ili postavi sistemske
-    let customUsers = JSON.parse(localStorage.getItem('kalkulator_custom_users')) || defaultUsers;
+    // Korisnici se čuvaju u cloudData.users
+    let customUsers = defaultUsers;
 
     // Originalni CSV podaci za Stevana
     const defaultStevanData = [
@@ -507,13 +548,16 @@
     let subjects = [];
     let gpaChart = null;
 
-    // Inicijalizacija pri pokretanju
-    window.onload = function() {
+    // Inicijalizacija pri pokretanju — najpre učitaj oblak
+    window.onload = async function() {
       lucide.createIcons();
+      showToast("Učitavanje podataka iz oblaka...", "info");
+      cloudData = await cloudLoad();
+      customUsers = cloudData.users || defaultUsers;
       checkActiveSession();
     };
 
-    // Provera da li već postoji ulogovan korisnik
+    // Provera da li već postoji ulogovan korisnik (sesija ostaje u localStorage)
     function checkActiveSession() {
       const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
       if (savedUser) {
@@ -551,28 +595,25 @@
     function loginUser(name, index) {
       currentUser = { name, index };
 
-      // Promeni UI
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
       
       document.getElementById('user-display-name').textContent = name;
       document.getElementById('user-display-index').textContent = index;
 
-      // Konfiguriši dugme za reset i učitaj podatke iz zasebnog prostora
       const btnReset = document.getElementById('btn-reset');
       const normalizedKey = name.toLowerCase();
+      const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
 
       if (normalizedKey.includes("stevan gajinov")) {
         btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Vrati originalni CSV`;
-        subjects = JSON.parse(localStorage.getItem('stevan_subjects')) || [...defaultStevanData];
+        subjects = cloudData[userCloudKey] || [...defaultStevanData];
       } else if (normalizedKey.includes("katarina gajinov")) {
         btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
-        subjects = JSON.parse(localStorage.getItem('katarina_subjects')) || [];
+        subjects = cloudData[userCloudKey] || [];
       } else {
-        // Novi korisnici dodati preko admina
         btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
-        const userStorageKey = `user_subjects_${normalizedKey.replace(/\s+/g, '_')}`;
-        subjects = JSON.parse(localStorage.getItem(userStorageKey)) || [];
+        subjects = cloudData[userCloudKey] || [];
       }
 
       lucide.createIcons();
@@ -624,25 +665,20 @@
       }, 3000);
     }
 
-    // Čuvanje u zaseban prostor u zavisnosti od korisnika
-    function saveUserData() {
+    // Čuvanje u oblak
+    async function saveUserData() {
       if (!currentUser) return;
       const normalizedKey = currentUser.name.toLowerCase();
-
-      if (normalizedKey.includes("stevan gajinov")) {
-        localStorage.setItem('stevan_subjects', JSON.stringify(subjects));
-      } else if (normalizedKey.includes("katarina gajinov")) {
-        localStorage.setItem('katarina_subjects', JSON.stringify(subjects));
-      } else {
-        const userStorageKey = `user_subjects_${normalizedKey.replace(/\s+/g, '_')}`;
-        localStorage.setItem(userStorageKey, JSON.stringify(subjects));
-      }
+      const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
+      cloudData[userCloudKey] = subjects;
+      await cloudSave(cloudData);
     }
 
     // Ručno čuvanje preko dugmeta
-    function manualSave() {
-      saveUserData();
-      showToast("Sve izmene su trajno upisane u memoriju pretraživača!");
+    async function manualSave() {
+      showToast("Čuvanje u oblak...", "info");
+      await saveUserData();
+      showToast("Sve izmene su sačuvane u oblaku!");
     }
 
     // Računanje globalne statistike
@@ -697,7 +733,7 @@
         `;
       });
 
-      // Sačuvaj trenutno stanje korisnika u pozadini
+      // Sačuvaj trenutno stanje korisnika u pozadini (tiho, bez čekanja)
       saveUserData();
 
       renderSemesters();
@@ -1110,7 +1146,7 @@
     }
 
     // Dodavanje novog korisnika preko admin forme
-    function adminAddUser(event) {
+    async function adminAddUser(event) {
       event.preventDefault();
       const nameInput = document.getElementById('admin-new-name').value.trim();
       const indexInput = document.getElementById('admin-new-index').value.trim();
@@ -1127,17 +1163,15 @@
         return;
       }
 
-      // Dodaj u našu listu korisnika
       customUsers[normalizedKey] = {
         index: indexInput,
         displayName: nameInput,
         isSystem: false
       };
 
-      // Sačuvaj listu korisnika
-      localStorage.setItem('kalkulator_custom_users', JSON.stringify(customUsers));
+      cloudData.users = customUsers;
+      await cloudSave(cloudData);
       
-      // Očisti formu i osveži listu
       document.getElementById('admin-new-name').value = "";
       document.getElementById('admin-new-index').value = "";
       renderAdminUsersList();
@@ -1145,20 +1179,17 @@
     }
 
     // Brisanje korisnika iz admin panela
-    function adminDeleteUser(key) {
+    async function adminDeleteUser(key) {
       const user = customUsers[key];
       if (!user) return;
 
       if (confirm(`Da li ste sigurni da želite da obrišete korisnika "${user.displayName}" i sve njegove sačuvane podatke?`)) {
-        // Obriši njegove sačuvane predmete iz localStorage
-        const userStorageKey = `user_subjects_${key.replace(/\s+/g, '_')}`;
-        localStorage.removeItem(userStorageKey);
-
-        // Obriši korisnika iz spiska
+        const userCloudKey = 'subjects_' + key.replace(/\s+/g, '_');
+        delete cloudData[userCloudKey];
         delete customUsers[key];
-        localStorage.setItem('kalkulator_custom_users', JSON.stringify(customUsers));
+        cloudData.users = customUsers;
+        await cloudSave(cloudData);
 
-        // Ako je izbrisani korisnik trenutno ulogovan (teoretski), odjavi ga
         const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
         if (savedUser && savedUser.name.toLowerCase() === key) {
           handleLogout();
