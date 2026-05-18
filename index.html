@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="sr" class="h-full bg-slate-200">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Ocena - Akademski Profil</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js za grafike -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col text-slate-800 bg-slate-200">
+
+  <!-- EKRAN ZA LOG IN (Prikazuje se prvi ako korisnik nije ulogovan) -->
+  <div id="login-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900 px-4">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100 relative overflow-hidden">
+      <!-- Dekorativna pozadina u login formi -->
+      <div class="absolute -right-16 -top-16 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -left-16 -bottom-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="flex flex-col items-center mb-6 text-center">
+        <div class="bg-emerald-500 p-3 rounded-2xl text-slate-900 mb-3 shadow-lg shadow-emerald-500/20">
+          <i data-lucide="graduation-cap" class="w-8 h-8"></i>
+        </div>
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Studentski Portal</h2>
+        <p class="text-xs text-slate-500 mt-1">Unesite Vaše podatke za pristup kalkulatoru</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ime i Prezime</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="user" class="w-4 h-4"></i>
+            </span>
+            <input type="text" id="login-name" placeholder="npr. Stevan Gajinov" required 
+              class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Broj Indeksa</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="hash" class="w-4 h-4"></i>
+            </span>
+            <input type="text" id="login-index" placeholder="npr. 169/23" required 
+              class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
+          </div>
+        </div>
+
+        <div id="login-error" class="hidden text-rose-600 text-xs font-semibold bg-rose-50 border border-rose-100 p-3 rounded-lg flex items-center gap-2">
+          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+          <span>Nevažeća kombinacija imena i broja indeksa.</span>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 mt-2">
+          Prijavi se <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <!-- Sekcija za prelazak u Admin mod -->
+      <div class="mt-6 border-t border-slate-100 pt-4 flex flex-col items-center gap-3">
+        <button onclick="openAdminPasswordModal()" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl border border-slate-200 w-full justify-center">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i> Administracija korisnika
+        </button>
+      </div>
+    </div>
+    
+    <!-- Kratka lista podrazumevanih naloga radi lakše orijentacije -->
+    <p class="text-[11px] text-slate-400 mt-4 text-center">
+          </p>
+  </div>
+
+  <!-- GLAVNA APLIKACIJA (Sakrivena dok se korisnik ne uloguje) -->
+  <div id="app-content" class="hidden flex-grow flex flex-col">
+    <!-- Navigacioni meni / Zaglavlje -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-emerald-500 p-2 rounded-lg text-slate-900">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight text-white font-black">Akademski Profil & Kalkulator</h1>
+            <p class="text-xs text-slate-300">Korisnik: <span id="user-display-name" class="text-emerald-400 font-bold">Ime Student</span> (Indeks: <span id="user-display-index" class="text-slate-200">000/00</span>)</p>
+          </div>
+        </div>
+        
+        <div class="flex flex-wrap gap-2">
+          <button onclick="manualSave()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition shadow-lg text-white">
+            <i data-lucide="save" class="w-4 h-4"></i> Sačuvaj izmene
+          </button>
+          <button id="btn-reset" onclick="resetToDefault()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg border border-slate-700 transition text-slate-200">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Vrati prazan profil
+          </button>
+          <button onclick="handleLogout()" class="flex items-center gap-2 px-3 py-1.5 bg-rose-600/95 hover:bg-rose-500 text-xs font-bold rounded-lg transition text-white">
+            <i data-lucide="log-out" class="w-4 h-4"></i> Odjavi se
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Glavni sadržaj -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <!-- KPI STATISTIKA (Ključni indikatori) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Običan Prosek -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Prosek Ocena</p>
+            <h3 class="text-4xl font-extrabold mt-1 text-emerald-600" id="gpa-simple">0.00</h3>
+            <p class="text-xs text-slate-400 mt-1">Aritmetička sredina svih položenih ispita</p>
+          </div>
+          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-100">
+            <i data-lucide="calculator" class="w-8 h-8"></i>
+          </div>
+        </div>
+
+        <!-- Ukupno ESPB -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Ostvareni ESPB Bodovi</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <h3 class="text-4xl font-extrabold text-slate-900" id="total-espb">0</h3>
+              <span class="text-sm text-slate-500 font-semibold">/ 240</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1" id="espb-percent">0% od ukupnog cilja</p>
+          </div>
+          <div class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100">
+            <i data-lucide="award" class="w-8 h-8"></i>
+          </div>
+        </div>
+
+        <!-- Položeni Ispiti -->
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
+          <div>
+            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Položeni Predmeti</p>
+            <div class="flex items-baseline gap-1 mt-1">
+              <h3 class="text-4xl font-extrabold text-slate-900" id="passed-exams">0</h3>
+              <span class="text-sm text-slate-500 font-semibold" id="total-exams-count">/ 0</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Ukupan broj ocenjenih ispita</p>
+          </div>
+          <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl border border-indigo-100">
+            <i data-lucide="check-circle" class="w-8 h-8"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROGRES BAR -->
+      <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 mb-8">
+        <div class="flex justify-between items-center mb-2">
+          <h4 class="text-sm font-bold text-slate-700">Ukupan napredak studija (na osnovu ESPB)</h4>
+          <span class="text-sm font-black text-emerald-600" id="progress-text">0%</span>
+        </div>
+        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
+          <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- GLAVNI PANEL SA 2 KOLONE -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- LEVA KOLONA: INTERAKTIVNI SEMESTRI (8 COLS) -->
+        <div class="lg:col-span-8 space-y-6">
+          
+          <!-- Pretraga i Akcije -->
+          <div class="bg-white p-4 rounded-xl shadow-md border border-slate-300/60 flex flex-col sm:flex-row gap-4 justify-between items-center">
+            <div class="relative w-full sm:w-72">
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <i data-lucide="search" class="w-4 h-4"></i>
+              </span>
+              <input type="text" id="search-input" oninput="filterSubjects()" placeholder="Pretraži predmet..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900 placeholder-slate-400">
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+              <select id="filter-year" onchange="filterSubjects()" class="w-full sm:w-auto text-sm bg-slate-50 border border-slate-300 rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-800">
+                <option value="all">Sve godine</option>
+                <option value="1">1. Godina (Semestri 1-2)</option>
+                <option value="2">2. Godina (Semestri 3-4)</option>
+                <option value="3">3. Godina (Semestri 5-6)</option>
+                <option value="4">4. Godina (Semestri 7-8)</option>
+              </select>
+              <button onclick="openAddModal()" class="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shrink-0 shadow-sm">
+                <i data-lucide="plus" class="w-4 h-4"></i> Dodaj Ispit
+              </button>
+            </div>
+          </div>
+
+          <!-- LISTA SEMESTARA -->
+          <div id="semesters-container" class="space-y-4">
+            <!-- Dinamički generisano -->
+          </div>
+
+        </div>
+
+        <!-- DESNA KOLONA: GRAFIK, SIMULATOR, DISTRIBUCIJA (4 COLS) -->
+        <div class="lg:col-span-4 space-y-6">
+          
+          <!-- Grafikon prosek po semestru -->
+          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
+            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima
+            </h3>
+            <div class="h-64">
+              <canvas id="gpaChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Šta-ako (What-if) simulator -->
+          <div class="bg-gradient-to-br from-slate-900 to-slate-850 text-white p-6 rounded-2xl shadow-xl border border-slate-850 relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
+              <i data-lucide="help-circle" class="w-40 h-40"></i>
+            </div>
+            
+            <h3 class="text-lg font-bold mb-2 flex items-center gap-2">
+              <i data-lucide="sparkles" class="text-emerald-400"></i> "Šta-Ako" Simulator
+            </h3>
+            <p class="text-xs text-slate-300 mb-4">Unesi ciljani običan prosek i simulator će ti izračunati tačnu prosečnu ocenu koju moraš dobiti na preostalim nepoloženim ispitima.</p>
+            
+            <div class="space-y-4 relative z-10">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Željeni običan prosek</label>
+                <div class="flex gap-2">
+                  <input type="number" id="target-gpa" min="6.0" max="10.0" step="0.01" value="9.50" class="flex-grow bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                  <button onclick="calculateWhatIf()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition shadow-md">
+                    Izračunaj
+                  </button>
+                </div>
+              </div>
+
+              <div id="whatif-result" class="hidden bg-slate-800/90 border border-slate-700/60 p-4 rounded-xl space-y-2">
+                <p class="text-xs text-slate-400">Rezultat proračuna:</p>
+                <div id="whatif-message" class="text-sm font-semibold text-slate-200">
+                  <!-- Poruka -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Distribucija Ocena -->
+          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
+            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+              <i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena
+            </h3>
+            <div class="space-y-3" id="grade-distribution">
+              <!-- Dinamički podaci -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Podnožje -->
+    <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 text-center mt-auto">
+      <div class="max-w-7xl mx-auto px-4">
+        <p>&copy; 2026 - Akademski kalkulator ocena • Studentski Portal. Sva prava zadržana.</p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- MODAL: DODAJ / UREDI ISPIT -->
+  <div id="subject-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
+        <h3 id="modal-title" class="font-bold text-lg">Dodaj Predmet</h3>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+      <form id="subject-form" onsubmit="saveSubject(event)" class="p-6 space-y-4">
+        <input type="hidden" id="modal-subject-id">
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Naziv Predmeta</label>
+          <input type="text" id="modal-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ocena</label>
+            <select id="modal-grade" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
+              <option value="10">10 (Deset)</option>
+              <option value="9">9 (Devet)</option>
+              <option value="8">8 (Osam)</option>
+              <option value="7">7 (Sedam)</option>
+              <option value="6">6 (Šest)</option>
+              <option value="null">Nema ocenu / Sluša se</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">ESPB Bodovi</label>
+            <input type="number" id="modal-espb" min="1" max="30" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Semestar</label>
+          <select id="modal-semester" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
+            <option value="1">1. Semestar</option>
+            <option value="2">2. Semestar</option>
+            <option value="3">3. Semestar</option>
+            <option value="4">4. Semestar</option>
+            <option value="5">5. Semestar</option>
+            <option value="6">6. Semestar</option>
+            <option value="7">7. Semestar</option>
+            <option value="8">8. Semestar</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition">Otkaz</button>
+          <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition">Sačuvaj</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: KORISNIČKI ADMIN PANEL -->
+  <div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-slate-200 flex flex-col max-h-[90vh]">
+      <!-- Header -->
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i>
+          <h3 class="font-black text-lg">Admin Panel: Korisnici</h3>
+        </div>
+        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white transition">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Sadržaj -->
+      <div class="p-6 space-y-6 overflow-y-auto flex-grow">
+        <!-- Forma za dodavanje novog korisnika -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-1">
+            <i data-lucide="user-plus" class="w-4 h-4 text-emerald-500"></i> Dodaj novog studenta
+          </h4>
+          <form onsubmit="adminAddUser(event)" class="space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i prezime</label>
+                <input type="text" id="admin-new-name" placeholder="npr. Marko Marković" required 
+                  class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj indeksa</label>
+                <input type="text" id="admin-new-index" placeholder="npr. 55/22" required 
+                  class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              </div>
+            </div>
+            <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-md flex items-center justify-center gap-1.5">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> Registruj korisnika
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista trenutnih korisnika -->
+        <div>
+          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-1">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i> Registrovani studenti
+          </h4>
+          <div id="admin-users-list" class="space-y-2">
+            <!-- Dinamički unosi korisnika -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
+        <button onclick="closeAdminModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition border border-slate-200">
+          Zatvori panel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASSWORD PROMPT MODAL ZA ADMINA -->
+  <div id="admin-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600">
+          <i data-lucide="lock" class="w-5 h-5"></i>
+        </div>
+        <h3 class="font-bold text-slate-900 text-base">Unesite lozinku</h3>
+      </div>
+      <form onsubmit="submitAdminPassword(event)" class="space-y-4">
+        <div>
+          <input type="password" id="admin-password-input" placeholder="Lozinka (podrazumevano: admin)" required 
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+        </div>
+        <div id="admin-password-error" class="hidden text-rose-600 text-xs font-bold flex items-center gap-1">
+          <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Pogrešna lozinka. Pokušajte ponovo.
+        </div>
+        <div class="flex justify-end gap-2">
+          <button type="button" onclick="closeAdminPasswordModal()" class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition">Otkaz</button>
+          <button type="submit" class="px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Potvrdi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFIKACIJE -->
+  <div id="toast" class="fixed bottom-5 right-5 z-[200] transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-slate-950 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-800">
+    <i data-lucide="info" class="w-5 h-5 text-emerald-400" id="toast-icon"></i>
+    <span id="toast-text" class="text-sm font-medium">Poruka</span>
+  </div>
+
+  <script>
+    // Inicijalna baza korisnika
+    const defaultUsers = {
+      "stevan gajinov": { index: "169/23", displayName: "Stevan Gajinov", isSystem: true },
+      "katarina gajinov": { index: "209/21", displayName: "Katarina Gajinov", isSystem: true }
+    };
+
+    // Učitaj korisnike iz localStorage ili postavi sistemske
+    let customUsers = JSON.parse(localStorage.getItem('kalkulator_custom_users')) || defaultUsers;
+
+    // Originalni CSV podaci za Stevana
+    const defaultStevanData = [
+      // 1. Semestar
+      { id: "s1-1", name: "Razvoj i tehnike animacije", grade: 10, espb: 3, semester: 1 },
+      { id: "s1-2", name: "Razvoj i tehnike animacije praktikum", grade: 10, espb: 3, semester: 1 },
+      { id: "s1-3", name: "Tehnologija audiovizuelnih medija 1", grade: 10, espb: 3, semester: 1 },
+      { id: "s1-4", name: "Osnovi snimanja slike", grade: 8, espb: 3, semester: 1 },
+      { id: "s1-5", name: "Osnovi montaže", grade: 9, espb: 3, semester: 1 },
+      { id: "s1-6", name: "Uvod u snimanje zvuka", grade: 10, espb: 3, semester: 1 },
+      { id: "s1-7", name: "Istorija filma 1", grade: 9, espb: 3, semester: 1 },
+      { id: "s1-8", name: "Uvod u multimedijalnu produkciju", grade: 10, espb: 3, semester: 1 },
+      { id: "s1-9", name: "Engleski jezik 1", grade: 10, espb: 2, semester: 1 },
+      { id: "s1-10", name: "Osnove likovnog izražavanja", grade: 9, espb: 4, semester: 1 },
+
+      // 2. Semestar
+      { id: "s2-1", name: "Scenska režija", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-2", name: "Istorija filma 2", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-3", name: "Montaža u audiovizuelnim medijima", grade: 9, espb: 3, semester: 2 },
+      { id: "s2-4", name: "Pozorišna produkcija 1", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-5", name: "Snimanje zvuka", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-6", name: "Tehnologija audiovizuelnih medija 2", grade: 9, espb: 3, semester: 2 },
+      { id: "s2-7", name: "Razvoj i tehnike vizuelnih efekata praktikum", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-8", name: "Osnovi dizajna svetla za film i televiziju", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-9", name: "Razvoj i tehnike vizuelnih efekata", grade: 10, espb: 3, semester: 2 },
+      { id: "s2-10", name: "Režija", grade: 10, espb: 3, semester: 2 },
+
+      // 3. Semestar
+      { id: "s3-1", name: "Osnove programa o liniji 1", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-2", name: "Multimedijalna produkcija 1", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-3", name: "Animacija 1", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-4", name: "Animacija 1, praktikum", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-5", name: "Filmska i televizijska režija 1", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-6", name: "Filmska kamera", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-7", name: "Dizajn svetla za film i televiziju 1", grade: 9, espb: 3, semester: 3 },
+      { id: "s3-8", name: "Osnovi dramaturgije", grade: 9, espb: 2, semester: 3 },
+      { id: "s3-9", name: "Istorija filma 3", grade: 10, espb: 3, semester: 3 },
+      { id: "s3-10", name: "Estetika zvuka", grade: 10, espb: 4, semester: 3 },
+
+      // 4. Semestar
+      { id: "s4-1", name: "Osnove programa o liniji 2", grade: 10, espb: 3, semester: 4 },
+      { id: "s4-2", name: "Multimedijalna produkcija 2", grade: 10, espb: 3, semester: 4 },
+      { id: "s4-3", name: "Vizuelni efekti 1", grade: 10, espb: 3, semester: 4 },
+      { id: "s4-4", name: "Vizuelni efekti 1, praktikum", grade: 10, espb: 3, semester: 4 },
+      { id: "s4-5", name: "Filmska i televizijska režija 2", grade: 10, espb: 3, semester: 4 },
+      { id: "s4-6", name: "Elektronska kamera", grade: 10, espb: 3, semester: 4 },
+      { id: "s4-7", name: "Dizajn svetla za film i televiziju 1", grade: 9, espb: 3, semester: 4 },
+      { id: "s4-8", name: "Osnovi scenarija", grade: 10, espb: 2, semester: 4 },
+      { id: "s4-9", name: "Istorija filma 4", grade: 9, espb: 3, semester: 4 },
+      { id: "s4-10", name: "Snimanje i dizajn zvuka za film", grade: 10, espb: 3, semester: 4 },
+
+      // 5. Semestar
+      { id: "s5-1", name: "Multimedijalna produkcija 3", grade: 9, espb: 3, semester: 5 },
+      { id: "s5-2", name: "Opšta psihologija", grade: 10, espb: 2, semester: 5 },
+      { id: "s5-3", name: "Vizuelni efekti 2", grade: 10, espb: 4, semester: 5 },
+      { id: "s5-4", name: "Vizuelni efekti 2 - praktikum", grade: 10, espb: 3, semester: 5 },
+      { id: "s5-5", name: "Primenjena muzika 1", grade: 8, espb: 2, semester: 5 },
+      { id: "s5-6", name: "Umetnost snimanja kamerom 1", grade: 10, espb: 3, semester: 5 },
+      { id: "s5-7", name: "Osnove estetike 1", grade: 6, espb: 2, semester: 5 },
+      { id: "s5-8", name: "Dizajn svetla za scenu 1", grade: 10, espb: 3, semester: 5 },
+      { id: "s5-9", name: "Scenografija i kostimografija 1", grade: 9, espb: 4, semester: 5 },
+      { id: "s5-10", name: "Teorija i estetika slike", grade: 10, espb: 4, semester: 5 },
+
+      // 6. Semestar
+      { id: "s6-1", name: "Multimedijalna produkcija 4", grade: null, espb: 3, semester: 6 },
+      { id: "s6-2", name: "Dizajn svetla za scenu 2", grade: null, espb: 3, semester: 6 },
+      { id: "s6-3", name: "Elektronska kamera 2", grade: null, espb: 3, semester: 6 },
+      { id: "s6-4", name: "Osnove estetike 2", grade: null, espb: 2, semester: 6 },
+      { id: "s6-5", name: "Psihologija ličnosti", grade: null, espb: 2, semester: 6 },
+      { id: "s6-6", name: "Strip 2", grade: null, espb: 3, semester: 6 },
+      { id: "s6-7", name: "Primenjena muzika 2", grade: null, espb: 2, semester: 6 },
+      { id: "s6-8", name: "Animacija 2", grade: null, espb: 3, semester: 6 },
+      { id: "s6-9", name: "Animacija 2 - praktikum", grade: null, espb: 2, semester: 6 }
+    ];
+
+    let currentUser = null;
+    let subjects = [];
+    let gpaChart = null;
+
+    // Inicijalizacija pri pokretanju
+    window.onload = function() {
+      lucide.createIcons();
+      checkActiveSession();
+    };
+
+    // Provera da li već postoji ulogovan korisnik
+    function checkActiveSession() {
+      const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
+      if (savedUser) {
+        loginUser(savedUser.name, savedUser.index);
+      }
+    }
+
+    // Login proces
+    function handleLogin(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById('login-name').value.trim();
+      const indexInput = document.getElementById('login-index').value.trim();
+      const errorDiv = document.getElementById('login-error');
+
+      const normalizedKey = nameInput.toLowerCase();
+      
+      // Proveri u dinamičkoj bazi korisnika
+      if (customUsers[normalizedKey] && customUsers[normalizedKey].index === indexInput) {
+        errorDiv.classList.add('hidden');
+        
+        const displayName = customUsers[normalizedKey].displayName;
+        
+        // Sačuvaj sesiju
+        const studentSession = { name: displayName, index: indexInput };
+        localStorage.setItem('active_student_user', JSON.stringify(studentSession));
+        
+        loginUser(displayName, indexInput);
+        showToast(`Uspešna prijava! Dobrodošli nazad, ${displayName}.`);
+      } else {
+        errorDiv.classList.remove('hidden');
+      }
+    }
+
+    // Učitavanje odgovarajućih podataka za ulogovanog korisnika
+    function loginUser(name, index) {
+      currentUser = { name, index };
+
+      // Promeni UI
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-content').classList.remove('hidden');
+      
+      document.getElementById('user-display-name').textContent = name;
+      document.getElementById('user-display-index').textContent = index;
+
+      // Konfiguriši dugme za reset i učitaj podatke iz zasebnog prostora
+      const btnReset = document.getElementById('btn-reset');
+      const normalizedKey = name.toLowerCase();
+
+      if (normalizedKey.includes("stevan gajinov")) {
+        btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Vrati originalni CSV`;
+        subjects = JSON.parse(localStorage.getItem('stevan_subjects')) || [...defaultStevanData];
+      } else if (normalizedKey.includes("katarina gajinov")) {
+        btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
+        subjects = JSON.parse(localStorage.getItem('katarina_subjects')) || [];
+      } else {
+        // Novi korisnici dodati preko admina
+        btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
+        const userStorageKey = `user_subjects_${normalizedKey.replace(/\s+/g, '_')}`;
+        subjects = JSON.parse(localStorage.getItem(userStorageKey)) || [];
+      }
+
+      lucide.createIcons();
+      calculateStatistics();
+    }
+
+    // Odjava sa sajta
+    function handleLogout() {
+      localStorage.removeItem('active_student_user');
+      currentUser = null;
+      subjects = [];
+      if (gpaChart) {
+        gpaChart.destroy();
+        gpaChart = null;
+      }
+      
+      document.getElementById('login-name').value = "";
+      document.getElementById('login-index').value = "";
+      document.getElementById('app-content').classList.add('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+      
+      showToast("Odjavljeni ste sa sistema.", "info");
+    }
+
+    // Prikaz Toast obaveštenja
+    function showToast(text, type = "success") {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      const toastIcon = document.getElementById('toast-icon');
+      
+      toastText.textContent = text;
+      
+      if (type === "success") {
+        toastIcon.setAttribute('data-lucide', 'check-circle');
+        toastIcon.className = "w-5 h-5 text-emerald-400";
+      } else {
+        toastIcon.setAttribute('data-lucide', 'alert-circle');
+        toastIcon.className = "w-5 h-5 text-rose-400";
+      }
+      
+      lucide.createIcons();
+      
+      toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.remove('opacity-100', 'translate-y-0');
+        toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // Čuvanje u zaseban prostor u zavisnosti od korisnika
+    function saveUserData() {
+      if (!currentUser) return;
+      const normalizedKey = currentUser.name.toLowerCase();
+
+      if (normalizedKey.includes("stevan gajinov")) {
+        localStorage.setItem('stevan_subjects', JSON.stringify(subjects));
+      } else if (normalizedKey.includes("katarina gajinov")) {
+        localStorage.setItem('katarina_subjects', JSON.stringify(subjects));
+      } else {
+        const userStorageKey = `user_subjects_${normalizedKey.replace(/\s+/g, '_')}`;
+        localStorage.setItem(userStorageKey, JSON.stringify(subjects));
+      }
+    }
+
+    // Ručno čuvanje preko dugmeta
+    function manualSave() {
+      saveUserData();
+      showToast("Sve izmene su trajno upisane u memoriju pretraživača!");
+    }
+
+    // Računanje globalne statistike
+    function calculateStatistics() {
+      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
+      const totalExams = subjects.length;
+      
+      // Običan prosek
+      const sumGrades = passed.reduce((acc, curr) => acc + curr.grade, 0);
+      const simpleAverage = passed.length > 0 ? (sumGrades / passed.length).toFixed(2) : "0.00";
+      document.getElementById('gpa-simple').textContent = simpleAverage;
+
+      // Ukupni ESPB bodovi
+      const sumESPB = passed.reduce((acc, curr) => acc + curr.espb, 0);
+      document.getElementById('total-espb').textContent = sumESPB;
+      
+      // Progres traka na osnovu ESPB
+      const percent = Math.min(Math.round((sumESPB / 240) * 100), 100);
+      document.getElementById('espb-percent').textContent = `${percent}% od potrebnih 240 ESPB`;
+      document.getElementById('progress-text').textContent = `${percent}%`;
+      document.getElementById('progress-bar').style.width = `${percent}%`;
+
+      // Broj položenih
+      document.getElementById('passed-exams').textContent = passed.length;
+      document.getElementById('total-exams-count').textContent = `/ ${totalExams}`;
+
+      // Distribucija ocena
+      const distribution = { 10: 0, 9: 0, 8: 0, 7: 0, 6: 0 };
+      passed.forEach(s => {
+        if (distribution[s.grade] !== undefined) {
+          distribution[s.grade]++;
+        }
+      });
+
+      const distContainer = document.getElementById('grade-distribution');
+      distContainer.innerHTML = '';
+      const maxCount = Math.max(...Object.values(distribution), 1);
+
+      Object.keys(distribution).reverse().forEach(grade => {
+        const count = distribution[grade];
+        const pct = (count / passed.length) * 100 || 0;
+        distContainer.innerHTML += `
+          <div>
+            <div class="flex justify-between items-center text-xs text-slate-700 font-semibold mb-1">
+              <span>Ocena ${grade}</span>
+              <span class="text-slate-900 font-bold">${count} (${Math.round(pct)}%)</span>
+            </div>
+            <div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200">
+              <div class="bg-indigo-600 h-full rounded-full" style="width: ${(count/maxCount)*100}%"></div>
+            </div>
+          </div>
+        `;
+      });
+
+      // Sačuvaj trenutno stanje korisnika u pozadini
+      saveUserData();
+
+      renderSemesters();
+      updateChart();
+    }
+
+    // Renderovanje semestara (1-8)
+    function renderSemesters() {
+      const container = document.getElementById('semesters-container');
+      container.innerHTML = '';
+
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const yearFilter = document.getElementById('filter-year').value;
+
+      for (let s = 1; s <= 8; s++) {
+        const yearOfSemester = Math.ceil(s / 2);
+        if (yearFilter !== 'all' && yearOfSemester.toString() !== yearFilter) {
+          continue;
+        }
+
+        const semSubjects = subjects.filter(sub => sub.semester === s);
+        const filteredSemSubjects = semSubjects.filter(sub => sub.name.toLowerCase().includes(query));
+
+        if (filteredSemSubjects.length === 0 && query !== '') {
+          continue;
+        }
+
+        const passedSem = semSubjects.filter(sub => sub.grade !== null && sub.grade >= 6);
+        const semESPB = passedSem.reduce((acc, curr) => acc + curr.espb, 0);
+        const semGradeSum = passedSem.reduce((acc, curr) => acc + curr.grade, 0);
+        const semAvg = passedSem.length > 0 ? (semGradeSum / passedSem.length).toFixed(2) : "0.00";
+
+        const semCard = document.createElement('div');
+        semCard.className = "bg-white rounded-2xl shadow-md border border-slate-300/70 overflow-hidden transition-all duration-200";
+        semCard.innerHTML = `
+          <!-- Semestar Header -->
+          <div class="bg-slate-100 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 cursor-pointer" onclick="toggleSemesterCollapse(${s})">
+            <div>
+              <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base">
+                <i data-lucide="folder" class="w-5 h-5 text-slate-500"></i>
+                ${s}. Semestar <span class="text-xs text-slate-500 font-medium">(${yearOfSemester}. Godina)</span>
+              </h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+              <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full border border-emerald-200 flex items-center gap-1">
+                <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Prosek: ${semAvg}
+              </span>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full border border-blue-200 flex items-center gap-1">
+                <i data-lucide="award" class="w-3.5 h-3.5"></i> ESPB: ${semESPB}
+              </span>
+              <button onclick="event.stopPropagation(); openAddModal(${s})" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 ml-2 bg-slate-50 border border-slate-300 rounded px-2 py-1 hover:bg-white transition">
+                <i data-lucide="plus" class="w-4 h-4"></i> Dodaj
+              </button>
+            </div>
+          </div>
+
+          <!-- Tabela predmeta -->
+          <div id="sem-content-${s}" class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+              <thead class="bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
+                <tr>
+                  <th scope="col" class="px-6 py-3">Predmet</th>
+                  <th scope="col" class="px-6 py-3 w-28 text-center">Ocena</th>
+                  <th scope="col" class="px-6 py-3 w-24 text-center">ESPB</th>
+                  <th scope="col" class="px-6 py-3 w-24 text-center">Status</th>
+                  <th scope="col" class="px-6 py-3 w-28 text-right">Akcije</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 bg-white">
+                ${filteredSemSubjects.length === 0 ? `
+                  <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-slate-500 font-medium">U ovom semestru nema unetih predmeta. Kliknite na "Dodaj" desno da unesete svoj prvi ispit.</td>
+                  </tr>
+                ` : filteredSemSubjects.map(sub => {
+                  const isPassed = sub.grade !== null && sub.grade >= 6;
+                  return `
+                    <tr class="hover:bg-slate-50 transition">
+                      <td class="px-6 py-4 font-semibold text-slate-900">${sub.name}</td>
+                      <td class="px-6 py-4 text-center">
+                        <span class="inline-block px-3 py-1 text-sm font-black rounded-lg ${
+                          isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        }">
+                          ${sub.grade || '—'}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-center font-bold text-slate-700">${sub.espb}</td>
+                      <td class="px-6 py-4 text-center">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                          isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
+                        }">
+                          <span class="w-1.5 h-1.5 rounded-full ${isPassed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
+                          ${isPassed ? 'Položen' : 'Sluša se'}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                        <button onclick="openEditModal('${sub.id}')" class="text-slate-600 hover:text-indigo-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Uredi">
+                          <i data-lucide="edit-3" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteSubject('${sub.id}')" class="text-slate-500 hover:text-rose-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Obriši">
+                          <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+        container.appendChild(semCard);
+      }
+      lucide.createIcons();
+    }
+
+    // Filtriranje
+    function filterSubjects() {
+      renderSemesters();
+    }
+
+    // Otvaranje modalnog prozora za dodavanje
+    function openAddModal(defaultSem = 1) {
+      document.getElementById('modal-title').textContent = "Dodaj Predmet";
+      document.getElementById('modal-subject-id').value = "";
+      document.getElementById('modal-name').value = "";
+      document.getElementById('modal-grade').value = "10";
+      document.getElementById('modal-espb').value = "3";
+      document.getElementById('modal-semester').value = defaultSem.toString();
+      
+      document.getElementById('subject-modal').classList.remove('hidden');
+    }
+
+    // Otvaranje modalnog prozora za promenu
+    function openEditModal(id) {
+      const sub = subjects.find(s => s.id === id);
+      if (!sub) return;
+
+      document.getElementById('modal-title').textContent = "Izmeni Predmet";
+      document.getElementById('modal-subject-id').value = sub.id;
+      document.getElementById('modal-name').value = sub.name;
+      document.getElementById('modal-grade').value = sub.grade === null ? "null" : sub.grade.toString();
+      document.getElementById('modal-espb').value = sub.espb.toString();
+      document.getElementById('modal-semester').value = sub.semester.toString();
+
+      document.getElementById('subject-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('subject-modal').classList.add('hidden');
+    }
+
+    // Čuvanje ispita (novi ili izmenjeni)
+    function saveSubject(event) {
+      event.preventDefault();
+      
+      const id = document.getElementById('modal-subject-id').value;
+      const name = document.getElementById('modal-name').value.trim();
+      const gradeVal = document.getElementById('modal-grade').value;
+      const grade = gradeVal === "null" ? null : parseInt(gradeVal);
+      const espb = parseInt(document.getElementById('modal-espb').value);
+      const semester = parseInt(document.getElementById('modal-semester').value);
+
+      if (id) {
+        const index = subjects.findIndex(s => s.id === id);
+        if (index !== -1) {
+          subjects[index] = { ...subjects[index], name, grade, espb, semester };
+          showToast("Predmet uspešno izmenjen!");
+        }
+      } else {
+        const newId = 'custom-' + Date.now();
+        subjects.push({ id: newId, name, grade, espb, semester });
+        showToast("Novi predmet je uspešno dodat!");
+      }
+
+      closeModal();
+      calculateStatistics();
+    }
+
+    // Brisanje predmeta
+    function deleteSubject(id) {
+      const sub = subjects.find(s => s.id === id);
+      if (!sub) return;
+      
+      if (confirm(`Da li ste sigurni da želite da obrišete predmet "${sub.name}"?`)) {
+        subjects = subjects.filter(s => s.id !== id);
+        showToast("Predmet je obrisan.", "info");
+        calculateStatistics();
+      }
+    }
+
+    // Resetovanje na original (Zavisi od ulogovanog korisnika)
+    function resetToDefault() {
+      if (!currentUser) return;
+      
+      if (currentUser.name.toLowerCase().includes("stevan gajinov")) {
+        if (confirm("Da li želite da vratite originalne podatke iz priloženog CSV fajla za Stevana?")) {
+          subjects = [...defaultStevanData];
+          showToast("Originalni predmeti i ocene su uspešno učitani.");
+          calculateStatistics();
+        }
+      } else {
+        if (confirm("Da li želite da obrišete sve unete predmete i počnete ponovo ispočetka?")) {
+          subjects = [];
+          showToast("Svi predmeti su uklonjeni.", "info");
+          calculateStatistics();
+        }
+      }
+    }
+
+    // Prikupljanje prosečnih ocena po semestrima za grafikon
+    function getSemesterGPAs() {
+      const semGPAs = [];
+      for (let s = 1; s <= 8; s++) {
+        const semSubs = subjects.filter(sub => sub.semester === s && sub.grade !== null && sub.grade >= 6);
+        if (semSubs.length > 0) {
+          const sum = semSubs.reduce((acc, curr) => acc + curr.grade, 0);
+          semGPAs.push((sum / semSubs.length).toFixed(2));
+        } else {
+          semGPAs.push(0);
+        }
+      }
+      return semGPAs;
+    }
+
+    // Renderovanje / ažuriranje grafikona
+    function updateChart() {
+      const data = getSemesterGPAs();
+      const labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'];
+
+      if (gpaChart) {
+        gpaChart.data.datasets[0].data = data;
+        gpaChart.update();
+      } else {
+        const ctx = document.getElementById('gpaChart').getContext('2d');
+        gpaChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Prosečna ocena',
+              data: data,
+              borderColor: 'rgb(79, 70, 229)',
+              backgroundColor: 'rgba(79, 70, 229, 0.1)',
+              tension: 0.3,
+              fill: true,
+              borderWidth: 3,
+              pointBackgroundColor: 'rgb(79, 70, 229)',
+              pointHoverRadius: 7
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                min: 5,
+                max: 10,
+                grid: {
+                  color: 'rgba(148, 163, 184, 0.1)'
+                },
+                ticks: {
+                  stepSize: 1
+                }
+              },
+              x: {
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // "Šta-ako" simulator
+    function calculateWhatIf() {
+      const target = parseFloat(document.getElementById('target-gpa').value);
+      if (isNaN(target) || target < 6.0 || target > 10.0) {
+        showToast("Unesite ispravan ciljani prosek (6.0 - 10.0)", "error");
+        return;
+      }
+
+      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
+      const remaining = subjects.filter(s => s.grade === null);
+
+      const resultBox = document.getElementById('whatif-result');
+      const messageDiv = document.getElementById('whatif-message');
+      resultBox.classList.remove('hidden');
+
+      if (remaining.length === 0) {
+        messageDiv.innerHTML = `
+          <div class="text-amber-400 font-bold mb-1">Nema preostalih ispita!</div>
+          <p class="text-xs text-slate-300">Već imate unete sve ocene. Vaš trenutni prosek je <span class="text-emerald-400 font-bold">${document.getElementById('gpa-simple').textContent}</span>.</p>
+        `;
+        return;
+      }
+
+      const totalCount = passed.length + remaining.length;
+      const targetSum = target * totalCount;
+      const currentSum = passed.reduce((acc, curr) => acc + curr.grade, 0);
+      const neededSum = targetSum - currentSum;
+      const neededAverage = neededSum / remaining.length;
+
+      if (neededAverage <= 6.0) {
+        messageDiv.innerHTML = `
+          <div class="text-emerald-400 font-bold text-base mb-1">Cilj je lako dostižan!</div>
+          <p class="text-xs text-slate-300">
+            Da biste ostvarili ukupan prosek od <strong class="text-white">${target.toFixed(2)}</strong>, na preostalih <strong>${remaining.length} ispita</strong> potreban Vam je prosek od samo <strong class="text-emerald-400 text-sm">6.00</strong> (dovoljno je samo da položite).
+          </p>
+        `;
+      } else if (neededAverage > 10.0) {
+        messageDiv.innerHTML = `
+          <div class="text-rose-400 font-bold text-base mb-1">Cilj je matematički nemoguće</div>
+          <p class="text-xs text-slate-300">
+            Čak i da dobijete sve same <strong class="text-white">desetke (10)</strong> na preostalih ${remaining.length} ispita, Vaš maksimalni mogući prosek bi bio <strong class="text-amber-400 font-bold">${((currentSum + (10 * remaining.length)) / totalCount).toFixed(2)}</strong>.
+          </p>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div class="text-indigo-400 font-bold text-base mb-1">Cilj je dostižan!</div>
+          <p class="text-xs text-slate-300">
+            Da biste ostvarili željeni prosek od <strong class="text-white">${target.toFixed(2)}</strong>, na preostalih <strong>${remaining.length} ispita</strong> morate ostvariti prosečnu ocenu od najmanje <strong class="text-emerald-400 text-sm">${neededAverage.toFixed(2)}</strong>.
+          </p>
+        `;
+      }
+    }
+
+    // Skupljanje i širenje semestara na klik
+    function toggleSemesterCollapse(s) {
+      const content = document.getElementById(`sem-content-${s}`);
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+      } else {
+        content.classList.add('hidden');
+      }
+    }
+
+    // --- ADMIN FUNKCIONALNOSTI ---
+
+    // Otvori modal za admin lozinku
+    function openAdminPasswordModal() {
+      document.getElementById('admin-password-input').value = "";
+      document.getElementById('admin-password-error').classList.add('hidden');
+      document.getElementById('admin-password-modal').classList.remove('hidden');
+    }
+
+    function closeAdminPasswordModal() {
+      document.getElementById('admin-password-modal').classList.add('hidden');
+    }
+
+    // Verifikuj admin lozinku
+    function submitAdminPassword(event) {
+      event.preventDefault();
+      const pwd = document.getElementById('admin-password-input').value;
+      
+      // Prosta podrazumevana lozinka: admin
+      if (pwd === 'admin') {
+        closeAdminPasswordModal();
+        openAdminModal();
+      } else {
+        document.getElementById('admin-password-error').classList.remove('hidden');
+      }
+    }
+
+    // Otvaranje glavnog admin panela
+    function openAdminModal() {
+      document.getElementById('admin-modal').classList.remove('hidden');
+      renderAdminUsersList();
+    }
+
+    function closeAdminModal() {
+      document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    // Renderovanje liste svih korisnika u admin panelu
+    function renderAdminUsersList() {
+      const container = document.getElementById('admin-users-list');
+      container.innerHTML = "";
+
+      Object.keys(customUsers).forEach(key => {
+        const u = customUsers[key];
+        const isSystem = u.isSystem;
+
+        const userRow = document.createElement('div');
+        userRow.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-slate-300 transition";
+        userRow.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs uppercase">
+              ${u.displayName.charAt(0)}
+            </div>
+            <div>
+              <p class="text-xs font-bold text-slate-900">${u.displayName}</p>
+              <p class="text-[10px] text-slate-500">Indeks: ${u.index}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            ${isSystem ? `
+              <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold px-2 py-1 rounded-lg">Sistemski</span>
+            ` : `
+              <button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-xl border border-transparent hover:border-rose-100 transition inline-flex items-center gap-1 text-[10px] font-bold" title="Ukloni korisnika">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Ukloni
+              </button>
+            `}
+          </div>
+        `;
+        container.appendChild(userRow);
+      });
+      lucide.createIcons();
+    }
+
+    // Dodavanje novog korisnika preko admin forme
+    function adminAddUser(event) {
+      event.preventDefault();
+      const nameInput = document.getElementById('admin-new-name').value.trim();
+      const indexInput = document.getElementById('admin-new-index').value.trim();
+
+      if (!nameInput || !indexInput) {
+        showToast("Molimo popunite sva polja.", "error");
+        return;
+      }
+
+      const normalizedKey = nameInput.toLowerCase();
+
+      if (customUsers[normalizedKey]) {
+        showToast("Korisnik sa tim imenom već postoji!", "error");
+        return;
+      }
+
+      // Dodaj u našu listu korisnika
+      customUsers[normalizedKey] = {
+        index: indexInput,
+        displayName: nameInput,
+        isSystem: false
+      };
+
+      // Sačuvaj listu korisnika
+      localStorage.setItem('kalkulator_custom_users', JSON.stringify(customUsers));
+      
+      // Očisti formu i osveži listu
+      document.getElementById('admin-new-name').value = "";
+      document.getElementById('admin-new-index').value = "";
+      renderAdminUsersList();
+      showToast(`Student ${nameInput} je uspešno registrovan!`);
+    }
+
+    // Brisanje korisnika iz admin panela
+    function adminDeleteUser(key) {
+      const user = customUsers[key];
+      if (!user) return;
+
+      if (confirm(`Da li ste sigurni da želite da obrišete korisnika "${user.displayName}" i sve njegove sačuvane podatke?`)) {
+        // Obriši njegove sačuvane predmete iz localStorage
+        const userStorageKey = `user_subjects_${key.replace(/\s+/g, '_')}`;
+        localStorage.removeItem(userStorageKey);
+
+        // Obriši korisnika iz spiska
+        delete customUsers[key];
+        localStorage.setItem('kalkulator_custom_users', JSON.stringify(customUsers));
+
+        // Ako je izbrisani korisnik trenutno ulogovan (teoretski), odjavi ga
+        const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
+        if (savedUser && savedUser.name.toLowerCase() === key) {
+          handleLogout();
+        }
+
+        renderAdminUsersList();
+        showToast("Korisnik je uspešno obrisan sa platforme.", "info");
+      }
+    }
+  </script>
+</body>
+</html>
