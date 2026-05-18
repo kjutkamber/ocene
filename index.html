@@ -41,7 +41,7 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="user" class="w-4 h-4"></i>
             </span>
-            <input type="text" id="login-name" placeholder="npr. Stevan Gajinov" required 
+            <input type="text" id="login-name" placeholder="Ime i prezime" required 
               class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
@@ -52,7 +52,7 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="hash" class="w-4 h-4"></i>
             </span>
-            <input type="text" id="login-index" placeholder="npr. 169/23" required 
+            <input type="text" id="login-index" placeholder="Broj indeksa" required 
               class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
@@ -279,6 +279,25 @@
           <i data-lucide="x" class="w-6 h-6"></i>
         </button>
       </div>
+
+      <!-- IZBOR NAČINA: Izborni predmet ili ručni unos -->
+      <div id="modal-mode-picker" class="p-4 border-b border-slate-100 flex gap-2">
+        <button id="btn-mode-elective" onclick="setModalMode('elective')" class="flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700">
+          📋 Izborni predmet
+        </button>
+        <button id="btn-mode-manual" onclick="setModalMode('manual')" class="flex-1 py-2 text-xs font-bold rounded-lg border-2 border-slate-200 bg-white text-slate-600">
+          ✏️ Ručni unos
+        </button>
+      </div>
+
+      <!-- ELECTIVE MODE: lista izbornih predmeta -->
+      <div id="modal-elective-section" class="p-4 border-b border-slate-100">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Izaberi izborni predmet</label>
+        <select id="modal-elective-select" onchange="onElectiveSelected()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
+          <option value="">— Izaberi predmet —</option>
+        </select>
+      </div>
+
       <form id="subject-form" onsubmit="saveSubject(event)" class="p-6 space-y-4">
         <input type="hidden" id="modal-subject-id">
         
@@ -375,6 +394,18 @@
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj Indeksa</label>
               <input type="text" id="admin-new-index" placeholder="npr. 55/22"
                 class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
+              <select id="admin-new-module" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+                <option value="">— Izaberi modul —</option>
+                <option value="kamera">Kamera</option>
+                <option value="montaza">Montaža u audiovizuelnim medijima</option>
+                <option value="dizajn_zvuka">Dizajn zvuka</option>
+                <option value="dizajn_svetla">Dizajn svetla</option>
+                <option value="animacija">Animacija i vizuelni efekti</option>
+                <option value="produkcija">Produkcija za audiovizuelne medije</option>
+              </select>
             </div>
             <button onclick="adminAddUser()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shadow-md">
               ✓ Registruj studenta
@@ -531,9 +562,214 @@
       { id: "s6-9", name: "Animacija 2 - praktikum", grade: null, espb: 2, semester: 6 }
     ];
 
-    let currentUser = null;
-    let subjects = [];
-    let gpaChart = null;
+    // =============================================
+    // KURIKULUM - OBAVEZNI I IZBORNI PREDMETI
+    // =============================================
+    const CURRICULUM = {
+      kamera: {
+        mandatory: [
+          { name: "Osnovi snimanja slike", espb: 3, semester: 1 },
+          { name: "Osnovi montaže", espb: 3, semester: 1 },
+          { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 },
+          { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 },
+          { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 },
+          { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 },
+          { name: "Osnovi scenske režije", espb: 3, semester: 1 },
+          { name: "Istorija filma 1", espb: 3, semester: 1 },
+          { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 },
+          { name: "Osnovi snimanja slike - praktikum", espb: 3, semester: 1 },
+          { name: "Snimanje kamerom", espb: 3, semester: 2 },
+          { name: "Snimanje kamerom - praktikum", espb: 3, semester: 2 },
+          { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 },
+          { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 },
+          { name: "Snimanje zvuka", espb: 3, semester: 2 },
+          { name: "Pozorišna produkcija 1", espb: 3, semester: 2 },
+          { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 },
+          { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 },
+          { name: "Istorija filma 2", espb: 3, semester: 2 },
+          { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 },
+          { name: "Filmska kamera", espb: 3, semester: 3 },
+          { name: "Filmska kamera - praktikum", espb: 2, semester: 3 },
+          { name: "Osnovi vizuelne kulture", espb: 2, semester: 3 },
+          { name: "Osnovi dramaturgije", espb: 2, semester: 3 },
+          { name: "Filmska i televizijska režija 1", espb: 3, semester: 3 },
+          { name: "Istorija filma 3", espb: 3, semester: 3 },
+          { name: "Sociologija kulture 1", espb: 2, semester: 3 },
+          { name: "Fotografska istraživačka praksa 1", espb: 3, semester: 3 },
+          { name: "Optika 1", espb: 2, semester: 3 },
+          { name: "Elektronska kamera", espb: 3, semester: 4 },
+          { name: "Elektronska kamera - praktikum", espb: 2, semester: 4 },
+          { name: "Vizuelne komunikacije", espb: 2, semester: 4 },
+          { name: "Osnovi scenarija", espb: 2, semester: 4 },
+          { name: "Fotografska istraživačka praksa 2", espb: 3, semester: 4 },
+          { name: "Sociologija kulture 2", espb: 2, semester: 4 },
+          { name: "Filmska i televizijska režija 2", espb: 3, semester: 4 },
+          { name: "Optika 2", espb: 2, semester: 4 },
+          { name: "Istorija filma 4", espb: 3, semester: 4 },
+          { name: "Umetnost snimanja kamerom 1", espb: 3, semester: 5 },
+          { name: "Umetnost snimanja kamerom 1 - praktikum", espb: 2, semester: 5 },
+          { name: "Dizajn produkcije", espb: 2, semester: 5 },
+          { name: "Fotografska istraživačka praksa 3", espb: 3, semester: 5 },
+          { name: "Mediji masovne komunikacije", espb: 2, semester: 5 },
+          { name: "Istorija umetnosti srednjeg veka 1", espb: 3, semester: 5 },
+          { name: "Pokretna grafika", espb: 3, semester: 5 },
+          { name: "Profesionalna praksa", espb: 2, semester: 5 },
+          { name: "Osnove estetike 1", espb: 2, semester: 5 },
+          { name: "Umetnost snimanja kamerom 2", espb: 3, semester: 6 },
+          { name: "Umetnost snimanja kamerom 2 - praktikum", espb: 2, semester: 6 },
+          { name: "Dizajn produkcije", espb: 2, semester: 6 },
+          { name: "Interaktivna animacija", espb: 3, semester: 6 },
+          { name: "Mediji masovne komunikacije", espb: 2, semester: 6 },
+          { name: "Osnove estetike 2", espb: 2, semester: 6 },
+          { name: "Fotografska istraživačka praksa 4", espb: 3, semester: 6 },
+          { name: "Profesionalna praksa", espb: 2, semester: 6 },
+          { name: "Istorija umetnosti srednjeg veka 2", espb: 3, semester: 6 },
+          { name: "Kamera - analiza i sinteza 1", espb: 3, semester: 7 },
+          { name: "Kamera - analiza i sinteza 1 - praktikum", espb: 3, semester: 7 },
+          { name: "Teorija filma", espb: 3, semester: 7 },
+          { name: "Teorija medija", espb: 3, semester: 7 },
+          { name: "Profesionalna praksa", espb: 3, semester: 7 },
+          { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 },
+          { name: "Dokumentarni film 1", espb: 3, semester: 7 },
+          { name: "Završni projekat", espb: 2, semester: 7 },
+          { name: "Kamera - analiza i sinteza 2", espb: 3, semester: 8 },
+          { name: "Kamera - analiza i sinteza 2 - praktikum", espb: 3, semester: 8 },
+          { name: "Teorija filma", espb: 3, semester: 8 },
+          { name: "Teorija medija", espb: 3, semester: 8 },
+          { name: "Dokumentarni film 2", espb: 3, semester: 8 },
+          { name: "Profesionalna praksa", espb: 3, semester: 8 },
+          { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 },
+          { name: "Završni projekat 2", espb: 2, semester: 8 },
+        ],
+        electives: {
+          3: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }],
+          4: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Kostimografija", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }],
+          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Likovni elementi 2", espb: 2 }, { name: "Scenografija 1", espb: 2 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }],
+          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Muzička pismenost 1", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }],
+          7: [{ name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Opšta psihologija", espb: 2 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }, { name: "Muzička produkcija", espb: 3 }],
+          8: [{ name: "Psihologija ličnosti", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Likovni elementi 1", espb: 2 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
+        }
+      },
+      montaza: {
+        mandatory: [
+          { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Osnovi montaže - praktikum", espb: 2, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Projekat 1", espb: 1, semester: 1 },
+          { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima - praktikum", espb: 2, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Projekat 2", espb: 1, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 },
+          { name: "Filmska montaža", espb: 3, semester: 3 }, { name: "Elektronska montaža", espb: 3, semester: 3 }, { name: "Filmska montaža - praktikum", espb: 2, semester: 3 }, { name: "Osnovi vizuelne kulture", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Projekat 3", espb: 2, semester: 3 }, { name: "Filmska i televizijska režija 1", espb: 3, semester: 3 },
+          { name: "Montaža zvuka za film i televiziju", espb: 3, semester: 4 }, { name: "Digitalna montaža", espb: 3, semester: 4 }, { name: "Montaža zvuka za film i televiziju - praktikum", espb: 2, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Filmska i televizijska režija 2", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Vizuelne komunikacije", espb: 2, semester: 4 }, { name: "Projekat 4", espb: 2, semester: 4 },
+          { name: "Montaža audiovizuelnih formi 1", espb: 3, semester: 5 }, { name: "Montaža audiovizuelnih formi 1 - praktikum", espb: 4, semester: 5 }, { name: "Pokretna grafika", espb: 3, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Projekat 5", espb: 2, semester: 5 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 },
+          { name: "Montaža audiovizuelnih formi 2", espb: 3, semester: 6 }, { name: "Montaža audiovizuelnih formi 2 - praktikum", espb: 4, semester: 6 }, { name: "Interaktivna animacija", espb: 3, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Projekat 6", espb: 2, semester: 6 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
+          { name: "Montažne artikulacije 1", espb: 3, semester: 7 }, { name: "Montažne artikulacije 1 - praktikum", espb: 3, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
+          { name: "Montažne artikulacije 2", espb: 3, semester: 8 }, { name: "Montažne artikulacije 2 - praktikum", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Završni projekat 2", espb: 2, semester: 8 },
+        ],
+        electives: {
+          3: [{ name: "Filmska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Osnovi programa o liniji 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Maska i sminka", espb: 2 }],
+          4: [{ name: "Elektronska kamera", espb: 3 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Kostimografija", espb: 2 }, { name: "Osnovi programa o liniji 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }],
+          5: [{ name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }],
+          6: [{ name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Akustika", espb: 2 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }, { name: "Scenografija 2", espb: 2 }],
+          7: [{ name: "Audio uređaji i sistemi 1", espb: 2 }, { name: "Muzička pismenost 1", espb: 2 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Optika 1", espb: 2 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }],
+          8: [{ name: "Optika 2", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Audio uređaji i sistemi 2", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
+        }
+      },
+      dizajn_zvuka: {
+        mandatory: [
+          { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka - praktikum", espb: 2, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Primenjena elektrotehnika", espb: 2, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 },
+          { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Snimanje zvuka - praktikum", espb: 2, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 },
+          { name: "Osnovi obrade zvuka", espb: 3, semester: 3 }, { name: "Osnovi obrade zvuka - praktikum", espb: 3, semester: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3, semester: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima - praktikum", espb: 2, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Audio uređaji i sistemi 1", espb: 2, semester: 3 }, { name: "Muzika kao kultura", espb: 2, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Muzička pismenost 1", espb: 2, semester: 3 },
+          { name: "Dizajn scenskog zvuka", espb: 3, semester: 4 }, { name: "Dizajn scenskog zvuka - praktikum", espb: 2, semester: 4 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3, semester: 4 }, { name: "Montaža dijaloga u audio-vizuelnim medijima - praktikum", espb: 3, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Audio uređaji i sistemi 2", espb: 2, semester: 4 }, { name: "Muzika kao kultura", espb: 2, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Akustika", espb: 2, semester: 4 },
+          { name: "Uvod u snimanje muzike", espb: 3, semester: 5 }, { name: "Uvod u snimanje muzike - praktikum", espb: 3, semester: 5 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3, semester: 5 }, { name: "Dizajn i montaža zvučnih efekata i muzike - praktikum", espb: 3, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 },
+          { name: "Snimanje muzike", espb: 3, semester: 6 }, { name: "Snimanje muzike - praktikum", espb: 2, semester: 6 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima", espb: 3, semester: 6 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima - praktikum", espb: 2, semester: 6 }, { name: "Muzički instrumenti", espb: 2, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
+          { name: "Muzička produkcija", espb: 3, semester: 7 }, { name: "Muzička produkcija - praktikum", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audiovizuelnim medijima", espb: 2, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
+          { name: "Analiza i sinteza zvučne slike", espb: 3, semester: 8 }, { name: "Analiza i sinteza zvučne slike - praktikum", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audiovizuelnim medijima", espb: 2, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
+        ],
+        electives: {
+          3: [{ name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Osnovi vizuelne kulture", espb: 2 }, { name: "Osnovi dramaturgije", espb: 2 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Filmska i televizijska režija 1", espb: 3 }],
+          4: [{ name: "Kostimografija", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Vizuelne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Filmska i televizijska režija 2", espb: 3 }, { name: "Osnovi scenarija", espb: 2 }],
+          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Harmonija u audiovizuelnim medijima 1", espb: 2 }],
+          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }, { name: "Harmonija u audiovizuelnim medijima 2", espb: 2 }],
+          7: [{ name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Optika 1", espb: 2 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Dizajn produkcije", espb: 2 }, { name: "Istorija nacionalne muzike", espb: 3 }],
+          8: [{ name: "Optika 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Dizajn produkcije", espb: 2 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
+        }
+      },
+      dizajn_svetla: {
+        mandatory: [
+          { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu - praktikum", espb: 2, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Primenjena elektrotehnika", espb: 2, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 },
+          { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju - praktikum", espb: 2, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 },
+          { name: "Dizajn svetla za film i televiziju 1", espb: 3, semester: 3 }, { name: "Dizajn svetla za film i televiziju 1 - praktikum", espb: 2, semester: 3 }, { name: "Osnovi vizuelne kulture", espb: 2, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Fotografska istraživačka praksa 1", espb: 3, semester: 3 }, { name: "Optika 1", espb: 2, semester: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 },
+          { name: "Dizajn svetla za film i televiziju 2", espb: 3, semester: 4 }, { name: "Dizajn svetla za film i televiziju 2 - praktikum", espb: 2, semester: 4 }, { name: "Vizuelne komunikacije", espb: 2, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Fotografska istraživačka praksa 2", espb: 3, semester: 4 }, { name: "Optika 2", espb: 2, semester: 4 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 },
+          { name: "Dizajn svetla za scenu 1", espb: 3, semester: 5 }, { name: "Dizajn svetla za scenu 1 - praktikum", espb: 4, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Dizajn produkcije", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Fotografska istraživačka praksa 3", espb: 3, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 }, { name: "Pokretna grafika", espb: 3, semester: 5 },
+          { name: "Dizajn svetla za scenu 2", espb: 3, semester: 6 }, { name: "Dizajn svetla za scenu 2 - praktikum", espb: 2, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Dizajn produkcije", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Fotografska istraživačka praksa 4", espb: 3, semester: 6 }, { name: "Interaktivna animacija", espb: 3, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
+          { name: "Kreativni svetlopis 1", espb: 3, semester: 7 }, { name: "Kreativni svetlopis 1 - praktikum", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
+          { name: "Kreativni svetlopis 2", espb: 3, semester: 8 }, { name: "Kreativni svetlopis 2 - praktikum", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
+        ],
+        electives: {
+          3: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Filmska i televizijska režija 1", espb: 3 }, { name: "Osnovi programa o liniji 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }],
+          4: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Kostimografija", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Filmska i televizijska režija 2", espb: 3 }, { name: "Osnovi programa o liniji 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }],
+          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }],
+          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }],
+          7: [{ name: "Audio uređaji i sistemi 1", espb: 2 }, { name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }],
+          8: [{ name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Audio uređaji i sistemi 2", espb: 2 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
+        }
+      },
+      animacija: {
+        mandatory: [
+          { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije - praktikum", espb: 3, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Tehnologija audiovizuelnih medija 1", espb: 3, semester: 1 },
+          { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata - praktikum", espb: 3, semester: 2 }, { name: "Režija u audiovizuelnim medijima", espb: 3, semester: 2 }, { name: "Montaža u audiovizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audiovizuelnih medija 2", espb: 3, semester: 2 },
+          { name: "Animacija 1", espb: 3, semester: 3 }, { name: "Animacija 1 - praktikum", espb: 3, semester: 3 }, { name: "Osnovi programa o liniji 1", espb: 3, semester: 3 }, { name: "Filmska i televizijska režija 1", espb: 3, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Istorija moderne umetnosti 1", espb: 3, semester: 3 },
+          { name: "Vizuelni efekti 1", espb: 3, semester: 4 }, { name: "Vizuelni efekti 1 - praktikum", espb: 3, semester: 4 }, { name: "Osnovi programa o liniji 2", espb: 3, semester: 4 }, { name: "Filmska i televizijska režija 2", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Istorija moderne umetnosti 2", espb: 3, semester: 4 },
+          { name: "Vizuelni efekti 2", espb: 3, semester: 5 }, { name: "Vizuelni efekti 2 - praktikum", espb: 4, semester: 5 }, { name: "Pokretna grafika", espb: 3, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Dizajn produkcije", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Strip 1", espb: 3, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 },
+          { name: "Animacija 2", espb: 3, semester: 6 }, { name: "Animacija 2 - praktikum", espb: 2, semester: 6 }, { name: "Interaktivna animacija", espb: 3, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Dizajn produkcije", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Strip 2", espb: 3, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
+          { name: "Vizuelni efekti 3", espb: 3, semester: 7 }, { name: "Vizuelni efekti 3 - praktikum", espb: 3, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 },
+          { name: "Animacija 3", espb: 3, semester: 8 }, { name: "Animacija 3 - praktikum", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
+        ],
+        electives: {
+          3: [{ name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audiovizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Osnovi vizuelne kulture", espb: 2 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Maska i sminka", espb: 2 }, { name: "Uvod u vajanje sa tehnologijom 1", espb: 3 }, { name: "Uvod u grafičke komunikacije 1", espb: 3 }, { name: "Ilustracija - osnove i tehnike 1", espb: 3 }],
+          4: [{ name: "Kostimografija", espb: 2 }, { name: "Elektronska montaža", espb: 3 }, { name: "Montaža dijaloga u audiovizuelnim medijima", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Vizuelne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Uvod u vajanje sa tehnologijom 2", espb: 3 }, { name: "Uvod u grafičke komunikacije 2", espb: 3 }, { name: "Ilustracija - osnove i tehnike 2", espb: 3 }],
+          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }, { name: "Grafičke tehnike 1", espb: 3 }, { name: "Uvod u arhitekturu 1", espb: 3 }, { name: "Savremene tehnologije u skulpturi 1", espb: 3 }],
+          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }, { name: "Grafičke tehnike 2", espb: 3 }, { name: "Uvod u arhitekturu 2", espb: 3 }, { name: "Savremene tehnologije u skulpturi 2", espb: 3 }],
+          7: [{ name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Optika 1", espb: 2 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }, { name: "Grafičke tehnike 3", espb: 3 }, { name: "Osnove plakata 1", espb: 3 }, { name: "Instalacije i intervencije u javnom prostoru 1", espb: 3 }, { name: "Osnovi dizajna enterijera 1", espb: 3 }],
+          8: [{ name: "Optika 2", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Akustika", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Grafičke tehnike 4", espb: 3 }, { name: "Osnove plakata 2", espb: 3 }, { name: "Instalacije i intervencije u javnom prostoru 2", espb: 3 }, { name: "Osnovi dizajna enterijera 2", espb: 3 }]
+        }
+      },
+      produkcija: {
+        mandatory: [
+          { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1 - praktikum", espb: 3, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 },
+          { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1 - praktikum", espb: 3, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 },
+          { name: "Filmska i televizijska produkcija 2", espb: 3, semester: 3 }, { name: "Filmska i televizijska produkcija 2 - praktikum", espb: 3, semester: 3 }, { name: "Multimedijalna produkcija 1", espb: 3, semester: 3 }, { name: "Multimedijalna produkcija 1 - praktikum", espb: 3, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Istorija svetske drame i pozorišta 1", espb: 3, semester: 3 },
+          { name: "Pozorišna produkcija 2", espb: 3, semester: 4 }, { name: "Pozorišna produkcija 2 - praktikum", espb: 3, semester: 4 }, { name: "Multimedijalna produkcija 2", espb: 3, semester: 4 }, { name: "Multimedijalna produkcija 2 - praktikum", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Istorija svetske drame i pozorišta 2", espb: 2, semester: 4 },
+          { name: "Pozorišna produkcija 3", espb: 2, semester: 5 }, { name: "Pozorišna produkcija 3 - praktikum", espb: 3, semester: 5 }, { name: "Multimedijalna produkcija 3", espb: 3, semester: 5 }, { name: "Multimedijalna produkcija 3 - praktikum", espb: 3, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Istorija svetske drame i pozorišta 3", espb: 3, semester: 5 },
+          { name: "Filmska i televizijska produkcija 3", espb: 3, semester: 6 }, { name: "Filmska i televizijska produkcija 3 - praktikum", espb: 3, semester: 6 }, { name: "Multimedijalna produkcija 4", espb: 2, semester: 6 }, { name: "Multimedijalna produkcija 4 - praktikum", espb: 3, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Istorija svetske drame i pozorišta 4", espb: 3, semester: 6 },
+          { name: "Pozorišna produkcija 4", espb: 3, semester: 7 }, { name: "Pozorišna produkcija 4 - praktikum", espb: 3, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Istorija južnoslovenske drame i pozorišta 1", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
+          { name: "Filmska i televizijska produkcija 4", espb: 3, semester: 8 }, { name: "Filmska i televizijska produkcija 4 - praktikum", espb: 4, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Istorija južnoslovenske drame i pozorišta 2", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
+        ],
+        electives: {
+          3: [{ name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Filmska i televizijska režija 1", espb: 3 }, { name: "Osnovi vizuelne kulture", espb: 2 }],
+          4: [{ name: "Kostimografija", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Vizuelne komunikacije", espb: 2 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Filmska i televizijska režija 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }],
+          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Program o liniji 1", espb: 3 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Mediji masovne komunikacije", espb: 2 }],
+          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima", espb: 3 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }],
+          7: [{ name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }],
+          8: [{ name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Akustika", espb: 2 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Dizajn produkcije", espb: 2 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
+        }
+      }
+    };
+
+    // Generiši predmete iz kurikuluma za datog studenta
+    function generateSubjectsFromCurriculum(module) {
+      const c = CURRICULUM[module];
+      if (!c) return [];
+      return c.mandatory.map((s, i) => ({
+        id: 'curr-' + module + '-' + i,
+        name: s.name,
+        grade: null,
+        espb: s.espb,
+        semester: s.semester
+      }));
+    }
+
+    // Dobij izborne predmete za modul i semestar
+    function getElectivesForSemester(module, semester) {
+      if (!module || !CURRICULUM[module]) return [];
+      return (CURRICULUM[module].electives[semester] || []);
+    }
 
     // Inicijalizacija pri pokretanju — najpre učitaj oblak
     window.onload = async function() {
