@@ -327,89 +327,76 @@
     </div>
   </div>
 
-  <!-- MODAL: KORISNIČKI ADMIN PANEL -->
-  <div id="admin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-slate-200 flex flex-col max-h-[90vh]">
-      <!-- Header -->
-      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0">
-        <div class="flex items-center gap-2">
-          <i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i>
-          <h3 class="font-black text-lg">Admin Panel: Korisnici</h3>
-        </div>
-        <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white transition">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-      </div>
-
-      <!-- Sadržaj -->
-      <div class="p-6 space-y-6 overflow-y-auto flex-grow">
-        <!-- Forma za dodavanje novog korisnika -->
-        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
-          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-1">
-            <i data-lucide="user-plus" class="w-4 h-4 text-emerald-500"></i> Dodaj novog studenta
-          </h4>
-          <form onsubmit="adminAddUser(event)" class="space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i prezime</label>
-                <input type="text" id="admin-new-name" placeholder="npr. Marko Marković" required 
-                  class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj indeksa</label>
-                <input type="text" id="admin-new-index" placeholder="npr. 55/22" required 
-                  class="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
-              </div>
-            </div>
-            <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-md flex items-center justify-center gap-1.5">
-              <i data-lucide="check" class="w-3.5 h-3.5"></i> Registruj korisnika
-            </button>
-          </form>
-        </div>
-
-        <!-- Lista trenutnih korisnika -->
-        <div>
-          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3 flex items-center gap-1">
-            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i> Registrovani studenti
-          </h4>
-          <div id="admin-users-list" class="space-y-2">
-            <!-- Dinamički unosi korisnika -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0">
-        <button onclick="closeAdminModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition border border-slate-200">
-          Zatvori panel
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- PASSWORD PROMPT MODAL ZA ADMINA -->
-  <div id="admin-password-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+  <!-- JEDINSTVENI ADMIN MODAL (lozinka + panel u jednom) -->
+  <div id="admin-master-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    
+    <!-- KORAK 1: Unos lozinke -->
+    <div id="admin-step-password" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
       <div class="flex items-center gap-2 mb-4">
         <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600">
           <i data-lucide="lock" class="w-5 h-5"></i>
         </div>
-        <h3 class="font-bold text-slate-900 text-base">Unesite lozinku</h3>
+        <h3 class="font-bold text-slate-900 text-base">Admin pristup</h3>
       </div>
-      <form onsubmit="submitAdminPassword(event)" class="space-y-4">
-        <div>
-          <input type="password" id="admin-password-input" placeholder="Lozinka (podrazumevano: admin)" required 
-            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+      <div class="space-y-4">
+        <input type="password" id="admin-password-input" placeholder="Unesite lozinku (admin)"
+          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+        <div id="admin-password-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg">
+          Pogrešna lozinka. Pokušajte ponovo.
         </div>
-        <div id="admin-password-error" class="hidden text-rose-600 text-xs font-bold flex items-center gap-1">
-          <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Pogrešna lozinka. Pokušajte ponovo.
+        <div class="flex gap-2">
+          <button onclick="closeAdminMasterModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
+          <button onclick="checkAdminPassword()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Potvrdi</button>
         </div>
-        <div class="flex justify-end gap-2">
-          <button type="button" onclick="closeAdminPasswordModal()" class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition">Otkaz</button>
-          <button type="submit" class="px-4 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Potvrdi</button>
-        </div>
-      </form>
+      </div>
     </div>
+
+    <!-- KORAK 2: Admin panel -->
+    <div id="admin-step-panel" class="hidden bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[90vh]">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0 rounded-t-3xl">
+        <div class="flex items-center gap-2">
+          <i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i>
+          <h3 class="font-black text-lg">Admin Panel: Studenti</h3>
+        </div>
+        <button onclick="closeAdminMasterModal()" class="text-slate-400 hover:text-white transition text-xl font-bold">✕</button>
+      </div>
+
+      <div class="p-6 space-y-6 overflow-y-auto flex-grow">
+        <!-- Forma za dodavanje -->
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">➕ Dodaj novog studenta</h4>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i Prezime</label>
+              <input type="text" id="admin-new-name" placeholder="npr. Marko Marković"
+                class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj Indeksa</label>
+              <input type="text" id="admin-new-index" placeholder="npr. 55/22"
+                class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <button onclick="adminAddUser()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shadow-md">
+              ✓ Registruj studenta
+            </button>
+            <div id="admin-add-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg"></div>
+          </div>
+        </div>
+
+        <!-- Lista korisnika -->
+        <div>
+          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">👥 Registrovani studenti</h4>
+          <div id="admin-users-list" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-3xl">
+        <button onclick="closeAdminMasterModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">
+          Zatvori panel
+        </button>
+      </div>
+    </div>
+
   </div>
 
   <!-- TOAST NOTIFIKACIJE -->
@@ -1074,53 +1061,62 @@
 
     // --- ADMIN FUNKCIONALNOSTI ---
 
-    // Otvori modal za admin lozinku
     function openAdminPasswordModal() {
-      document.getElementById('admin-password-input').value = "";
+      document.getElementById('admin-password-input').value = '';
       document.getElementById('admin-password-error').classList.add('hidden');
-      document.getElementById('admin-password-modal').classList.remove('hidden');
+      document.getElementById('admin-step-password').classList.remove('hidden');
+      document.getElementById('admin-step-panel').classList.add('hidden');
+      document.getElementById('admin-master-modal').classList.remove('hidden');
     }
 
-    function closeAdminPasswordModal() {
-      document.getElementById('admin-password-modal').classList.add('hidden');
+    function closeAdminMasterModal() {
+      document.getElementById('admin-master-modal').classList.add('hidden');
     }
 
-    // Verifikuj admin lozinku
-    function submitAdminPassword(event) {
-      event.preventDefault();
+    // Keep old names working just in case
+    function closeAdminPasswordModal() { closeAdminMasterModal(); }
+    function closeAdminModal() { closeAdminMasterModal(); }
+    function openAdminModal() {
+      document.getElementById('admin-step-password').classList.add('hidden');
+      document.getElementById('admin-step-panel').classList.remove('hidden');
+      renderAdminUsersList();
+    }
+
+    function checkAdminPassword() {
       const pwd = document.getElementById('admin-password-input').value;
-      
-      // Prosta podrazumevana lozinka: admin
       if (pwd === 'admin') {
-        closeAdminPasswordModal();
+        document.getElementById('admin-password-error').classList.add('hidden');
         openAdminModal();
       } else {
         document.getElementById('admin-password-error').classList.remove('hidden');
       }
     }
 
-    // Otvaranje glavnog admin panela
-    function openAdminModal() {
-      document.getElementById('admin-modal').classList.remove('hidden');
-      renderAdminUsersList();
-    }
+    // Also support Enter key in password field
+    document.addEventListener('DOMContentLoaded', function() {
+      const pwdInput = document.getElementById('admin-password-input');
+      if (pwdInput) {
+        pwdInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') checkAdminPassword();
+        });
+      }
+    });
 
-    function closeAdminModal() {
-      document.getElementById('admin-modal').classList.add('hidden');
-    }
-
-    // Renderovanje liste svih korisnika u admin panelu
     function renderAdminUsersList() {
       const container = document.getElementById('admin-users-list');
-      container.innerHTML = "";
+      container.innerHTML = '';
 
-      Object.keys(customUsers).forEach(key => {
+      const keys = Object.keys(customUsers);
+      if (keys.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema registrovanih studenata.</p>';
+        return;
+      }
+
+      keys.forEach(key => {
         const u = customUsers[key];
-        const isSystem = u.isSystem;
-
-        const userRow = document.createElement('div');
-        userRow.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm hover:border-slate-300 transition";
-        userRow.innerHTML = `
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm";
+        row.innerHTML = `
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs uppercase">
               ${u.displayName.charAt(0)}
@@ -1130,73 +1126,59 @@
               <p class="text-[10px] text-slate-500">Indeks: ${u.index}</p>
             </div>
           </div>
-          <div class="flex items-center gap-2">
-            ${isSystem ? `
-              <span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold px-2 py-1 rounded-lg">Sistemski</span>
-            ` : `
-              <button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-xl border border-transparent hover:border-rose-100 transition inline-flex items-center gap-1 text-[10px] font-bold" title="Ukloni korisnika">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Ukloni
-              </button>
-            `}
+          <div>
+            ${u.isSystem
+              ? `<span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold px-2 py-1 rounded-lg">Sistemski</span>`
+              : `<button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-rose-100 hover:bg-rose-50 transition">Ukloni</button>`
+            }
           </div>
         `;
-        container.appendChild(userRow);
+        container.appendChild(row);
       });
-      lucide.createIcons();
     }
 
-    // Dodavanje novog korisnika preko admin forme
-    async function adminAddUser(event) {
-      event.preventDefault();
+    async function adminAddUser() {
       const nameInput = document.getElementById('admin-new-name').value.trim();
       const indexInput = document.getElementById('admin-new-index').value.trim();
+      const errDiv = document.getElementById('admin-add-error');
 
       if (!nameInput || !indexInput) {
-        showToast("Molimo popunite sva polja.", "error");
+        errDiv.textContent = 'Molimo popunite oba polja.';
+        errDiv.classList.remove('hidden');
         return;
       }
 
       const normalizedKey = nameInput.toLowerCase();
-
       if (customUsers[normalizedKey]) {
-        showToast("Korisnik sa tim imenom već postoji!", "error");
+        errDiv.textContent = 'Korisnik sa tim imenom već postoji!';
+        errDiv.classList.remove('hidden');
         return;
       }
 
-      customUsers[normalizedKey] = {
-        index: indexInput,
-        displayName: nameInput,
-        isSystem: false
-      };
-
+      errDiv.classList.add('hidden');
+      customUsers[normalizedKey] = { index: indexInput, displayName: nameInput, isSystem: false };
       cloudData.users = customUsers;
       await cloudSave(cloudData);
-      
-      document.getElementById('admin-new-name').value = "";
-      document.getElementById('admin-new-index').value = "";
+
+      document.getElementById('admin-new-name').value = '';
+      document.getElementById('admin-new-index').value = '';
       renderAdminUsersList();
       showToast(`Student ${nameInput} je uspešno registrovan!`);
     }
 
-    // Brisanje korisnika iz admin panela
     async function adminDeleteUser(key) {
       const user = customUsers[key];
       if (!user) return;
-
-      if (confirm(`Da li ste sigurni da želite da obrišete korisnika "${user.displayName}" i sve njegove sačuvane podatke?`)) {
+      if (confirm(`Obrisati korisnika "${user.displayName}" i sve njegove podatke?`)) {
         const userCloudKey = 'subjects_' + key.replace(/\s+/g, '_');
         delete cloudData[userCloudKey];
         delete customUsers[key];
         cloudData.users = customUsers;
         await cloudSave(cloudData);
-
         const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
-        if (savedUser && savedUser.name.toLowerCase() === key) {
-          handleLogout();
-        }
-
+        if (savedUser && savedUser.name.toLowerCase() === key) handleLogout();
         renderAdminUsersList();
-        showToast("Korisnik je uspešno obrisan sa platforme.", "info");
+        showToast('Korisnik je obrisan.', 'info');
       }
     }
   </script>
