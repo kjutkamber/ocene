@@ -34,14 +34,14 @@
         <p class="text-xs text-slate-500 mt-1">Unesite Vaše podatke za pristup kalkulatoru</p>
       </div>
 
-      <form onsubmit="handleLogin(event)" class="space-y-4">
+      <div class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ime i Prezime</label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="user" class="w-4 h-4"></i>
             </span>
-            <input type="text" id="login-name" placeholder="Ime i prezime" required 
+            <input type="text" id="login-name" placeholder="Ime i prezime"
               class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
@@ -52,20 +52,20 @@
             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
               <i data-lucide="hash" class="w-4 h-4"></i>
             </span>
-            <input type="text" id="login-index" placeholder="Broj indeksa" required 
+            <input type="text" id="login-index" placeholder="Broj indeksa"
               class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
 
         <div id="login-error" class="hidden text-rose-600 text-xs font-semibold bg-rose-50 border border-rose-100 p-3 rounded-lg flex items-center gap-2">
           <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
-          <span>Nevažeća kombinacija imena i broja indeksa.</span>
+          <span id="login-error-text">Nevažeća kombinacija imena i broja indeksa.</span>
         </div>
 
-        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 mt-2">
+        <button onclick="handleLogin()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 mt-2">
           Prijavi se <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
-      </form>
+      </div>
 
       <!-- Sekcija za prelazak u Admin mod -->
       <div class="mt-6 border-t border-slate-100 pt-4 flex flex-col items-center gap-3">
@@ -98,9 +98,6 @@
         <div class="flex flex-wrap gap-2">
           <button onclick="manualSave()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition shadow-lg text-white">
             <i data-lucide="save" class="w-4 h-4"></i> Sačuvaj izmene
-          </button>
-          <button id="btn-reset" onclick="resetToDefault()" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded-lg border border-slate-700 transition text-slate-200">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Vrati prazan profil
           </button>
           <button onclick="handleLogout()" class="flex items-center gap-2 px-3 py-1.5 bg-rose-600/95 hover:bg-rose-500 text-xs font-bold rounded-lg transition text-white">
             <i data-lucide="log-out" class="w-4 h-4"></i> Odjavi se
@@ -358,7 +355,7 @@
         <h3 class="font-bold text-slate-900 text-base">Admin pristup</h3>
       </div>
       <div class="space-y-4">
-        <input type="password" id="admin-password-input" placeholder="Unesite lozinku (admin)"
+        <input type="password" id="admin-password-input" placeholder="Unesite lozinku"
           class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
         <div id="admin-password-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg">
           Pogrešna lozinka. Pokušajte ponovo.
@@ -428,6 +425,51 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- MODAL: IZMENI STUDENTA -->
+  <div id="admin-edit-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600">
+            <i data-lucide="user-cog" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-base">Izmeni studenta</h3>
+        </div>
+        <button onclick="closeEditStudentModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+      </div>
+      <input type="hidden" id="edit-student-key">
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i Prezime</label>
+          <input type="text" id="edit-student-name"
+            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj Indeksa</label>
+          <input type="text" id="edit-student-index"
+            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
+          <select id="edit-student-module" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+            <option value="">— Izaberi modul —</option>
+            <option value="kamera">Kamera</option>
+            <option value="montaza">Montaža u audiovizuelnim medijima</option>
+            <option value="dizajn_zvuka">Dizajn zvuka</option>
+            <option value="dizajn_svetla">Dizajn svetla</option>
+            <option value="animacija">Animacija i vizuelni efekti</option>
+            <option value="produkcija">Produkcija za audiovizuelne medije</option>
+          </select>
+        </div>
+        <div id="edit-student-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg"></div>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeEditStudentModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
+          <button onclick="saveEditedStudent()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Sačuvaj izmene</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- TOAST NOTIFIKACIJE -->
@@ -771,6 +813,16 @@
       return (CURRICULUM[module].electives[semester] || []);
     }
 
+    let currentUser = null;
+    let subjects = [];
+    let gpaChart = null;
+    let unsavedChanges = false;
+
+    // Označi da ima nesačuvanih promena (ne šalje na server)
+    function markUnsaved() {
+      unsavedChanges = true;
+    }
+
     // Inicijalizacija pri pokretanju — najpre učitaj oblak
     window.onload = async function() {
       lucide.createIcons();
@@ -779,6 +831,15 @@
       customUsers = cloudData.users || defaultUsers;
       checkActiveSession();
     };
+
+    // Upozorenje pre zatvaranja stranice ako ima nesačuvanih promena
+    window.addEventListener('beforeunload', function(e) {
+      if (unsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'Imate nesačuvane izmene. Da li ste sigurni da želite da napustite stranicu?';
+        return e.returnValue;
+      }
+    });
 
     // Provera da li već postoji ulogovan korisnik (sesija ostaje u localStorage)
     function checkActiveSession() {
@@ -789,34 +850,46 @@
     }
 
     // Login proces
-    function handleLogin(event) {
-      event.preventDefault();
+    function handleLogin() {
       const nameInput = document.getElementById('login-name').value.trim();
       const indexInput = document.getElementById('login-index').value.trim();
       const errorDiv = document.getElementById('login-error');
+      const errorText = document.getElementById('login-error-text');
+
+      if (!nameInput || !indexInput) {
+        errorText.textContent = 'Molimo unesite ime i broj indeksa.';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
 
       const normalizedKey = nameInput.toLowerCase();
-      
-      // Proveri u dinamičkoj bazi korisnika
+
       if (customUsers[normalizedKey] && customUsers[normalizedKey].index === indexInput) {
         errorDiv.classList.add('hidden');
-        
         const displayName = customUsers[normalizedKey].displayName;
-        
-        // Sačuvaj sesiju
-        const studentSession = { name: displayName, index: indexInput };
-        localStorage.setItem('active_student_user', JSON.stringify(studentSession));
-        
+        localStorage.setItem('active_student_user', JSON.stringify({ name: displayName, index: indexInput }));
         loginUser(displayName, indexInput);
         showToast(`Uspešna prijava! Dobrodošli nazad, ${displayName}.`);
       } else {
+        errorText.textContent = 'Nevažeća kombinacija imena i broja indeksa.';
         errorDiv.classList.remove('hidden');
       }
     }
 
+    // Enter key na login ekranu
+    document.addEventListener('DOMContentLoaded', function() {
+      ['login-name', 'login-index'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+      });
+      const pwdInput = document.getElementById('admin-password-input');
+      if (pwdInput) pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPassword(); });
+    });
+
     // Učitavanje odgovarajućih podataka za ulogovanog korisnika
     function loginUser(name, index) {
       currentUser = { name, index };
+      unsavedChanges = false;
 
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
@@ -827,16 +900,22 @@
       const btnReset = document.getElementById('btn-reset');
       const normalizedKey = name.toLowerCase();
       const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
+      const userMeta = customUsers[normalizedKey];
+      currentUser.module = userMeta ? userMeta.module : null;
 
       if (normalizedKey.includes("stevan gajinov")) {
         btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Vrati originalni CSV`;
         subjects = cloudData[userCloudKey] || [...defaultStevanData];
-      } else if (normalizedKey.includes("katarina gajinov")) {
-        btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
-        subjects = cloudData[userCloudKey] || [];
       } else {
         btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
-        subjects = cloudData[userCloudKey] || [];
+        if (cloudData[userCloudKey]) {
+          subjects = cloudData[userCloudKey];
+        } else if (currentUser.module) {
+          // Auto-populate from curriculum on first login
+          subjects = generateSubjectsFromCurriculum(currentUser.module);
+        } else {
+          subjects = [];
+        }
       }
 
       lucide.createIcons();
@@ -845,6 +924,10 @@
 
     // Odjava sa sajta
     function handleLogout() {
+      if (unsavedChanges) {
+        if (!confirm('Imate nesačuvane izmene. Da li ste sigurni da želite da se odjavite bez čuvanja?')) return;
+      }
+      unsavedChanges = false;
       localStorage.removeItem('active_student_user');
       currentUser = null;
       subjects = [];
@@ -888,13 +971,14 @@
       }, 3000);
     }
 
-    // Čuvanje u oblak
+    // Čuvanje u oblak (samo na zahtev)
     async function saveUserData() {
       if (!currentUser) return;
       const normalizedKey = currentUser.name.toLowerCase();
       const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
       cloudData[userCloudKey] = subjects;
       await cloudSave(cloudData);
+      unsavedChanges = false;
     }
 
     // Ručno čuvanje preko dugmeta
@@ -956,8 +1040,8 @@
         `;
       });
 
-      // Sačuvaj trenutno stanje korisnika u pozadini (tiho, bez čekanja)
-      saveUserData();
+      // Označi nesačuvane promene (ne šalje na server)
+      markUnsaved();
 
       renderSemesters();
       updateChart();
@@ -1076,15 +1160,76 @@
       renderSemesters();
     }
 
+    // Postavi mod modalnog prozora (elective ili manual)
+    function setModalMode(mode) {
+      const electiveSection = document.getElementById('modal-elective-section');
+      const nameInput = document.getElementById('modal-name');
+      const espbInput = document.getElementById('modal-espb');
+      const btnElective = document.getElementById('btn-mode-elective');
+      const btnManual = document.getElementById('btn-mode-manual');
+
+      if (mode === 'elective') {
+        electiveSection.classList.remove('hidden');
+        btnElective.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700';
+        btnManual.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-slate-200 bg-white text-slate-600';
+      } else {
+        electiveSection.classList.add('hidden');
+        btnElective.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-slate-200 bg-white text-slate-600';
+        btnManual.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700';
+        nameInput.value = '';
+        espbInput.value = '3';
+      }
+    }
+
+    // Kada korisnik bira iz liste izbornih predmeta
+    function onElectiveSelected() {
+      const sel = document.getElementById('modal-elective-select');
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt.value) return;
+      const espb = opt.dataset.espb;
+      document.getElementById('modal-name').value = opt.value;
+      document.getElementById('modal-espb').value = espb;
+    }
+
     // Otvaranje modalnog prozora za dodavanje
     function openAddModal(defaultSem = 1) {
       document.getElementById('modal-title').textContent = "Dodaj Predmet";
       document.getElementById('modal-subject-id').value = "";
       document.getElementById('modal-name').value = "";
-      document.getElementById('modal-grade').value = "10";
+      document.getElementById('modal-grade').value = "null";
       document.getElementById('modal-espb').value = "3";
       document.getElementById('modal-semester').value = defaultSem.toString();
-      
+
+      // Pokaži/sakrij elective sekciju i mode picker
+      const modePicker = document.getElementById('modal-mode-picker');
+      const electiveSection = document.getElementById('modal-elective-section');
+      const module = currentUser ? currentUser.module : null;
+
+      if (module && CURRICULUM[module]) {
+        modePicker.classList.remove('hidden');
+        electiveSection.classList.remove('hidden');
+        setModalMode('elective');
+
+        // Popuni dropdown izbornih predmeta za taj semestar
+        const electives = getElectivesForSemester(module, parseInt(defaultSem));
+        const sel = document.getElementById('modal-elective-select');
+        sel.innerHTML = '<option value="">— Izaberi predmet —</option>';
+        electives.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.name;
+          opt.dataset.espb = e.espb;
+          opt.textContent = `${e.name} (${e.espb} ESPB)`;
+          sel.appendChild(opt);
+        });
+        if (electives.length === 0) {
+          sel.innerHTML = '<option value="">Nema izbornih za ovaj semestar</option>';
+        }
+      } else {
+        modePicker.classList.add('hidden');
+        electiveSection.classList.add('hidden');
+        setModalMode('manual');
+      }
+
       document.getElementById('subject-modal').classList.remove('hidden');
     }
 
@@ -1099,6 +1244,10 @@
       document.getElementById('modal-grade').value = sub.grade === null ? "null" : sub.grade.toString();
       document.getElementById('modal-espb').value = sub.espb.toString();
       document.getElementById('modal-semester').value = sub.semester.toString();
+
+      // Sakrij mode picker i elective sekciju pri izmeni
+      document.getElementById('modal-mode-picker').classList.add('hidden');
+      document.getElementById('modal-elective-section').classList.add('hidden');
 
       document.getElementById('subject-modal').classList.remove('hidden');
     }
@@ -1186,11 +1335,14 @@
       const labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'];
 
       if (gpaChart) {
-        gpaChart.data.datasets[0].data = data;
-        gpaChart.update();
-      } else {
-        const ctx = document.getElementById('gpaChart').getContext('2d');
-        gpaChart = new Chart(ctx, {
+        gpaChart.destroy();
+        gpaChart = null;
+      }
+
+      const canvas = document.getElementById('gpaChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      gpaChart = new Chart(ctx, {
           type: 'line',
           data: {
             labels: labels,
@@ -1229,7 +1381,6 @@
             }
           }
         });
-      }
     }
 
     // "Šta-ako" simulator
@@ -1328,15 +1479,16 @@
       }
     }
 
-    // Also support Enter key in password field
-    document.addEventListener('DOMContentLoaded', function() {
-      const pwdInput = document.getElementById('admin-password-input');
-      if (pwdInput) {
-        pwdInput.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') checkAdminPassword();
-        });
-      }
-    });
+
+
+    const MODULE_LABELS = {
+      kamera: 'Kamera',
+      montaza: 'Montaža',
+      dizajn_zvuka: 'Dizajn zvuka',
+      dizajn_svetla: 'Dizajn svetla',
+      animacija: 'Animacija i VFX',
+      produkcija: 'Produkcija'
+    };
 
     function renderAdminUsersList() {
       const container = document.getElementById('admin-users-list');
@@ -1350,6 +1502,7 @@
 
       keys.forEach(key => {
         const u = customUsers[key];
+        const moduleLabel = u.module ? MODULE_LABELS[u.module] || u.module : '—';
         const row = document.createElement('div');
         row.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm";
         row.innerHTML = `
@@ -1359,13 +1512,16 @@
             </div>
             <div>
               <p class="text-xs font-bold text-slate-900">${u.displayName}</p>
-              <p class="text-[10px] text-slate-500">Indeks: ${u.index}</p>
+              <p class="text-[10px] text-slate-500">Indeks: ${u.index} · Modul: ${moduleLabel}</p>
             </div>
           </div>
           <div>
             ${u.isSystem
               ? `<span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold px-2 py-1 rounded-lg">Sistemski</span>`
-              : `<button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-rose-100 hover:bg-rose-50 transition">Ukloni</button>`
+              : `<div class="flex gap-1">
+                   <button onclick="openEditStudentModal('${key}')" class="text-indigo-500 hover:text-indigo-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-50 transition">Izmeni</button>
+                   <button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-rose-100 hover:bg-rose-50 transition">Ukloni</button>
+                 </div>`
             }
           </div>
         `;
@@ -1376,10 +1532,16 @@
     async function adminAddUser() {
       const nameInput = document.getElementById('admin-new-name').value.trim();
       const indexInput = document.getElementById('admin-new-index').value.trim();
+      const moduleInput = document.getElementById('admin-new-module').value;
       const errDiv = document.getElementById('admin-add-error');
 
       if (!nameInput || !indexInput) {
-        errDiv.textContent = 'Molimo popunite oba polja.';
+        errDiv.textContent = 'Molimo popunite ime i broj indeksa.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+      if (!moduleInput) {
+        errDiv.textContent = 'Molimo izaberite modul (smer) za studenta.';
         errDiv.classList.remove('hidden');
         return;
       }
@@ -1392,14 +1554,82 @@
       }
 
       errDiv.classList.add('hidden');
-      customUsers[normalizedKey] = { index: indexInput, displayName: nameInput, isSystem: false };
+      customUsers[normalizedKey] = { index: indexInput, displayName: nameInput, module: moduleInput, isSystem: false };
       cloudData.users = customUsers;
       await cloudSave(cloudData);
 
       document.getElementById('admin-new-name').value = '';
       document.getElementById('admin-new-index').value = '';
+      document.getElementById('admin-new-module').value = '';
       renderAdminUsersList();
       showToast(`Student ${nameInput} je uspešno registrovan!`);
+    }
+
+    function openEditStudentModal(key) {
+      const u = customUsers[key];
+      if (!u) return;
+      document.getElementById('edit-student-key').value = key;
+      document.getElementById('edit-student-name').value = u.displayName;
+      document.getElementById('edit-student-index').value = u.index;
+      document.getElementById('edit-student-module').value = u.module || '';
+      document.getElementById('edit-student-error').classList.add('hidden');
+      document.getElementById('admin-edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditStudentModal() {
+      document.getElementById('admin-edit-modal').classList.add('hidden');
+    }
+
+    async function saveEditedStudent() {
+      const oldKey = document.getElementById('edit-student-key').value;
+      const newName = document.getElementById('edit-student-name').value.trim();
+      const newIndex = document.getElementById('edit-student-index').value.trim();
+      const newModule = document.getElementById('edit-student-module').value;
+      const errDiv = document.getElementById('edit-student-error');
+
+      if (!newName || !newIndex) {
+        errDiv.textContent = 'Ime i broj indeksa su obavezni.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+
+      const newKey = newName.toLowerCase();
+
+      // If name changed, check for conflict
+      if (newKey !== oldKey && customUsers[newKey]) {
+        errDiv.textContent = 'Korisnik sa tim imenom već postoji.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+
+      errDiv.classList.add('hidden');
+
+      const oldUser = customUsers[oldKey];
+
+      // If name changed, migrate the subjects data to new key
+      if (newKey !== oldKey) {
+        const oldCloudKey = 'subjects_' + oldKey.replace(/\s+/g, '_');
+        const newCloudKey = 'subjects_' + newKey.replace(/\s+/g, '_');
+        if (cloudData[oldCloudKey]) {
+          cloudData[newCloudKey] = cloudData[oldCloudKey];
+          delete cloudData[oldCloudKey];
+        }
+        delete customUsers[oldKey];
+      }
+
+      customUsers[newKey] = {
+        ...oldUser,
+        displayName: newName,
+        index: newIndex,
+        module: newModule || oldUser.module
+      };
+
+      cloudData.users = customUsers;
+      await cloudSave(cloudData);
+
+      closeEditStudentModal();
+      renderAdminUsersList();
+      showToast(`Podaci studenta ${newName} su ažurirani.`);
     }
 
     async function adminDeleteUser(key) {
