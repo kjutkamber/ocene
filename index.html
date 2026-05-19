@@ -966,8 +966,14 @@
     // Renderovanje semestara (1-8)
     function renderSemesters() {
       const container = document.getElementById('semesters-container');
-      container.innerHTML = '';
 
+      const openSemesters = new Set();
+      for (let s = 1; s <= 8; s++) {
+        const el = document.getElementById(`sem-content-${s}`);
+        if (el && !el.classList.contains('hidden')) openSemesters.add(s);
+      }
+
+      container.innerHTML = '';
       const query = document.getElementById('search-input').value.toLowerCase();
       const yearFilter = document.getElementById('filter-year').value;
 
@@ -1068,6 +1074,12 @@
           </div>
         `;
         container.appendChild(semCard);
+
+        // Vrati stanje (otvoren/zatvoren) — novi semestri su zatvoreni po defaultu
+        if (!openSemesters.has(s)) {
+          const content = document.getElementById(`sem-content-${s}`);
+          if (content) content.classList.add('hidden');
+        }
       }
       lucide.createIcons();
     }
