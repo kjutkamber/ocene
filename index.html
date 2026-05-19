@@ -752,7 +752,12 @@
       customUsers = cloudData.users || {};
       checkActiveSession();
     };
-
+    function checkActiveSession() {
+      const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
+      if (savedUser) {
+        loginUser(savedUser.name, savedUser.index);
+      }
+    }
     // Upozorenje pre zatvaranja stranice ako ima nesačuvanih promena
     window.addEventListener('beforeunload', function(e) {
       if (unsavedChanges) {
