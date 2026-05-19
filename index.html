@@ -750,15 +750,8 @@
       showToast("Učitavanje podataka iz oblaka...", "info");
       cloudData = await cloudLoad();
       customUsers = cloudData.users || {};
-      checkActiveSession();
     };
-    function checkActiveSession() {
-      const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
-      if (savedUser) {
-        loginUser(savedUser.name, savedUser.index);
-      }
-    }
-    // Upozorenje pre zatvaranja stranice ako ima nesačuvanih promena
+
     window.addEventListener('beforeunload', function(e) {
       if (unsavedChanges) {
         e.preventDefault();
@@ -766,14 +759,6 @@
         return e.returnValue;
       }
     });
-
-    // Provera da li već postoji ulogovan korisnik (sesija ostaje u localStorage)
-    function checkActiveSession() {
-      const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
-      if (savedUser) {
-        loginUser(savedUser.name, savedUser.index);
-      }
-    }
 
     // Login proces
     function handleLogin() {
@@ -793,7 +778,6 @@
       if (customUsers[normalizedKey] && customUsers[normalizedKey].index === indexInput) {
         errorDiv.classList.add('hidden');
         const displayName = customUsers[normalizedKey].displayName;
-        localStorage.setItem('active_student_user', JSON.stringify({ name: displayName, index: indexInput }));
         loginUser(displayName, indexInput);
         showToast(`Uspešna prijava! Dobrodošli nazad, ${displayName}.`);
       } else {
@@ -849,7 +833,6 @@
         if (!confirm('Imate nesačuvane izmene. Da li ste sigurni da želite da se odjavite bez čuvanja?')) return;
       }
       unsavedChanges = false;
-      localStorage.removeItem('active_student_user');
       currentUser = null;
       subjects = [];
       if (gpaChart) {
@@ -972,6 +955,7 @@
     function renderSemesters() {
       const container = document.getElementById('semesters-container');
 
+      // Zapamti koji semestri su otvoreni pre ponovnog renderovanja
       const openSemesters = new Set();
       for (let s = 1; s <= 8; s++) {
         const el = document.getElementById(`sem-content-${s}`);
@@ -979,6 +963,7 @@
       }
 
       container.innerHTML = '';
+
       const query = document.getElementById('search-input').value.toLowerCase();
       const yearFilter = document.getElementById('filter-year').value;
 
@@ -1026,7 +1011,7 @@
           </div>
 
           <!-- Tabela predmeta -->
-          <div id="sem-content-${s}" class="overflow-x-auto hidden">
+          <div id="sem-content-${s}" class="overflow-x-auto${openSemesters.has(s) ? '' : ' hidden'}">
             <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead class="bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
                 <tr>
@@ -1079,12 +1064,6 @@
           </div>
         `;
         container.appendChild(semCard);
-
-        // Vrati stanje (otvoren/zatvoren) — novi semestri su zatvoreni po defaultu
-        if (!openSemesters.has(s)) {
-          const content = document.getElementById(`sem-content-${s}`);
-          if (content) content.classList.add('hidden');
-        }
       }
       lucide.createIcons();
     }
