@@ -522,87 +522,8 @@
     // =============================================
     // INICIJALNA BAZA KORISNIKA
     // =============================================
-    const defaultUsers = {
-      "stevan gajinov": { index: "169/23", displayName: "Stevan Gajinov", isSystem: true },
-      "katarina gajinov": { index: "209/21", displayName: "Katarina Gajinov", isSystem: true }
-    };
-
     // Korisnici se čuvaju u cloudData.users
-    let customUsers = defaultUsers;
-
-    // Originalni CSV podaci za Stevana
-    const defaultStevanData = [
-      // 1. Semestar
-      { id: "s1-1", name: "Razvoj i tehnike animacije", grade: 10, espb: 3, semester: 1 },
-      { id: "s1-2", name: "Razvoj i tehnike animacije praktikum", grade: 10, espb: 3, semester: 1 },
-      { id: "s1-3", name: "Tehnologija audiovizuelnih medija 1", grade: 10, espb: 3, semester: 1 },
-      { id: "s1-4", name: "Osnovi snimanja slike", grade: 8, espb: 3, semester: 1 },
-      { id: "s1-5", name: "Osnovi montaže", grade: 9, espb: 3, semester: 1 },
-      { id: "s1-6", name: "Uvod u snimanje zvuka", grade: 10, espb: 3, semester: 1 },
-      { id: "s1-7", name: "Istorija filma 1", grade: 9, espb: 3, semester: 1 },
-      { id: "s1-8", name: "Uvod u multimedijalnu produkciju", grade: 10, espb: 3, semester: 1 },
-      { id: "s1-9", name: "Engleski jezik 1", grade: 10, espb: 2, semester: 1 },
-      { id: "s1-10", name: "Osnove likovnog izražavanja", grade: 9, espb: 4, semester: 1 },
-
-      // 2. Semestar
-      { id: "s2-1", name: "Scenska režija", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-2", name: "Istorija filma 2", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-3", name: "Montaža u audiovizuelnim medijima", grade: 9, espb: 3, semester: 2 },
-      { id: "s2-4", name: "Pozorišna produkcija 1", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-5", name: "Snimanje zvuka", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-6", name: "Tehnologija audiovizuelnih medija 2", grade: 9, espb: 3, semester: 2 },
-      { id: "s2-7", name: "Razvoj i tehnike vizuelnih efekata praktikum", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-8", name: "Osnovi dizajna svetla za film i televiziju", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-9", name: "Razvoj i tehnike vizuelnih efekata", grade: 10, espb: 3, semester: 2 },
-      { id: "s2-10", name: "Režija", grade: 10, espb: 3, semester: 2 },
-
-      // 3. Semestar
-      { id: "s3-1", name: "Osnove programa o liniji 1", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-2", name: "Multimedijalna produkcija 1", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-3", name: "Animacija 1", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-4", name: "Animacija 1, praktikum", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-5", name: "Filmska i televizijska režija 1", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-6", name: "Filmska kamera", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-7", name: "Dizajn svetla za film i televiziju 1", grade: 9, espb: 3, semester: 3 },
-      { id: "s3-8", name: "Osnovi dramaturgije", grade: 9, espb: 2, semester: 3 },
-      { id: "s3-9", name: "Istorija filma 3", grade: 10, espb: 3, semester: 3 },
-      { id: "s3-10", name: "Estetika zvuka", grade: 10, espb: 4, semester: 3 },
-
-      // 4. Semestar
-      { id: "s4-1", name: "Osnove programa o liniji 2", grade: 10, espb: 3, semester: 4 },
-      { id: "s4-2", name: "Multimedijalna produkcija 2", grade: 10, espb: 3, semester: 4 },
-      { id: "s4-3", name: "Vizuelni efekti 1", grade: 10, espb: 3, semester: 4 },
-      { id: "s4-4", name: "Vizuelni efekti 1, praktikum", grade: 10, espb: 3, semester: 4 },
-      { id: "s4-5", name: "Filmska i televizijska režija 2", grade: 10, espb: 3, semester: 4 },
-      { id: "s4-6", name: "Elektronska kamera", grade: 10, espb: 3, semester: 4 },
-      { id: "s4-7", name: "Dizajn svetla za film i televiziju 1", grade: 9, espb: 3, semester: 4 },
-      { id: "s4-8", name: "Osnovi scenarija", grade: 10, espb: 2, semester: 4 },
-      { id: "s4-9", name: "Istorija filma 4", grade: 9, espb: 3, semester: 4 },
-      { id: "s4-10", name: "Snimanje i dizajn zvuka za film", grade: 10, espb: 3, semester: 4 },
-
-      // 5. Semestar
-      { id: "s5-1", name: "Multimedijalna produkcija 3", grade: 9, espb: 3, semester: 5 },
-      { id: "s5-2", name: "Opšta psihologija", grade: 10, espb: 2, semester: 5 },
-      { id: "s5-3", name: "Vizuelni efekti 2", grade: 10, espb: 4, semester: 5 },
-      { id: "s5-4", name: "Vizuelni efekti 2 - praktikum", grade: 10, espb: 3, semester: 5 },
-      { id: "s5-5", name: "Primenjena muzika 1", grade: 8, espb: 2, semester: 5 },
-      { id: "s5-6", name: "Umetnost snimanja kamerom 1", grade: 10, espb: 3, semester: 5 },
-      { id: "s5-7", name: "Osnove estetike 1", grade: 6, espb: 2, semester: 5 },
-      { id: "s5-8", name: "Dizajn svetla za scenu 1", grade: 10, espb: 3, semester: 5 },
-      { id: "s5-9", name: "Scenografija i kostimografija 1", grade: 9, espb: 4, semester: 5 },
-      { id: "s5-10", name: "Teorija i estetika slike", grade: 10, espb: 4, semester: 5 },
-
-      // 6. Semestar
-      { id: "s6-1", name: "Multimedijalna produkcija 4", grade: null, espb: 3, semester: 6 },
-      { id: "s6-2", name: "Dizajn svetla za scenu 2", grade: null, espb: 3, semester: 6 },
-      { id: "s6-3", name: "Elektronska kamera 2", grade: null, espb: 3, semester: 6 },
-      { id: "s6-4", name: "Osnove estetike 2", grade: null, espb: 2, semester: 6 },
-      { id: "s6-5", name: "Psihologija ličnosti", grade: null, espb: 2, semester: 6 },
-      { id: "s6-6", name: "Strip 2", grade: null, espb: 3, semester: 6 },
-      { id: "s6-7", name: "Primenjena muzika 2", grade: null, espb: 2, semester: 6 },
-      { id: "s6-8", name: "Animacija 2", grade: null, espb: 3, semester: 6 },
-      { id: "s6-9", name: "Animacija 2 - praktikum", grade: null, espb: 2, semester: 6 }
-    ];
+    let customUsers = {};
 
     // =============================================
     // KURIKULUM - OBAVEZNI I IZBORNI PREDMETI
@@ -828,7 +749,7 @@
       lucide.createIcons();
       showToast("Učitavanje podataka iz oblaka...", "info");
       cloudData = await cloudLoad();
-      customUsers = cloudData.users || defaultUsers;
+      customUsers = cloudData.users || {};
       checkActiveSession();
     };
 
@@ -907,8 +828,6 @@
 
       if (hasSaved) {
         subjects = savedSubjects;
-      } else if (normalizedKey.includes("stevan gajinov")) {
-        subjects = [...defaultStevanData];
       } else if (currentUser.module && CURRICULUM[currentUser.module]) {
         subjects = generateSubjectsFromCurriculum(currentUser.module);
       } else {
@@ -1290,25 +1209,6 @@
         subjects = subjects.filter(s => s.id !== id);
         showToast("Predmet je obrisan.", "info");
         calculateStatistics();
-      }
-    }
-
-    // Resetovanje na original (Zavisi od ulogovanog korisnika)
-    function resetToDefault() {
-      if (!currentUser) return;
-      
-      if (currentUser.name.toLowerCase().includes("stevan gajinov")) {
-        if (confirm("Da li želite da vratite originalne podatke iz priloženog CSV fajla za Stevana?")) {
-          subjects = [...defaultStevanData];
-          showToast("Originalni predmeti i ocene su uspešno učitani.");
-          calculateStatistics();
-        }
-      } else {
-        if (confirm("Da li želite da obrišete sve unete predmete i počnete ponovo ispočetka?")) {
-          subjects = [];
-          showToast("Svi predmeti su uklonjeni.", "info");
-          calculateStatistics();
-        }
       }
     }
 
