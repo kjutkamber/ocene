@@ -897,25 +897,22 @@
       document.getElementById('user-display-name').textContent = name;
       document.getElementById('user-display-index').textContent = index;
 
-      const btnReset = document.getElementById('btn-reset');
       const normalizedKey = name.toLowerCase();
       const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
       const userMeta = customUsers[normalizedKey];
       currentUser.module = userMeta ? userMeta.module : null;
 
-      if (normalizedKey.includes("stevan gajinov")) {
-        btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Vrati originalni CSV`;
-        subjects = cloudData[userCloudKey] || [...defaultStevanData];
+      const savedSubjects = cloudData[userCloudKey];
+      const hasSaved = Array.isArray(savedSubjects) && savedSubjects.length > 0;
+
+      if (hasSaved) {
+        subjects = savedSubjects;
+      } else if (normalizedKey.includes("stevan gajinov")) {
+        subjects = [...defaultStevanData];
+      } else if (currentUser.module && CURRICULUM[currentUser.module]) {
+        subjects = generateSubjectsFromCurriculum(currentUser.module);
       } else {
-        btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i> Isprazni sve predmete`;
-        if (cloudData[userCloudKey]) {
-          subjects = cloudData[userCloudKey];
-        } else if (currentUser.module) {
-          // Auto-populate from curriculum on first login
-          subjects = generateSubjectsFromCurriculum(currentUser.module);
-        } else {
-          subjects = [];
-        }
+        subjects = [];
       }
 
       lucide.createIcons();
@@ -1040,8 +1037,8 @@
         `;
       });
 
-      // Označi nesačuvane promene (ne šalje na server)
-      markUnsaved();
+      // Označi nesačuvane promene samo ako je korisnik već ulogovan i radi izmene
+      if (currentUser) markUnsaved();
 
       renderSemesters();
       updateChart();
@@ -1064,7 +1061,8 @@
         const semSubjects = subjects.filter(sub => sub.semester === s);
         const filteredSemSubjects = semSubjects.filter(sub => sub.name.toLowerCase().includes(query));
 
-        if (filteredSemSubjects.length === 0 && query !== '') {
+        // Kada pretražujemo, preskoči semestar ako nema rezultata
+        if (query !== '' && filteredSemSubjects.length === 0) {
           continue;
         }
 
