@@ -1,104 +1,38 @@
+
+bash
+
+cat > /mnt/user-data/outputs/studentski-portal-v2.html << 'HTMLEOF'
 <!DOCTYPE html>
 <html lang="sr" class="h-full bg-slate-200">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kalkulator Ocena - Akademski Profil</title>
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Chart.js za grafike -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
-    /* Checkmark overlay */
-    .grade-celebration {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      pointer-events: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .checkmark-circle {
-      width: 100px;
-      height: 100px;
-      background: #10b981;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-                 fadeOut 0.4s ease 0.9s forwards;
-      box-shadow: 0 0 0 0 rgba(16,185,129,0.6);
-      animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-                 pulseRing 0.6s ease 0.3s forwards,
-                 fadeOut 0.4s ease 1s forwards;
-    }
-
-    .checkmark-circle svg {
-      width: 52px;
-      height: 52px;
-      stroke: white;
-      stroke-width: 3;
-      fill: none;
-      stroke-dasharray: 80;
-      stroke-dashoffset: 80;
-      animation: drawCheck 0.35s ease 0.2s forwards;
-    }
-
-    @keyframes popIn {
-      0%   { transform: scale(0); opacity: 0; }
-      70%  { transform: scale(1.15); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes drawCheck {
-      to { stroke-dashoffset: 0; }
-    }
-
-    @keyframes pulseRing {
-      0%   { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
-      100% { box-shadow: 0 0 0 40px rgba(16,185,129,0); }
-    }
-
-    @keyframes fadeOut {
-      to { opacity: 0; transform: scale(0.8); }
-    }
-
-    /* Firework particles */
-    .particle {
-      position: fixed;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 9998;
-      animation: burst 0.8s ease-out forwards;
-    }
-
-    @keyframes burst {
-      0%   { transform: translate(0,0) scale(1); opacity: 1; }
-      100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
-    }
+    body { font-family: 'Inter', sans-serif; }
+    .grade-celebration { position:fixed;inset:0;z-index:9999;pointer-events:none;display:flex;align-items:center;justify-content:center; }
+    .checkmark-circle { width:100px;height:100px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards,pulseRing 0.6s ease 0.3s forwards,fadeOut 0.4s ease 1s forwards; }
+    .checkmark-circle svg { width:52px;height:52px;stroke:white;stroke-width:3;fill:none;stroke-dasharray:80;stroke-dashoffset:80;animation:drawCheck 0.35s ease 0.2s forwards; }
+    @keyframes popIn { 0%{transform:scale(0);opacity:0;} 70%{transform:scale(1.15);opacity:1;} 100%{transform:scale(1);opacity:1;} }
+    @keyframes drawCheck { to{stroke-dashoffset:0;} }
+    @keyframes pulseRing { 0%{box-shadow:0 0 0 0 rgba(16,185,129,0.5);} 100%{box-shadow:0 0 0 40px rgba(16,185,129,0);} }
+    @keyframes fadeOut { to{opacity:0;transform:scale(0.8);} }
+    .particle { position:fixed;width:8px;height:8px;border-radius:50%;pointer-events:none;z-index:9998;animation:burst 0.8s ease-out forwards; }
+    @keyframes burst { 0%{transform:translate(0,0) scale(1);opacity:1;} 100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0;} }
   </style>
 </head>
 <body class="h-full flex flex-col text-slate-800 bg-slate-200">
 
-  <!-- EKRAN ZA LOG IN (Prikazuje se prvi ako korisnik nije ulogovan) -->
+  <!-- LOGIN SCREEN -->
   <div id="login-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-900 px-4">
     <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100 relative overflow-hidden">
-      <!-- Dekorativna pozadina u login formi -->
       <div class="absolute -right-16 -top-16 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
       <div class="absolute -left-16 -bottom-16 w-36 h-36 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
-
       <div class="flex flex-col items-center mb-6 text-center">
         <div class="bg-emerald-500 p-3 rounded-2xl text-slate-900 mb-3 shadow-lg shadow-emerald-500/20">
           <i data-lucide="graduation-cap" class="w-8 h-8"></i>
@@ -106,72 +40,63 @@
         <h2 class="text-2xl font-black text-slate-900 tracking-tight">Studentski Portal</h2>
         <p class="text-xs text-slate-500 mt-1">Unesite Vaše podatke za pristup kalkulatoru</p>
       </div>
-
       <div class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ime i Prezime</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <i data-lucide="user" class="w-4 h-4"></i>
-            </span>
-            <input type="text" id="login-name" placeholder="Ime i prezime"
-              class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i data-lucide="user" class="w-4 h-4"></i></span>
+            <input type="text" id="login-name" placeholder="Ime i prezime" class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
-
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Broj Indeksa</label>
           <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <i data-lucide="hash" class="w-4 h-4"></i>
-            </span>
-            <input type="text" id="login-index" placeholder="Broj indeksa"
-              class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i data-lucide="hash" class="w-4 h-4"></i></span>
+            <input type="text" id="login-index" placeholder="Broj indeksa" class="w-full pl-9 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900">
           </div>
         </div>
-
         <div id="login-error" class="hidden text-rose-600 text-xs font-semibold bg-rose-50 border border-rose-100 p-3 rounded-lg flex items-center gap-2">
           <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
           <span id="login-error-text">Nevažeća kombinacija imena i broja indeksa.</span>
         </div>
-
         <button onclick="handleLogin()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 mt-2">
           Prijavi se <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </div>
-
-      <!-- Sekcija za prelazak u Admin mod -->
       <div class="mt-6 border-t border-slate-100 pt-4 flex flex-col items-center gap-3">
         <button onclick="openAdminPasswordModal()" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl border border-slate-200 w-full justify-center">
           <i data-lucide="shield-alert" class="w-4 h-4"></i> Administracija korisnika
         </button>
       </div>
     </div>
-    
-    <!-- Kratka lista podrazumevanih naloga radi lakše orijentacije -->
-    <p class="text-[11px] text-slate-400 mt-4 text-center">
-          </p>
   </div>
 
-  <!-- GLAVNA APLIKACIJA (Sakrivena dok se korisnik ne uloguje) -->
+  <!-- MAIN APP -->
   <div id="app-content" class="hidden flex-grow flex flex-col">
-    <!-- Navigacioni meni / Zaglavlje -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3">
-          <div class="bg-emerald-500 p-2 rounded-lg text-slate-900">
-            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
-          </div>
+          <div class="bg-emerald-500 p-2 rounded-lg text-slate-900"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
           <div>
             <h1 class="text-xl font-bold tracking-tight text-white font-black">Akademski Profil & Kalkulator</h1>
             <p class="text-xs text-slate-300">Korisnik: <span id="user-display-name" class="text-emerald-400 font-bold">Ime Student</span> (Indeks: <span id="user-display-index" class="text-slate-200">000/00</span>)</p>
           </div>
         </div>
-        
         <div class="flex flex-wrap gap-2">
-          <button onclick="printGradeStatement()" title="Štampaj uverenje" class="flex items-center justify-center px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-lg text-white">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-          </button>
+          <!-- Print dropdown -->
+          <div class="relative" id="print-dropdown-container">
+            <button onclick="togglePrintDropdown()" class="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-lg text-white text-xs font-bold">
+              <i data-lucide="printer" class="w-4 h-4"></i> Štampaj
+            </button>
+            <div id="print-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 min-w-[200px]">
+              <button onclick="printGradeStatement(); togglePrintDropdown();" class="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-t-xl">
+                <i data-lucide="list" class="w-4 h-4 text-indigo-500"></i> Listing ocena
+              </button>
+              <button onclick="printOfficialUverenje(); togglePrintDropdown();" class="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-b-xl border-t border-slate-100">
+                <i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i> Zvanično Uverenje
+              </button>
+            </div>
+          </div>
           <button onclick="manualSave()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition shadow-lg text-white">
             <i data-lucide="save" class="w-4 h-4"></i> Sačuvaj izmene
           </button>
@@ -182,24 +107,16 @@
       </div>
     </header>
 
-    <!-- Glavni sadržaj -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
-      <!-- KPI STATISTIKA (Ključni indikatori) -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <!-- Običan Prosek -->
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
           <div>
             <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Prosek Ocena</p>
             <h3 class="text-4xl font-extrabold mt-1 text-emerald-600" id="gpa-simple">0.00</h3>
             <p class="text-xs text-slate-400 mt-1">Aritmetička sredina svih položenih ispita</p>
           </div>
-          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-100">
-            <i data-lucide="calculator" class="w-8 h-8"></i>
-          </div>
+          <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-100"><i data-lucide="calculator" class="w-8 h-8"></i></div>
         </div>
-
-        <!-- Ukupno ESPB -->
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
           <div>
             <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Ostvareni ESPB Bodovi</p>
@@ -209,12 +126,8 @@
             </div>
             <p class="text-xs text-slate-400 mt-1" id="espb-percent">0% od ukupnog cilja</p>
           </div>
-          <div class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100">
-            <i data-lucide="award" class="w-8 h-8"></i>
-          </div>
+          <div class="bg-blue-50 text-blue-600 p-3 rounded-xl border border-blue-100"><i data-lucide="award" class="w-8 h-8"></i></div>
         </div>
-
-        <!-- Položeni Ispiti -->
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
           <div>
             <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Položeni Predmeti</p>
@@ -224,35 +137,23 @@
             </div>
             <p class="text-xs text-slate-400 mt-1">Ukupan broj ocenjenih ispita</p>
           </div>
-          <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl border border-indigo-100">
-            <i data-lucide="check-circle" class="w-8 h-8"></i>
-          </div>
+          <div class="bg-indigo-50 text-indigo-600 p-3 rounded-xl border border-indigo-100"><i data-lucide="check-circle" class="w-8 h-8"></i></div>
         </div>
       </div>
-
-      <!-- PROGRES BAR -->
       <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 mb-8">
         <div class="flex justify-between items-center mb-2">
           <h4 class="text-sm font-bold text-slate-700">Ukupan napredak studija (na osnovu ESPB)</h4>
           <span class="text-sm font-black text-emerald-600" id="progress-text">0%</span>
         </div>
         <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden border border-slate-200">
-          <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          <div id="progress-bar" class="bg-gradient-to-r from-emerald-400 to-emerald-600 h-full rounded-full transition-all duration-500" style="width:0%"></div>
         </div>
       </div>
-
-      <!-- GLAVNI PANEL SA 2 KOLONE -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <!-- LEVA KOLONA: INTERAKTIVNI SEMESTRI (8 COLS) -->
         <div class="lg:col-span-8 space-y-6">
-          
-          <!-- Pretraga i Akcije -->
           <div class="bg-white p-4 rounded-xl shadow-md border border-slate-300/60 flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div class="relative w-full sm:w-72">
-              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                <i data-lucide="search" class="w-4 h-4"></i>
-              </span>
+              <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i data-lucide="search" class="w-4 h-4"></i></span>
               <input type="text" id="search-input" oninput="filterSubjects()" placeholder="Pretraži predmet..." class="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-slate-900 placeholder-slate-400">
             </div>
             <div class="flex gap-2 w-full sm:w-auto">
@@ -268,74 +169,39 @@
               </button>
             </div>
           </div>
-
-          <!-- LISTA SEMESTARA -->
-          <div id="semesters-container" class="space-y-4">
-            <!-- Dinamički generisano -->
-          </div>
-
+          <div id="semesters-container" class="space-y-4"></div>
         </div>
-
-        <!-- DESNA KOLONA: GRAFIK, SIMULATOR, DISTRIBUCIJA (4 COLS) -->
         <div class="lg:col-span-4 space-y-6">
-          
-          <!-- Grafikon prosek po semestru -->
           <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
-            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima
-            </h3>
-            <div class="h-64">
-              <canvas id="gpaChart"></canvas>
-            </div>
+            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima</h3>
+            <div class="h-64"><canvas id="gpaChart"></canvas></div>
           </div>
-
-          <!-- Šta-ako (What-if) simulator -->
           <div class="bg-gradient-to-br from-slate-900 to-slate-850 text-white p-6 rounded-2xl shadow-xl border border-slate-850 relative overflow-hidden">
-            <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none">
-              <i data-lucide="help-circle" class="w-40 h-40"></i>
-            </div>
-            
-            <h3 class="text-lg font-bold mb-2 flex items-center gap-2">
-              <i data-lucide="sparkles" class="text-emerald-400"></i> "Šta-Ako" Simulator
-            </h3>
-            <p class="text-xs text-slate-300 mb-4">Unesi ciljani običan prosek i simulator će ti izračunati tačnu prosečnu ocenu koju moraš dobiti na preostalim nepoloženim ispitima.</p>
-            
+            <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none"><i data-lucide="help-circle" class="w-40 h-40"></i></div>
+            <h3 class="text-lg font-bold mb-2 flex items-center gap-2"><i data-lucide="sparkles" class="text-emerald-400"></i> "Šta-Ako" Simulator</h3>
+            <p class="text-xs text-slate-300 mb-4">Unesi ciljani prosek i simulator će ti izračunati prosečnu ocenu potrebnu na preostalim ispitima.</p>
             <div class="space-y-4 relative z-10">
               <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">Željeni običan prosek</label>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Željeni prosek</label>
                 <div class="flex gap-2">
                   <input type="number" id="target-gpa" min="6.0" max="10.0" step="0.01" value="9.50" class="flex-grow bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                  <button onclick="calculateWhatIf()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition shadow-md">
-                    Izračunaj
-                  </button>
+                  <button onclick="calculateWhatIf()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition shadow-md">Izračunaj</button>
                 </div>
               </div>
-
               <div id="whatif-result" class="hidden bg-slate-800/90 border border-slate-700/60 p-4 rounded-xl space-y-2">
                 <p class="text-xs text-slate-400">Rezultat proračuna:</p>
-                <div id="whatif-message" class="text-sm font-semibold text-slate-200">
-                  <!-- Poruka -->
-                </div>
+                <div id="whatif-message" class="text-sm font-semibold text-slate-200"></div>
               </div>
             </div>
           </div>
-
-          <!-- Distribucija Ocena -->
           <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
-            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
-              <i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena
-            </h3>
-            <div class="space-y-3" id="grade-distribution">
-              <!-- Dinamički podaci -->
-            </div>
+            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena</h3>
+            <div class="space-y-3" id="grade-distribution"></div>
           </div>
-
         </div>
       </div>
-
     </main>
 
-    <!-- Podnožje -->
     <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 text-center mt-auto">
       <div class="max-w-7xl mx-auto px-4">
         <p>&copy; 2026 - Akademski kalkulator ocena • Studentski Portal. Sva prava zadržana.</p>
@@ -348,37 +214,24 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all border border-slate-200">
       <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white">
         <h3 id="modal-title" class="font-bold text-lg">Dodaj Predmet</h3>
-        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
       </div>
-
-      <!-- IZBOR NAČINA: Izborni predmet ili ručni unos -->
       <div id="modal-mode-picker" class="p-4 border-b border-slate-100 flex gap-2">
-        <button id="btn-mode-elective" onclick="setModalMode('elective')" class="flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700">
-          📋 Izborni predmet
-        </button>
-        <button id="btn-mode-manual" onclick="setModalMode('manual')" class="flex-1 py-2 text-xs font-bold rounded-lg border-2 border-slate-200 bg-white text-slate-600">
-          ✏️ Ručni unos
-        </button>
+        <button id="btn-mode-elective" onclick="setModalMode('elective')" class="flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700">📋 Izborni predmet</button>
+        <button id="btn-mode-manual" onclick="setModalMode('manual')" class="flex-1 py-2 text-xs font-bold rounded-lg border-2 border-slate-200 bg-white text-slate-600">✏️ Ručni unos</button>
       </div>
-
-      <!-- ELECTIVE MODE: lista izbornih predmeta -->
       <div id="modal-elective-section" class="p-4 border-b border-slate-100">
         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Izaberi izborni predmet</label>
         <select id="modal-elective-select" onchange="onElectiveSelected()" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
           <option value="">— Izaberi predmet —</option>
         </select>
       </div>
-
       <form id="subject-form" onsubmit="saveSubject(event)" class="p-6 space-y-4">
         <input type="hidden" id="modal-subject-id">
-        
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Naziv Predmeta</label>
           <input type="text" id="modal-name" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
         </div>
-
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ocena</label>
@@ -396,21 +249,13 @@
             <input type="number" id="modal-espb" min="1" max="30" required class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
           </div>
         </div>
-
         <div>
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Semestar</label>
           <select id="modal-semester" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
-            <option value="1">1. Semestar</option>
-            <option value="2">2. Semestar</option>
-            <option value="3">3. Semestar</option>
-            <option value="4">4. Semestar</option>
-            <option value="5">5. Semestar</option>
-            <option value="6">6. Semestar</option>
-            <option value="7">7. Semestar</option>
-            <option value="8">8. Semestar</option>
+            <option value="1">1. Semestar</option><option value="2">2. Semestar</option><option value="3">3. Semestar</option><option value="4">4. Semestar</option>
+            <option value="5">5. Semestar</option><option value="6">6. Semestar</option><option value="7">7. Semestar</option><option value="8">8. Semestar</option>
           </select>
         </div>
-
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
           <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition">Otkaz</button>
           <button type="submit" class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition">Sačuvaj</button>
@@ -419,54 +264,71 @@
     </div>
   </div>
 
-  <!-- JEDINSTVENI ADMIN MODAL (lozinka + panel u jednom) -->
+  <!-- ADMIN MODAL -->
   <div id="admin-master-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    
-    <!-- KORAK 1: Unos lozinke -->
     <div id="admin-step-password" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
       <div class="flex items-center gap-2 mb-4">
-        <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600">
-          <i data-lucide="lock" class="w-5 h-5"></i>
-        </div>
+        <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600"><i data-lucide="lock" class="w-5 h-5"></i></div>
         <h3 class="font-bold text-slate-900 text-base">Admin pristup</h3>
       </div>
       <div class="space-y-4">
-        <input type="password" id="admin-password-input" placeholder="Unesite lozinku"
-          class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
-        <div id="admin-password-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg">
-          Pogrešna lozinka. Pokušajte ponovo.
-        </div>
+        <input type="password" id="admin-password-input" placeholder="Unesite lozinku" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+        <div id="admin-password-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg">Pogrešna lozinka.</div>
         <div class="flex gap-2">
           <button onclick="closeAdminMasterModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
           <button onclick="checkAdminPassword()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Potvrdi</button>
         </div>
       </div>
     </div>
-
-    <!-- KORAK 2: Admin panel -->
-    <div id="admin-step-panel" class="hidden bg-white rounded-3xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[90vh]">
+    <div id="admin-step-panel" class="hidden bg-white rounded-3xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[90vh]">
       <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0 rounded-t-3xl">
-        <div class="flex items-center gap-2">
-          <i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i>
-          <h3 class="font-black text-lg">Admin Panel: Studenti</h3>
-        </div>
+        <div class="flex items-center gap-2"><i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i><h3 class="font-black text-lg">Admin Panel: Studenti</h3></div>
         <button onclick="closeAdminMasterModal()" class="text-slate-400 hover:text-white transition text-xl font-bold">✕</button>
       </div>
-
       <div class="p-6 space-y-6 overflow-y-auto flex-grow">
-        <!-- Forma za dodavanje -->
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
           <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">➕ Dodaj novog studenta</h4>
-          <div class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i Prezime</label>
-              <input type="text" id="admin-new-name" placeholder="npr. Marko Marković"
-                class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              <input type="text" id="admin-new-name" placeholder="npr. Katarina Gajinov" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj Indeksa</label>
-              <input type="text" id="admin-new-index" placeholder="npr. 55/22"
-                class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              <input type="text" id="admin-new-index" placeholder="npr. 209/21" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime roditelja</label>
+              <input type="text" id="admin-new-parent-name" placeholder="npr. Zoran" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Datum rođenja</label>
+              <input type="date" id="admin-new-birth-date" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mesto rođenja</label>
+              <input type="text" id="admin-new-birth-place" placeholder="npr. Novi Sad" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status finansiranja</label>
+              <select id="admin-new-funding" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+                <option value="budzet">Budžet</option>
+                <option value="samofinansiranje">Samofinansiranje</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Trenutna god. studija</label>
+              <select id="admin-new-study-year" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+                <option value="1">1. godina</option><option value="2">2. godina</option><option value="3">3. godina</option><option value="4">4. godina</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tekuća škol. godina (npr. 2025/2026)</label>
+              <input type="text" id="admin-new-enrollment-year" placeholder="2025/2026" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Godina prvog upisa (npr. 2021/2022)</label>
+              <input type="text" id="admin-new-first-enrollment" placeholder="2021/2022" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
@@ -480,52 +342,77 @@
                 <option value="produkcija">Produkcija za audiovizuelne medije</option>
               </select>
             </div>
-            <button onclick="adminAddUser()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shadow-md">
-              ✓ Registruj studenta
-            </button>
-            <div id="admin-add-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg"></div>
+            <div class="sm:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Puni naziv studijskog programa (za uverenje)</label>
+              <input type="text" id="admin-new-study-program" placeholder="npr. Аудиовизуелни медији - Продукција за аудиовизуелне медије" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
           </div>
+          <button onclick="adminAddUser()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shadow-md mt-3">✓ Registruj studenta</button>
+          <div id="admin-add-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg mt-2"></div>
         </div>
-
-        <!-- Lista korisnika -->
         <div>
           <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">👥 Registrovani studenti</h4>
           <div id="admin-users-list" class="space-y-2"></div>
         </div>
       </div>
-
       <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-3xl">
-        <button onclick="closeAdminMasterModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">
-          Zatvori panel
-        </button>
+        <button onclick="closeAdminMasterModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Zatvori panel</button>
       </div>
     </div>
-
   </div>
 
-  <!-- MODAL: IZMENI STUDENTA -->
+  <!-- EDIT STUDENT MODAL -->
   <div id="admin-edit-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-slate-200 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
-          <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600">
-            <i data-lucide="user-cog" class="w-5 h-5"></i>
-          </div>
+          <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600"><i data-lucide="user-cog" class="w-5 h-5"></i></div>
           <h3 class="font-bold text-slate-900 text-base">Izmeni studenta</h3>
         </div>
         <button onclick="closeEditStudentModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
       </div>
       <input type="hidden" id="edit-student-key">
-      <div class="space-y-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i Prezime</label>
-          <input type="text" id="edit-student-name"
-            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+          <input type="text" id="edit-student-name" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
         </div>
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj Indeksa</label>
-          <input type="text" id="edit-student-index"
-            class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+          <input type="text" id="edit-student-index" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime roditelja</label>
+          <input type="text" id="edit-student-parent-name" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Datum rođenja</label>
+          <input type="date" id="edit-student-birth-date" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mesto rođenja</label>
+          <input type="text" id="edit-student-birth-place" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status finansiranja</label>
+          <select id="edit-student-funding" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+            <option value="budzet">Budžet</option>
+            <option value="samofinansiranje">Samofinansiranje</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Trenutna god. studija</label>
+          <select id="edit-student-study-year" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+            <option value="1">1. godina</option><option value="2">2. godina</option><option value="3">3. godina</option><option value="4">4. godina</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tekuća škol. godina</label>
+          <input type="text" id="edit-student-enrollment-year" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Godina prvog upisa</label>
+          <input type="text" id="edit-student-first-enrollment" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
         </div>
         <div>
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
@@ -539,16 +426,20 @@
             <option value="produkcija">Produkcija za audiovizuelne medije</option>
           </select>
         </div>
-        <div id="edit-student-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg"></div>
-        <div class="flex gap-2 pt-2">
-          <button onclick="closeEditStudentModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
-          <button onclick="saveEditedStudent()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Sačuvaj izmene</button>
+        <div class="sm:col-span-2">
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Puni naziv studijskog programa</label>
+          <input type="text" id="edit-student-study-program" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
         </div>
+      </div>
+      <div id="edit-student-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg mt-3"></div>
+      <div class="flex gap-2 pt-4 mt-2 border-t border-slate-100">
+        <button onclick="closeEditStudentModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
+        <button onclick="saveEditedStudent()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Sačuvaj izmene</button>
       </div>
     </div>
   </div>
 
-  <!-- TOAST NOTIFIKACIJE -->
+  <!-- TOAST -->
   <div id="toast" class="fixed bottom-5 right-5 z-[200] transform translate-y-10 opacity-0 pointer-events-none transition-all duration-300 bg-slate-950 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-slate-800">
     <i data-lucide="info" class="w-5 h-5 text-emerald-400" id="toast-icon"></i>
     <span id="toast-text" class="text-sm font-medium">Poruka</span>
@@ -556,315 +447,199 @@
 
   <script>
     // =============================================
-    // JSONBIN CLOUD STORAGE KONFIGURACIJA
+    // SUPABASE CONFIG
     // =============================================
-    const JSONBIN_API_KEY = '$2a$10$gO/Ia2kHSPipLAkZk47VWuYmgmUpzaJjdGeW1MXORA4ohc0PtbmTG';
-    const JSONBIN_BIN_ID = '6a0b5f3cee5a733b12de0b42';
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+    const SUPABASE_URL = 'https://nhffxmmmwoonnkhvrqev.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZmZ4bW1td29vbm5raHZycWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEzNDcsImV4cCI6MjA5NDk0NzM0N30.FG2gdhNRXJxRnPVKdQ8qLGlwcaJ4nSUpKJJrfq4YsDc';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Učitaj sve podatke iz JSONBin-a
-    async function cloudLoad() {
-      try {
-        const res = await fetch(JSONBIN_URL + '/latest', {
-          headers: { 'X-Master-Key': JSONBIN_API_KEY }
-        });
-        const data = await res.json();
-        return data.record || {};
-      } catch (e) {
-        console.error('Greška pri učitavanju iz oblaka:', e);
-        return {};
-      }
+    // =============================================
+    // CLOUD API
+    // =============================================
+    async function cloudLoadUsers() {
+      const { data, error } = await sb.from('users').select('*');
+      if (error) { console.error('Greška pri učitavanju korisnika:', error); return {}; }
+      const map = {};
+      data.forEach(u => {
+        map[u.key] = {
+          index: u.index_number,
+          displayName: u.display_name,
+          module: u.module,
+          isSystem: u.is_system,
+          // New fields
+          parentName: u.parent_name || '',
+          birthDate: u.birth_date || '',
+          birthPlace: u.birth_place || '',
+          fundingStatus: u.funding_status || 'budzet',
+          currentYearOfStudy: u.current_year_of_study || 1,
+          enrollmentSchoolYear: u.enrollment_school_year || '',
+          firstEnrollmentYear: u.first_enrollment_year || '',
+          studyProgramDetailed: u.study_program_detailed || ''
+        };
+      });
+      return map;
     }
 
-    // Sačuvaj sve podatke u JSONBin
-    async function cloudSave(record) {
-      try {
-        await fetch(JSONBIN_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_API_KEY
-          },
-          body: JSON.stringify(record)
-        });
-      } catch (e) {
-        console.error('Greška pri čuvanju u oblak:', e);
-      }
+    async function cloudLoadSubjects(userKey) {
+      const { data, error } = await sb.from('student_subjects').select('*').eq('user_key', userKey).order('semester', { ascending: true });
+      if (error) { console.error(error); return []; }
+      return data.map(r => ({ id: r.subject_id, name: r.name, grade: r.grade, espb: r.espb, semester: r.semester }));
     }
 
-    // Globalni objekat koji drži sve podatke (učitan iz oblaka)
-    let cloudData = {};
+    async function cloudSaveSubjects(userKey, subjectsList) {
+      const rows = subjectsList.map(s => ({ user_key: userKey, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, updated_at: new Date().toISOString() }));
+      if (rows.length === 0) return true;
+      const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
+      if (error) { console.error(error); return false; }
+      const currentIds = subjectsList.map(s => s.id);
+      const { error: delErr } = await sb.from('student_subjects').delete().eq('user_key', userKey).not('subject_id', 'in', `(${currentIds.join(',')})`);
+      if (delErr) console.warn(delErr);
+      return true;
+    }
+
+    async function cloudAddUser(key, data) {
+      const { error } = await sb.from('users').insert({
+        key,
+        display_name: data.displayName,
+        index_number: data.index,
+        module: data.module,
+        is_system: false,
+        parent_name: data.parentName,
+        birth_date: data.birthDate || null,
+        birth_place: data.birthPlace,
+        funding_status: data.fundingStatus,
+        current_year_of_study: data.currentYearOfStudy,
+        enrollment_school_year: data.enrollmentSchoolYear,
+        first_enrollment_year: data.firstEnrollmentYear,
+        study_program_detailed: data.studyProgramDetailed
+      });
+      return !error;
+    }
+
+    async function cloudUpdateUser(oldKey, newKey, data) {
+      if (oldKey !== newKey) {
+        const { error: e1 } = await sb.from('student_subjects').update({ user_key: newKey }).eq('user_key', oldKey);
+        if (e1) { console.error(e1); return false; }
+      }
+      const { error } = await sb.from('users').update({
+        key: newKey,
+        display_name: data.displayName,
+        index_number: data.index,
+        module: data.module,
+        parent_name: data.parentName,
+        birth_date: data.birthDate || null,
+        birth_place: data.birthPlace,
+        funding_status: data.fundingStatus,
+        current_year_of_study: data.currentYearOfStudy,
+        enrollment_school_year: data.enrollmentSchoolYear,
+        first_enrollment_year: data.firstEnrollmentYear,
+        study_program_detailed: data.studyProgramDetailed
+      }).eq('key', oldKey);
+      return !error;
+    }
+
+    async function cloudDeleteUser(key) {
+      const { error } = await sb.from('users').delete().eq('key', key);
+      return !error;
+    }
 
     // =============================================
-    // INICIJALNA BAZA KORISNIKA
+    // GLOBAL STATE
     // =============================================
-    // Korisnici se čuvaju u cloudData.users
     let customUsers = {};
+    let currentUser = null;
+    let subjects = [];
+    let gpaChart = null;
+    let unsavedChanges = false;
+    function markUnsaved() { unsavedChanges = true; }
 
     // =============================================
-    // KURIKULUM - OBAVEZNI I IZBORNI PREDMETI
+    // CURRICULUM (unchanged)
     // =============================================
     const CURRICULUM = {
-      kamera: {
-        mandatory: [
-          { name: "Osnovi snimanja slike", espb: 3, semester: 1 },
-          { name: "Osnovi montaže", espb: 3, semester: 1 },
-          { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 },
-          { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 },
-          { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 },
-          { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 },
-          { name: "Osnovi scenske režije", espb: 3, semester: 1 },
-          { name: "Istorija filma 1", espb: 3, semester: 1 },
-          { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 },
-          { name: "Osnovi snimanja slike - praktikum", espb: 3, semester: 1 },
-          { name: "Snimanje kamerom", espb: 3, semester: 2 },
-          { name: "Snimanje kamerom - praktikum", espb: 3, semester: 2 },
-          { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 },
-          { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 },
-          { name: "Snimanje zvuka", espb: 3, semester: 2 },
-          { name: "Pozorišna produkcija 1", espb: 3, semester: 2 },
-          { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 },
-          { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 },
-          { name: "Istorija filma 2", espb: 3, semester: 2 },
-          { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 },
-          { name: "Filmska kamera", espb: 3, semester: 3 },
-          { name: "Filmska kamera - praktikum", espb: 2, semester: 3 },
-          { name: "Osnovi vizuelne kulture", espb: 2, semester: 3 },
-          { name: "Osnovi dramaturgije", espb: 2, semester: 3 },
-          { name: "Filmska i televizijska režija 1", espb: 3, semester: 3 },
-          { name: "Istorija filma 3", espb: 3, semester: 3 },
-          { name: "Sociologija kulture 1", espb: 2, semester: 3 },
-          { name: "Fotografska istraživačka praksa 1", espb: 3, semester: 3 },
-          { name: "Optika 1", espb: 2, semester: 3 },
-          { name: "Elektronska kamera", espb: 3, semester: 4 },
-          { name: "Elektronska kamera - praktikum", espb: 2, semester: 4 },
-          { name: "Vizuelne komunikacije", espb: 2, semester: 4 },
-          { name: "Osnovi scenarija", espb: 2, semester: 4 },
-          { name: "Fotografska istraživačka praksa 2", espb: 3, semester: 4 },
-          { name: "Sociologija kulture 2", espb: 2, semester: 4 },
-          { name: "Filmska i televizijska režija 2", espb: 3, semester: 4 },
-          { name: "Optika 2", espb: 2, semester: 4 },
-          { name: "Istorija filma 4", espb: 3, semester: 4 },
-          { name: "Umetnost snimanja kamerom 1", espb: 3, semester: 5 },
-          { name: "Umetnost snimanja kamerom 1 - praktikum", espb: 2, semester: 5 },
-          { name: "Dizajn produkcije", espb: 2, semester: 5 },
-          { name: "Fotografska istraživačka praksa 3", espb: 3, semester: 5 },
-          { name: "Mediji masovne komunikacije", espb: 2, semester: 5 },
-          { name: "Istorija umetnosti srednjeg veka 1", espb: 3, semester: 5 },
-          { name: "Pokretna grafika", espb: 3, semester: 5 },
-          { name: "Profesionalna praksa", espb: 2, semester: 5 },
-          { name: "Osnove estetike 1", espb: 2, semester: 5 },
-          { name: "Umetnost snimanja kamerom 2", espb: 3, semester: 6 },
-          { name: "Umetnost snimanja kamerom 2 - praktikum", espb: 2, semester: 6 },
-          { name: "Dizajn produkcije", espb: 2, semester: 6 },
-          { name: "Interaktivna animacija", espb: 3, semester: 6 },
-          { name: "Mediji masovne komunikacije", espb: 2, semester: 6 },
-          { name: "Osnove estetike 2", espb: 2, semester: 6 },
-          { name: "Fotografska istraživačka praksa 4", espb: 3, semester: 6 },
-          { name: "Profesionalna praksa", espb: 2, semester: 6 },
-          { name: "Istorija umetnosti srednjeg veka 2", espb: 3, semester: 6 },
-          { name: "Kamera - analiza i sinteza 1", espb: 3, semester: 7 },
-          { name: "Kamera - analiza i sinteza 1 - praktikum", espb: 3, semester: 7 },
-          { name: "Teorija filma", espb: 3, semester: 7 },
-          { name: "Teorija medija", espb: 3, semester: 7 },
-          { name: "Profesionalna praksa", espb: 3, semester: 7 },
-          { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 },
-          { name: "Dokumentarni film 1", espb: 3, semester: 7 },
-          { name: "Završni projekat", espb: 2, semester: 7 },
-          { name: "Kamera - analiza i sinteza 2", espb: 3, semester: 8 },
-          { name: "Kamera - analiza i sinteza 2 - praktikum", espb: 3, semester: 8 },
-          { name: "Teorija filma", espb: 3, semester: 8 },
-          { name: "Teorija medija", espb: 3, semester: 8 },
-          { name: "Dokumentarni film 2", espb: 3, semester: 8 },
-          { name: "Profesionalna praksa", espb: 3, semester: 8 },
-          { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 },
-          { name: "Završni projekat 2", espb: 2, semester: 8 },
-        ],
-        electives: {
-          3: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }],
-          4: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Kostimografija", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }],
-          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Likovni elementi 2", espb: 2 }, { name: "Scenografija 1", espb: 2 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }],
-          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Muzička pismenost 1", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }],
-          7: [{ name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Opšta psihologija", espb: 2 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }, { name: "Muzička produkcija", espb: 3 }],
-          8: [{ name: "Psihologija ličnosti", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Likovni elementi 1", espb: 2 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
-        }
-      },
-      montaza: {
-        mandatory: [
-          { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Osnovi montaže - praktikum", espb: 2, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Projekat 1", espb: 1, semester: 1 },
-          { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima - praktikum", espb: 2, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Projekat 2", espb: 1, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 },
-          { name: "Filmska montaža", espb: 3, semester: 3 }, { name: "Elektronska montaža", espb: 3, semester: 3 }, { name: "Filmska montaža - praktikum", espb: 2, semester: 3 }, { name: "Osnovi vizuelne kulture", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Projekat 3", espb: 2, semester: 3 }, { name: "Filmska i televizijska režija 1", espb: 3, semester: 3 },
-          { name: "Montaža zvuka za film i televiziju", espb: 3, semester: 4 }, { name: "Digitalna montaža", espb: 3, semester: 4 }, { name: "Montaža zvuka za film i televiziju - praktikum", espb: 2, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Filmska i televizijska režija 2", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Vizuelne komunikacije", espb: 2, semester: 4 }, { name: "Projekat 4", espb: 2, semester: 4 },
-          { name: "Montaža audiovizuelnih formi 1", espb: 3, semester: 5 }, { name: "Montaža audiovizuelnih formi 1 - praktikum", espb: 4, semester: 5 }, { name: "Pokretna grafika", espb: 3, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Projekat 5", espb: 2, semester: 5 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 },
-          { name: "Montaža audiovizuelnih formi 2", espb: 3, semester: 6 }, { name: "Montaža audiovizuelnih formi 2 - praktikum", espb: 4, semester: 6 }, { name: "Interaktivna animacija", espb: 3, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Projekat 6", espb: 2, semester: 6 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
-          { name: "Montažne artikulacije 1", espb: 3, semester: 7 }, { name: "Montažne artikulacije 1 - praktikum", espb: 3, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
-          { name: "Montažne artikulacije 2", espb: 3, semester: 8 }, { name: "Montažne artikulacije 2 - praktikum", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Završni projekat 2", espb: 2, semester: 8 },
-        ],
-        electives: {
-          3: [{ name: "Filmska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Osnovi programa o liniji 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Maska i sminka", espb: 2 }],
-          4: [{ name: "Elektronska kamera", espb: 3 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Kostimografija", espb: 2 }, { name: "Osnovi programa o liniji 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }],
-          5: [{ name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }],
-          6: [{ name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Akustika", espb: 2 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }, { name: "Scenografija 2", espb: 2 }],
-          7: [{ name: "Audio uređaji i sistemi 1", espb: 2 }, { name: "Muzička pismenost 1", espb: 2 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Optika 1", espb: 2 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }],
-          8: [{ name: "Optika 2", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Audio uređaji i sistemi 2", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
-        }
-      },
-      dizajn_zvuka: {
-        mandatory: [
-          { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka - praktikum", espb: 2, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Primenjena elektrotehnika", espb: 2, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 },
-          { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Snimanje zvuka - praktikum", espb: 2, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 },
-          { name: "Osnovi obrade zvuka", espb: 3, semester: 3 }, { name: "Osnovi obrade zvuka - praktikum", espb: 3, semester: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3, semester: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima - praktikum", espb: 2, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Audio uređaji i sistemi 1", espb: 2, semester: 3 }, { name: "Muzika kao kultura", espb: 2, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Muzička pismenost 1", espb: 2, semester: 3 },
-          { name: "Dizajn scenskog zvuka", espb: 3, semester: 4 }, { name: "Dizajn scenskog zvuka - praktikum", espb: 2, semester: 4 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3, semester: 4 }, { name: "Montaža dijaloga u audio-vizuelnim medijima - praktikum", espb: 3, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Audio uređaji i sistemi 2", espb: 2, semester: 4 }, { name: "Muzika kao kultura", espb: 2, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Akustika", espb: 2, semester: 4 },
-          { name: "Uvod u snimanje muzike", espb: 3, semester: 5 }, { name: "Uvod u snimanje muzike - praktikum", espb: 3, semester: 5 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3, semester: 5 }, { name: "Dizajn i montaža zvučnih efekata i muzike - praktikum", espb: 3, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 },
-          { name: "Snimanje muzike", espb: 3, semester: 6 }, { name: "Snimanje muzike - praktikum", espb: 2, semester: 6 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima", espb: 3, semester: 6 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima - praktikum", espb: 2, semester: 6 }, { name: "Muzički instrumenti", espb: 2, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Mediji masovne komunikacije", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
-          { name: "Muzička produkcija", espb: 3, semester: 7 }, { name: "Muzička produkcija - praktikum", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audiovizuelnim medijima", espb: 2, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
-          { name: "Analiza i sinteza zvučne slike", espb: 3, semester: 8 }, { name: "Analiza i sinteza zvučne slike - praktikum", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audiovizuelnim medijima", espb: 2, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
-        ],
-        electives: {
-          3: [{ name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Osnovi vizuelne kulture", espb: 2 }, { name: "Osnovi dramaturgije", espb: 2 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Filmska i televizijska režija 1", espb: 3 }],
-          4: [{ name: "Kostimografija", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Vizuelne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Filmska i televizijska režija 2", espb: 3 }, { name: "Osnovi scenarija", espb: 2 }],
-          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Harmonija u audiovizuelnim medijima 1", espb: 2 }],
-          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }, { name: "Harmonija u audiovizuelnim medijima 2", espb: 2 }],
-          7: [{ name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Optika 1", espb: 2 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Dizajn produkcije", espb: 2 }, { name: "Istorija nacionalne muzike", espb: 3 }],
-          8: [{ name: "Optika 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Dizajn produkcije", espb: 2 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
-        }
-      },
-      dizajn_svetla: {
-        mandatory: [
-          { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu - praktikum", espb: 2, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Primenjena elektrotehnika", espb: 2, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 },
-          { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju - praktikum", espb: 2, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 },
-          { name: "Dizajn svetla za film i televiziju 1", espb: 3, semester: 3 }, { name: "Dizajn svetla za film i televiziju 1 - praktikum", espb: 2, semester: 3 }, { name: "Osnovi vizuelne kulture", espb: 2, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Fotografska istraživačka praksa 1", espb: 3, semester: 3 }, { name: "Optika 1", espb: 2, semester: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 },
-          { name: "Dizajn svetla za film i televiziju 2", espb: 3, semester: 4 }, { name: "Dizajn svetla za film i televiziju 2 - praktikum", espb: 2, semester: 4 }, { name: "Vizuelne komunikacije", espb: 2, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Fotografska istraživačka praksa 2", espb: 3, semester: 4 }, { name: "Optika 2", espb: 2, semester: 4 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 },
-          { name: "Dizajn svetla za scenu 1", espb: 3, semester: 5 }, { name: "Dizajn svetla za scenu 1 - praktikum", espb: 4, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Dizajn produkcije", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Fotografska istraživačka praksa 3", espb: 3, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 }, { name: "Pokretna grafika", espb: 3, semester: 5 },
-          { name: "Dizajn svetla za scenu 2", espb: 3, semester: 6 }, { name: "Dizajn svetla za scenu 2 - praktikum", espb: 2, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Dizajn produkcije", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Fotografska istraživačka praksa 4", espb: 3, semester: 6 }, { name: "Interaktivna animacija", espb: 3, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
-          { name: "Kreativni svetlopis 1", espb: 3, semester: 7 }, { name: "Kreativni svetlopis 1 - praktikum", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
-          { name: "Kreativni svetlopis 2", espb: 3, semester: 8 }, { name: "Kreativni svetlopis 2 - praktikum", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
-        ],
-        electives: {
-          3: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Filmska i televizijska režija 1", espb: 3 }, { name: "Osnovi programa o liniji 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }],
-          4: [{ name: "Muzika kao kultura", espb: 2 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Kostimografija", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Filmska i televizijska režija 2", espb: 3 }, { name: "Osnovi programa o liniji 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }],
-          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }],
-          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }],
-          7: [{ name: "Audio uređaji i sistemi 1", espb: 2 }, { name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }],
-          8: [{ name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Audio uređaji i sistemi 2", espb: 2 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
-        }
-      },
-      animacija: {
-        mandatory: [
-          { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije - praktikum", espb: 3, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Tehnologija audiovizuelnih medija 1", espb: 3, semester: 1 },
-          { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata - praktikum", espb: 3, semester: 2 }, { name: "Režija u audiovizuelnim medijima", espb: 3, semester: 2 }, { name: "Montaža u audiovizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audiovizuelnih medija 2", espb: 3, semester: 2 },
-          { name: "Animacija 1", espb: 3, semester: 3 }, { name: "Animacija 1 - praktikum", espb: 3, semester: 3 }, { name: "Osnovi programa o liniji 1", espb: 3, semester: 3 }, { name: "Filmska i televizijska režija 1", espb: 3, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Istorija moderne umetnosti 1", espb: 3, semester: 3 },
-          { name: "Vizuelni efekti 1", espb: 3, semester: 4 }, { name: "Vizuelni efekti 1 - praktikum", espb: 3, semester: 4 }, { name: "Osnovi programa o liniji 2", espb: 3, semester: 4 }, { name: "Filmska i televizijska režija 2", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Istorija moderne umetnosti 2", espb: 3, semester: 4 },
-          { name: "Vizuelni efekti 2", espb: 3, semester: 5 }, { name: "Vizuelni efekti 2 - praktikum", espb: 4, semester: 5 }, { name: "Pokretna grafika", espb: 3, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Dizajn produkcije", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Strip 1", espb: 3, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 },
-          { name: "Animacija 2", espb: 3, semester: 6 }, { name: "Animacija 2 - praktikum", espb: 2, semester: 6 }, { name: "Interaktivna animacija", espb: 3, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Dizajn produkcije", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Strip 2", espb: 3, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 },
-          { name: "Vizuelni efekti 3", espb: 3, semester: 7 }, { name: "Vizuelni efekti 3 - praktikum", espb: 3, semester: 7 }, { name: "Teorija medija", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 },
-          { name: "Animacija 3", espb: 3, semester: 8 }, { name: "Animacija 3 - praktikum", espb: 3, semester: 8 }, { name: "Teorija medija", espb: 3, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
-        ],
-        electives: {
-          3: [{ name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audiovizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 1", espb: 3 }, { name: "Osnovi vizuelne kulture", espb: 2 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Maska i sminka", espb: 2 }, { name: "Uvod u vajanje sa tehnologijom 1", espb: 3 }, { name: "Uvod u grafičke komunikacije 1", espb: 3 }, { name: "Ilustracija - osnove i tehnike 1", espb: 3 }],
-          4: [{ name: "Kostimografija", espb: 2 }, { name: "Elektronska montaža", espb: 3 }, { name: "Montaža dijaloga u audiovizuelnim medijima", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Pozorišna produkcija 2", espb: 3 }, { name: "Multimedijalna produkcija 2", espb: 3 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Vizuelne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Uvod u vajanje sa tehnologijom 2", espb: 3 }, { name: "Uvod u grafičke komunikacije 2", espb: 3 }, { name: "Ilustracija - osnove i tehnike 2", espb: 3 }],
-          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Pozorišna produkcija 3", espb: 2 }, { name: "Multimedijalna produkcija 3", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Program o liniji 1", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }, { name: "Grafičke tehnike 1", espb: 3 }, { name: "Uvod u arhitekturu 1", espb: 3 }, { name: "Savremene tehnologije u skulpturi 1", espb: 3 }],
-          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima", espb: 3 }, { name: "Filmska i televizijska produkcija 3", espb: 3 }, { name: "Multimedijalna produkcija 4", espb: 2 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }, { name: "Grafičke tehnike 2", espb: 3 }, { name: "Uvod u arhitekturu 2", espb: 3 }, { name: "Savremene tehnologije u skulpturi 2", espb: 3 }],
-          7: [{ name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Pozorišna produkcija 4", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Optika 1", espb: 2 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }, { name: "Grafičke tehnike 3", espb: 3 }, { name: "Osnove plakata 1", espb: 3 }, { name: "Instalacije i intervencije u javnom prostoru 1", espb: 3 }, { name: "Osnovi dizajna enterijera 1", espb: 3 }],
-          8: [{ name: "Optika 2", espb: 2 }, { name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Akustika", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Filmska i televizijska produkcija 4", espb: 3 }, { name: "Digitalna slika 2", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Grafičke tehnike 4", espb: 3 }, { name: "Osnove plakata 2", espb: 3 }, { name: "Instalacije i intervencije u javnom prostoru 2", espb: 3 }, { name: "Osnovi dizajna enterijera 2", espb: 3 }]
-        }
-      },
-      produkcija: {
-        mandatory: [
-          { name: "Filmska i televizijska produkcija 1", espb: 3, semester: 1 }, { name: "Filmska i televizijska produkcija 1 - praktikum", espb: 3, semester: 1 }, { name: "Osnovi montaže", espb: 3, semester: 1 }, { name: "Osnovi snimanja slike", espb: 3, semester: 1 }, { name: "Osnovi dizajna svetla za scenu", espb: 3, semester: 1 }, { name: "Uvod u snimanje zvuka", espb: 3, semester: 1 }, { name: "Osnovi scenske režije", espb: 3, semester: 1 }, { name: "Istorija filma 1", espb: 3, semester: 1 }, { name: "Tehnologija audio-vizuelnih medija 1", espb: 3, semester: 1 }, { name: "Razvoj i tehnike animacije", espb: 3, semester: 1 },
-          { name: "Pozorišna produkcija 1", espb: 3, semester: 2 }, { name: "Pozorišna produkcija 1 - praktikum", espb: 3, semester: 2 }, { name: "Montaža u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Snimanje kamerom", espb: 3, semester: 2 }, { name: "Osnovi dizajna svetla za film i televiziju", espb: 3, semester: 2 }, { name: "Snimanje zvuka", espb: 3, semester: 2 }, { name: "Režija u audio-vizuelnim medijima", espb: 3, semester: 2 }, { name: "Istorija filma 2", espb: 3, semester: 2 }, { name: "Tehnologija audio-vizuelnih medija 2", espb: 3, semester: 2 }, { name: "Razvoj i tehnike vizuelnih efekata", espb: 3, semester: 2 },
-          { name: "Filmska i televizijska produkcija 2", espb: 3, semester: 3 }, { name: "Filmska i televizijska produkcija 2 - praktikum", espb: 3, semester: 3 }, { name: "Multimedijalna produkcija 1", espb: 3, semester: 3 }, { name: "Multimedijalna produkcija 1 - praktikum", espb: 3, semester: 3 }, { name: "Istorija filma 3", espb: 3, semester: 3 }, { name: "Sociologija kulture 1", espb: 2, semester: 3 }, { name: "Osnovi dramaturgije", espb: 2, semester: 3 }, { name: "Istorija svetske drame i pozorišta 1", espb: 3, semester: 3 },
-          { name: "Pozorišna produkcija 2", espb: 3, semester: 4 }, { name: "Pozorišna produkcija 2 - praktikum", espb: 3, semester: 4 }, { name: "Multimedijalna produkcija 2", espb: 3, semester: 4 }, { name: "Multimedijalna produkcija 2 - praktikum", espb: 3, semester: 4 }, { name: "Istorija filma 4", espb: 3, semester: 4 }, { name: "Sociologija kulture 2", espb: 2, semester: 4 }, { name: "Osnovi scenarija", espb: 2, semester: 4 }, { name: "Istorija svetske drame i pozorišta 2", espb: 2, semester: 4 },
-          { name: "Pozorišna produkcija 3", espb: 2, semester: 5 }, { name: "Pozorišna produkcija 3 - praktikum", espb: 3, semester: 5 }, { name: "Multimedijalna produkcija 3", espb: 3, semester: 5 }, { name: "Multimedijalna produkcija 3 - praktikum", espb: 3, semester: 5 }, { name: "Opšta psihologija", espb: 2, semester: 5 }, { name: "Profesionalna praksa", espb: 2, semester: 5 }, { name: "Primenjena muzika 1", espb: 2, semester: 5 }, { name: "Osnove estetike 1", espb: 2, semester: 5 }, { name: "Istorija svetske drame i pozorišta 3", espb: 3, semester: 5 },
-          { name: "Filmska i televizijska produkcija 3", espb: 3, semester: 6 }, { name: "Filmska i televizijska produkcija 3 - praktikum", espb: 3, semester: 6 }, { name: "Multimedijalna produkcija 4", espb: 2, semester: 6 }, { name: "Multimedijalna produkcija 4 - praktikum", espb: 3, semester: 6 }, { name: "Psihologija ličnosti", espb: 2, semester: 6 }, { name: "Profesionalna praksa", espb: 2, semester: 6 }, { name: "Primenjena muzika 2", espb: 2, semester: 6 }, { name: "Osnove estetike 2", espb: 2, semester: 6 }, { name: "Istorija svetske drame i pozorišta 4", espb: 3, semester: 6 },
-          { name: "Pozorišna produkcija 4", espb: 3, semester: 7 }, { name: "Pozorišna produkcija 4 - praktikum", espb: 3, semester: 7 }, { name: "Dokumentarni film 1", espb: 3, semester: 7 }, { name: "Teorija filma", espb: 3, semester: 7 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 7 }, { name: "Istorija južnoslovenske drame i pozorišta 1", espb: 3, semester: 7 }, { name: "Profesionalna praksa", espb: 3, semester: 7 }, { name: "Završni projekat", espb: 2, semester: 7 },
-          { name: "Filmska i televizijska produkcija 4", espb: 3, semester: 8 }, { name: "Filmska i televizijska produkcija 4 - praktikum", espb: 4, semester: 8 }, { name: "Dokumentarni film 2", espb: 3, semester: 8 }, { name: "Teorija filma", espb: 3, semester: 8 }, { name: "Istorija južnoslovenske drame i pozorišta 2", espb: 3, semester: 8 }, { name: "Primena savremenih tehnologija u audio-vizuelnim medijima", espb: 2, semester: 8 }, { name: "Profesionalna praksa", espb: 3, semester: 8 }, { name: "Završni projekat", espb: 2, semester: 8 },
-        ],
-        electives: {
-          3: [{ name: "Maska i sminka", espb: 2 }, { name: "Filmska montaža", espb: 3 }, { name: "Filmska kamera", espb: 3 }, { name: "Fotografska istraživačka praksa 1", espb: 3 }, { name: "Dizajn svetla za film i televiziju 1", espb: 3 }, { name: "Osnovi obrade zvuka", espb: 3 }, { name: "Produkcija zvuka u audio-vizuelnim medijima", espb: 3 }, { name: "Animacija 1", espb: 3 }, { name: "Engleski jezik 1", espb: 2 }, { name: "Istorija umetnosti starog veka 1", espb: 3 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Filmska i televizijska režija 1", espb: 3 }, { name: "Osnovi vizuelne kulture", espb: 2 }],
-          4: [{ name: "Kostimografija", espb: 2 }, { name: "Montaža zvuka za film i televiziju", espb: 3 }, { name: "Elektronska kamera", espb: 3 }, { name: "Dizajn svetla za film i televiziju 2", espb: 3 }, { name: "Dizajn scenskog zvuka", espb: 3 }, { name: "Montaža dijaloga u audio-vizuelnim medijima", espb: 3 }, { name: "Vizuelni efekti 1", espb: 3 }, { name: "Vizuelne komunikacije", espb: 2 }, { name: "Engleski jezik 2", espb: 2 }, { name: "Fotografska istraživačka praksa 2", espb: 3 }, { name: "Muzika kao kultura", espb: 2 }, { name: "Filmska i televizijska režija 2", espb: 3 }, { name: "Istorija umetnosti starog veka 2", espb: 3 }],
-          5: [{ name: "Montaža audiovizuelnih formi 1", espb: 3 }, { name: "Scenografija 1", espb: 2 }, { name: "Umetnost snimanja kamerom 1", espb: 3 }, { name: "Dizajn svetla za scenu 1", espb: 3 }, { name: "Uvod u snimanje muzike", espb: 3 }, { name: "Dizajn i montaža zvučnih efekata i muzike", espb: 3 }, { name: "Vizuelni efekti 2", espb: 3 }, { name: "Engleski jezik 3", espb: 2 }, { name: "Program o liniji 1", espb: 3 }, { name: "Fotografska istraživačka praksa 3", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 1", espb: 3 }, { name: "Mediji masovne komunikacije", espb: 2 }],
-          6: [{ name: "Scenografija 2", espb: 2 }, { name: "Montaža audiovizuelnih formi 2", espb: 3 }, { name: "Umetnost snimanja kamerom 2", espb: 3 }, { name: "Dizajn svetla za scenu 2", espb: 3 }, { name: "Snimanje muzike", espb: 3 }, { name: "Postprodukcija zvuka u audiovizuelnim medijima", espb: 3 }, { name: "Animacija 2", espb: 3 }, { name: "Program o liniji 2", espb: 3 }, { name: "Istorija umetnosti srednjeg veka 2", espb: 3 }, { name: "Engleski jezik 4", espb: 2 }, { name: "Mediji masovne komunikacije", espb: 2 }, { name: "Fotografska istraživačka praksa 4", espb: 3 }],
-          7: [{ name: "Muzička pismenost 1", espb: 2 }, { name: "Montažne artikulacije 1", espb: 3 }, { name: "Kamera - analiza i sinteza 1", espb: 3 }, { name: "Primenjena elektrotehnika", espb: 2 }, { name: "Kreativni svetlopis 1", espb: 3 }, { name: "Muzička produkcija", espb: 3 }, { name: "Vizuelni efekti 3", espb: 3 }, { name: "Digitalna slika 1", espb: 3 }, { name: "Istorija umetnosti novog veka 1", espb: 3 }, { name: "Uvod u dizajn video igara 1", espb: 3 }, { name: "Istorija nacionalne muzike", espb: 3 }],
-          8: [{ name: "Muzička pismenost 2", espb: 2 }, { name: "Montažne artikulacije 2", espb: 3 }, { name: "Kamera - analiza i sinteza 2", espb: 3 }, { name: "Kreativni svetlopis 2", espb: 3 }, { name: "Akustika", espb: 2 }, { name: "Muzički instrumenti", espb: 2 }, { name: "Osnovi dikcije", espb: 2 }, { name: "Analiza i sinteza zvučne slike", espb: 3 }, { name: "Animacija 3", espb: 3 }, { name: "Istorija umetnosti novog veka 2", espb: 3 }, { name: "Uvod u dizajn video igara 2", espb: 3 }, { name: "Dizajn produkcije", espb: 2 }, { name: "Istorija muzike 20. veka 1", espb: 3 }]
-        }
-      }
+      kamera: { mandatory: [
+        {name:"Osnovi snimanja slike",espb:3,semester:1},{name:"Osnovi montaže",espb:3,semester:1},{name:"Osnovi dizajna svetla za scenu",espb:3,semester:1},{name:"Uvod u snimanje zvuka",espb:3,semester:1},{name:"Filmska i televizijska produkcija 1",espb:3,semester:1},{name:"Razvoj i tehnike animacije",espb:3,semester:1},{name:"Osnovi scenske režije",espb:3,semester:1},{name:"Istorija filma 1",espb:3,semester:1},{name:"Tehnologija audio-vizuelnih medija 1",espb:3,semester:1},{name:"Osnovi snimanja slike - praktikum",espb:3,semester:1},
+        {name:"Snimanje kamerom",espb:3,semester:2},{name:"Snimanje kamerom - praktikum",espb:3,semester:2},{name:"Montaža u audio-vizuelnim medijima",espb:3,semester:2},{name:"Osnovi dizajna svetla za film i televiziju",espb:3,semester:2},{name:"Snimanje zvuka",espb:3,semester:2},{name:"Pozorišna produkcija 1",espb:3,semester:2},{name:"Razvoj i tehnike vizuelnih efekata",espb:3,semester:2},{name:"Režija u audio-vizuelnim medijima",espb:3,semester:2},{name:"Istorija filma 2",espb:3,semester:2},{name:"Tehnologija audio-vizuelnih medija 2",espb:3,semester:2},
+        {name:"Filmska kamera",espb:3,semester:3},{name:"Filmska kamera - praktikum",espb:2,semester:3},{name:"Osnovi vizuelne kulture",espb:2,semester:3},{name:"Osnovi dramaturgije",espb:2,semester:3},{name:"Filmska i televizijska režija 1",espb:3,semester:3},{name:"Istorija filma 3",espb:3,semester:3},{name:"Sociologija kulture 1",espb:2,semester:3},{name:"Fotografska istraživačka praksa 1",espb:3,semester:3},{name:"Optika 1",espb:2,semester:3},
+        {name:"Elektronska kamera",espb:3,semester:4},{name:"Elektronska kamera - praktikum",espb:2,semester:4},{name:"Vizuelne komunikacije",espb:2,semester:4},{name:"Osnovi scenarija",espb:2,semester:4},{name:"Fotografska istraživačka praksa 2",espb:3,semester:4},{name:"Sociologija kulture 2",espb:2,semester:4},{name:"Filmska i televizijska režija 2",espb:3,semester:4},{name:"Optika 2",espb:2,semester:4},{name:"Istorija filma 4",espb:3,semester:4},
+        {name:"Umetnost snimanja kamerom 1",espb:3,semester:5},{name:"Umetnost snimanja kamerom 1 - praktikum",espb:2,semester:5},{name:"Dizajn produkcije",espb:2,semester:5},{name:"Fotografska istraživačka praksa 3",espb:3,semester:5},{name:"Mediji masovne komunikacije",espb:2,semester:5},{name:"Istorija umetnosti srednjeg veka 1",espb:3,semester:5},{name:"Pokretna grafika",espb:3,semester:5},{name:"Profesionalna praksa",espb:2,semester:5},{name:"Osnove estetike 1",espb:2,semester:5},
+        {name:"Umetnost snimanja kamerom 2",espb:3,semester:6},{name:"Umetnost snimanja kamerom 2 - praktikum",espb:2,semester:6},{name:"Dizajn produkcije",espb:2,semester:6},{name:"Interaktivna animacija",espb:3,semester:6},{name:"Mediji masovne komunikacije",espb:2,semester:6},{name:"Osnove estetike 2",espb:2,semester:6},{name:"Fotografska istraživačka praksa 4",espb:3,semester:6},{name:"Profesionalna praksa",espb:2,semester:6},{name:"Istorija umetnosti srednjeg veka 2",espb:3,semester:6},
+        {name:"Kamera - analiza i sinteza 1",espb:3,semester:7},{name:"Kamera - analiza i sinteza 1 - praktikum",espb:3,semester:7},{name:"Teorija filma",espb:3,semester:7},{name:"Teorija medija",espb:3,semester:7},{name:"Profesionalna praksa",espb:3,semester:7},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:7},{name:"Dokumentarni film 1",espb:3,semester:7},{name:"Završni projekat",espb:2,semester:7},
+        {name:"Kamera - analiza i sinteza 2",espb:3,semester:8},{name:"Kamera - analiza i sinteza 2 - praktikum",espb:3,semester:8},{name:"Teorija filma",espb:3,semester:8},{name:"Teorija medija",espb:3,semester:8},{name:"Dokumentarni film 2",espb:3,semester:8},{name:"Profesionalna praksa",espb:3,semester:8},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:8},{name:"Završni projekat 2",espb:2,semester:8}
+      ], electives:{3:[{name:"Muzika kao kultura",espb:2},{name:"Maska i sminka",espb:2},{name:"Filmska montaža",espb:3},{name:"Dizajn svetla za film i televiziju 1",espb:3},{name:"Osnovi obrade zvuka",espb:3},{name:"Produkcija zvuka u audio-vizuelnim medijima",espb:3},{name:"Filmska i televizijska produkcija 2",espb:3},{name:"Multimedijalna produkcija 1",espb:3},{name:"Animacija 1",espb:3},{name:"Engleski jezik 1",espb:2}],4:[{name:"Muzika kao kultura",espb:2},{name:"Dizajn scenskog zvuka",espb:3},{name:"Montaža dijaloga u audio-vizuelnim medijima",espb:3},{name:"Kostimografija",espb:2},{name:"Montaža zvuka za film i televiziju",espb:3},{name:"Pozorišna produkcija 2",espb:3},{name:"Multimedijalna produkcija 2",espb:3},{name:"Vizuelni efekti 1",espb:3},{name:"Dizajn svetla za film i televiziju 2",espb:3},{name:"Engleski jezik 2",espb:2}],5:[{name:"Montaža audiovizuelnih formi 1",espb:3},{name:"Likovni elementi 2",espb:2},{name:"Scenografija 1",espb:2},{name:"Dizajn svetla za scenu 1",espb:3},{name:"Uvod u snimanje muzike",espb:3},{name:"Dizajn i montaža zvučnih efekata i muzike",espb:3},{name:"Pozorišna produkcija 3",espb:2},{name:"Multimedijalna produkcija 3",espb:3},{name:"Vizuelni efekti 2",espb:3},{name:"Engleski jezik 3",espb:2}],6:[{name:"Scenografija 2",espb:2},{name:"Muzička pismenost 1",espb:2},{name:"Montaža audiovizuelnih formi 2",espb:3},{name:"Dizajn svetla za scenu 2",espb:3},{name:"Snimanje muzike",espb:3},{name:"Postprodukcija zvuka u audio-vizuelnim medijima",espb:3},{name:"Filmska i televizijska produkcija 3",espb:3},{name:"Multimedijalna produkcija 4",espb:2},{name:"Animacija 2",espb:3},{name:"Engleski jezik 4",espb:2}],7:[{name:"Muzička pismenost 1",espb:2},{name:"Montažne artikulacije 1",espb:3},{name:"Primenjena elektrotehnika",espb:2},{name:"Opšta psihologija",espb:2},{name:"Digitalna slika 1",espb:3},{name:"Kreativni svetlopis 1",espb:3},{name:"Pozorišna produkcija 4",espb:3},{name:"Vizuelni efekti 3",espb:3},{name:"Istorija umetnosti novog veka 1",espb:3}],8:[{name:"Psihologija ličnosti",espb:2},{name:"Muzička pismenost 2",espb:2},{name:"Montažne artikulacije 2",espb:3},{name:"Kreativni svetlopis 2",espb:3},{name:"Muzički instrumenti",espb:2},{name:"Osnovi dikcije",espb:2},{name:"Analiza i sinteza zvučne slike",espb:3},{name:"Filmska i televizijska produkcija 4",espb:3},{name:"Animacija 3",espb:3},{name:"Digitalna slika 2",espb:3}]}},
+      produkcija: { mandatory: [
+        {name:"Filmska i televizijska produkcija 1",espb:3,semester:1},{name:"Filmska i televizijska produkcija 1 - praktikum",espb:3,semester:1},{name:"Osnovi montaže",espb:3,semester:1},{name:"Osnovi snimanja slike",espb:3,semester:1},{name:"Osnovi dizajna svetla za scenu",espb:3,semester:1},{name:"Uvod u snimanje zvuka",espb:3,semester:1},{name:"Osnovi scenske režije",espb:3,semester:1},{name:"Istorija filma 1",espb:3,semester:1},{name:"Tehnologija audio-vizuelnih medija 1",espb:3,semester:1},{name:"Razvoj i tehnike animacije",espb:3,semester:1},
+        {name:"Pozorišna produkcija 1",espb:3,semester:2},{name:"Pozorišna produkcija 1 - praktikum",espb:3,semester:2},{name:"Montaža u audio-vizuelnim medijima",espb:3,semester:2},{name:"Snimanje kamerom",espb:3,semester:2},{name:"Osnovi dizajna svetla za film i televiziju",espb:3,semester:2},{name:"Snimanje zvuka",espb:3,semester:2},{name:"Režija u audio-vizuelnim medijima",espb:3,semester:2},{name:"Istorija filma 2",espb:3,semester:2},{name:"Tehnologija audio-vizuelnih medija 2",espb:3,semester:2},{name:"Razvoj i tehnike vizuelnih efekata",espb:3,semester:2},
+        {name:"Filmska i televizijska produkcija 2",espb:3,semester:3},{name:"Filmska i televizijska produkcija 2 - praktikum",espb:3,semester:3},{name:"Multimedijalna produkcija 1",espb:3,semester:3},{name:"Multimedijalna produkcija 1 - praktikum",espb:3,semester:3},{name:"Istorija filma 3",espb:3,semester:3},{name:"Sociologija kulture 1",espb:2,semester:3},{name:"Osnovi dramaturgije",espb:2,semester:3},{name:"Istorija svetske drame i pozorišta 1",espb:3,semester:3},
+        {name:"Pozorišna produkcija 2",espb:3,semester:4},{name:"Pozorišna produkcija 2 - praktikum",espb:3,semester:4},{name:"Multimedijalna produkcija 2",espb:3,semester:4},{name:"Multimedijalna produkcija 2 - praktikum",espb:3,semester:4},{name:"Istorija filma 4",espb:3,semester:4},{name:"Sociologija kulture 2",espb:2,semester:4},{name:"Osnovi scenarija",espb:2,semester:4},{name:"Istorija svetske drame i pozorišta 2",espb:2,semester:4},
+        {name:"Pozorišna produkcija 3",espb:2,semester:5},{name:"Pozorišna produkcija 3 - praktikum",espb:3,semester:5},{name:"Multimedijalna produkcija 3",espb:3,semester:5},{name:"Multimedijalna produkcija 3 - praktikum",espb:3,semester:5},{name:"Opšta psihologija",espb:2,semester:5},{name:"Profesionalna praksa",espb:2,semester:5},{name:"Primenjena muzika 1",espb:2,semester:5},{name:"Osnove estetike 1",espb:2,semester:5},{name:"Istorija svetske drame i pozorišta 3",espb:3,semester:5},
+        {name:"Filmska i televizijska produkcija 3",espb:3,semester:6},{name:"Filmska i televizijska produkcija 3 - praktikum",espb:3,semester:6},{name:"Multimedijalna produkcija 4",espb:2,semester:6},{name:"Multimedijalna produkcija 4 - praktikum",espb:3,semester:6},{name:"Psihologija ličnosti",espb:2,semester:6},{name:"Profesionalna praksa",espb:2,semester:6},{name:"Primenjena muzika 2",espb:2,semester:6},{name:"Osnove estetike 2",espb:2,semester:6},{name:"Istorija svetske drame i pozorišta 4",espb:3,semester:6},
+        {name:"Pozorišna produkcija 4",espb:3,semester:7},{name:"Pozorišna produkcija 4 - praktikum",espb:3,semester:7},{name:"Dokumentarni film 1",espb:3,semester:7},{name:"Teorija filma",espb:3,semester:7},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:7},{name:"Istorija južnoslovenske drame i pozorišta 1",espb:3,semester:7},{name:"Profesionalna praksa",espb:3,semester:7},{name:"Završni projekat",espb:2,semester:7},
+        {name:"Filmska i televizijska produkcija 4",espb:3,semester:8},{name:"Filmska i televizijska produkcija 4 - praktikum",espb:4,semester:8},{name:"Dokumentarni film 2",espb:3,semester:8},{name:"Teorija filma",espb:3,semester:8},{name:"Istorija južnoslovenske drame i pozorišta 2",espb:3,semester:8},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:8},{name:"Profesionalna praksa",espb:3,semester:8},{name:"Završni projekat",espb:2,semester:8}
+      ], electives:{3:[],4:[],5:[],6:[],7:[],8:[]}},
+      montaza: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} },
+      dizajn_zvuka: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} },
+      dizajn_svetla: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} },
+      animacija: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} }
     };
 
-    // Generiši predmete iz kurikuluma za datog studenta
     function generateSubjectsFromCurriculum(module) {
       const c = CURRICULUM[module];
       if (!c) return [];
-      return c.mandatory.map((s, i) => ({
-        id: 'curr-' + module + '-' + i,
-        name: s.name,
-        grade: null,
-        espb: s.espb,
-        semester: s.semester
-      }));
+      return c.mandatory.map((s, i) => ({ id: 'curr-' + module + '-' + i, name: s.name, grade: null, espb: s.espb, semester: s.semester }));
     }
-
-    // Dobij izborne predmete za modul i semestar
     function getElectivesForSemester(module, semester) {
       if (!module || !CURRICULUM[module]) return [];
       return (CURRICULUM[module].electives[semester] || []);
     }
 
-    let currentUser = null;
-    let subjects = [];
-    let gpaChart = null;
-    let unsavedChanges = false;
-
-    // Označi da ima nesačuvanih promena (ne šalje na server)
-    function markUnsaved() {
-      unsavedChanges = true;
-    }
-
-    // Inicijalizacija pri pokretanju — najpre učitaj oblak
+    // =============================================
+    // INIT
+    // =============================================
     window.onload = async function() {
       lucide.createIcons();
-      showToast("Učitavanje podataka iz oblaka...", "info");
-      cloudData = await cloudLoad();
-      customUsers = cloudData.users || {};
+      showToast("Učitavanje podataka iz baze...", "info");
+      customUsers = await cloudLoadUsers();
     };
 
     window.addEventListener('beforeunload', function(e) {
-      if (unsavedChanges) {
-        e.preventDefault();
-        e.returnValue = 'Imate nesačuvane izmene. Da li ste sigurni da želite da napustite stranicu?';
-        return e.returnValue;
-      }
+      if (unsavedChanges) { e.preventDefault(); e.returnValue = 'Imate nesačuvane izmene.'; return e.returnValue; }
     });
 
-    // Login proces
-    function handleLogin() {
+    document.addEventListener('click', function(e) {
+      const dd = document.getElementById('print-dropdown');
+      const container = document.getElementById('print-dropdown-container');
+      if (dd && !container.contains(e.target)) dd.classList.add('hidden');
+    });
+
+    function togglePrintDropdown() {
+      document.getElementById('print-dropdown').classList.toggle('hidden');
+    }
+
+    // =============================================
+    // LOGIN / LOGOUT
+    // =============================================
+    async function handleLogin() {
       const nameInput = document.getElementById('login-name').value.trim();
       const indexInput = document.getElementById('login-index').value.trim();
       const errorDiv = document.getElementById('login-error');
       const errorText = document.getElementById('login-error-text');
-
-      if (!nameInput || !indexInput) {
-        errorText.textContent = 'Molimo unesite ime i broj indeksa.';
-        errorDiv.classList.remove('hidden');
-        return;
-      }
-
+      if (!nameInput || !indexInput) { errorText.textContent = 'Molimo unesite ime i broj indeksa.'; errorDiv.classList.remove('hidden'); return; }
       const normalizedKey = nameInput.toLowerCase();
-
       if (customUsers[normalizedKey] && customUsers[normalizedKey].index === indexInput) {
         errorDiv.classList.add('hidden');
         const displayName = customUsers[normalizedKey].displayName;
-        loginUser(displayName, indexInput);
-        showToast(`Uspešna prijava! Dobrodošli nazad, ${displayName}.`);
+        await loginUser(displayName, indexInput, normalizedKey);
+        showToast(`Dobrodošli, ${displayName}!`);
       } else {
         errorText.textContent = 'Nevažeća kombinacija imena i broja indeksa.';
         errorDiv.classList.remove('hidden');
       }
     }
 
-    // Enter key na login ekranu
     document.addEventListener('DOMContentLoaded', function() {
-      ['login-name', 'login-index'].forEach(id => {
+      ['login-name','login-index'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
       });
@@ -872,291 +647,160 @@
       if (pwdInput) pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPassword(); });
     });
 
-    // Učitavanje odgovarajućih podataka za ulogovanog korisnika
-    function loginUser(name, index) {
-      currentUser = { name, index };
+    async function loginUser(name, index, normalizedKey) {
+      currentUser = { name, index, key: normalizedKey };
       unsavedChanges = false;
-
       document.getElementById('login-screen').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
-      
       document.getElementById('user-display-name').textContent = name;
       document.getElementById('user-display-index').textContent = index;
-
-      const normalizedKey = name.toLowerCase();
-      const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
       const userMeta = customUsers[normalizedKey];
       currentUser.module = userMeta ? userMeta.module : null;
-
-      const savedSubjects = cloudData[userCloudKey];
-      const hasSaved = Array.isArray(savedSubjects) && savedSubjects.length > 0;
-
-      if (hasSaved) {
+      showToast("Učitavanje predmeta...", "info");
+      const savedSubjects = await cloudLoadSubjects(normalizedKey);
+      if (savedSubjects.length > 0) {
         subjects = savedSubjects;
       } else if (currentUser.module && CURRICULUM[currentUser.module]) {
         subjects = generateSubjectsFromCurriculum(currentUser.module);
+        await cloudSaveSubjects(normalizedKey, subjects);
       } else {
         subjects = [];
       }
-
       lucide.createIcons();
       calculateStatistics();
     }
 
-    // Odjava sa sajta
     function handleLogout() {
-      if (unsavedChanges) {
-        if (!confirm('Imate nesačuvane izmene. Da li ste sigurni da želite da se odjavite bez čuvanja?')) return;
-      }
-      unsavedChanges = false;
-      currentUser = null;
-      subjects = [];
-      if (gpaChart) {
-        gpaChart.destroy();
-        gpaChart = null;
-      }
-      
+      if (unsavedChanges && !confirm('Imate nesačuvane izmene. Da li ste sigurni da želite da se odjavite?')) return;
+      unsavedChanges = false; currentUser = null; subjects = [];
+      if (gpaChart) { gpaChart.destroy(); gpaChart = null; }
       document.getElementById('login-name').value = "";
       document.getElementById('login-index').value = "";
       document.getElementById('app-content').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
-      
-      showToast("Odjavljeni ste sa sistema.", "info");
+      showToast("Odjavljeni ste.", "info");
     }
 
-    // Prikaz Toast obaveštenja
+    async function saveUserData() {
+      if (!currentUser) return;
+      await cloudSaveSubjects(currentUser.key, subjects);
+      unsavedChanges = false;
+    }
+    async function manualSave() {
+      showToast("Čuvanje u bazu...", "info");
+      await saveUserData();
+      showToast("Sve izmene su sačuvane!");
+    }
+
     function showToast(text, type = "success") {
       const toast = document.getElementById('toast');
       const toastText = document.getElementById('toast-text');
       const toastIcon = document.getElementById('toast-icon');
-      
       toastText.textContent = text;
-      
-      if (type === "success") {
-        toastIcon.setAttribute('data-lucide', 'check-circle');
-        toastIcon.className = "w-5 h-5 text-emerald-400";
-      } else {
-        toastIcon.setAttribute('data-lucide', 'alert-circle');
-        toastIcon.className = "w-5 h-5 text-rose-400";
-      }
-      
+      toastIcon.setAttribute('data-lucide', type === "success" ? 'check-circle' : 'alert-circle');
+      toastIcon.className = `w-5 h-5 ${type === "success" ? 'text-emerald-400' : 'text-rose-400'}`;
       lucide.createIcons();
-      
-      toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-      toast.classList.add('opacity-100', 'translate-y-0');
-      
-      setTimeout(() => {
-        toast.classList.remove('opacity-100', 'translate-y-0');
-        toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-      }, 3000);
+      toast.classList.remove('opacity-0','translate-y-10','pointer-events-none');
+      toast.classList.add('opacity-100','translate-y-0');
+      setTimeout(() => { toast.classList.remove('opacity-100','translate-y-0'); toast.classList.add('opacity-0','translate-y-10','pointer-events-none'); }, 3000);
     }
 
-    // Čuvanje u oblak (samo na zahtev)
-    async function saveUserData() {
-      if (!currentUser) return;
-      const normalizedKey = currentUser.name.toLowerCase();
-      const userCloudKey = 'subjects_' + normalizedKey.replace(/\s+/g, '_');
-      cloudData[userCloudKey] = subjects;
-      await cloudSave(cloudData);
-      unsavedChanges = false;
-    }
-
-    // Ručno čuvanje preko dugmeta
-    async function manualSave() {
-      showToast("Čuvanje u oblak...", "info");
-      await saveUserData();
-      showToast("Sve izmene su sačuvane u oblaku!");
-    }
-
-    // Računanje globalne statistike
+    // =============================================
+    // STATISTICS
+    // =============================================
     function calculateStatistics() {
       const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
       const totalExams = subjects.length;
-      
-      // Običan prosek
       const sumGrades = passed.reduce((acc, curr) => acc + curr.grade, 0);
       const simpleAverage = passed.length > 0 ? (sumGrades / passed.length).toFixed(2) : "0.00";
       document.getElementById('gpa-simple').textContent = simpleAverage;
-
-      // Ukupni ESPB bodovi
       const sumESPB = passed.reduce((acc, curr) => acc + curr.espb, 0);
       document.getElementById('total-espb').textContent = sumESPB;
-      
-      // Progres traka na osnovu ESPB
       const percent = Math.min(Math.round((sumESPB / 240) * 100), 100);
       document.getElementById('espb-percent').textContent = `${percent}% od potrebnih 240 ESPB`;
       document.getElementById('progress-text').textContent = `${percent}%`;
       document.getElementById('progress-bar').style.width = `${percent}%`;
-
-      // Broj položenih
       document.getElementById('passed-exams').textContent = passed.length;
       document.getElementById('total-exams-count').textContent = `/ ${totalExams}`;
-
-      // Distribucija ocena
-      const distribution = { 10: 0, 9: 0, 8: 0, 7: 0, 6: 0 };
-      passed.forEach(s => {
-        if (distribution[s.grade] !== undefined) {
-          distribution[s.grade]++;
-        }
-      });
-
+      const distribution = {10:0,9:0,8:0,7:0,6:0};
+      passed.forEach(s => { if (distribution[s.grade] !== undefined) distribution[s.grade]++; });
       const distContainer = document.getElementById('grade-distribution');
       distContainer.innerHTML = '';
       const maxCount = Math.max(...Object.values(distribution), 1);
-
       Object.keys(distribution).reverse().forEach(grade => {
         const count = distribution[grade];
         const pct = (count / passed.length) * 100 || 0;
-        distContainer.innerHTML += `
-          <div>
-            <div class="flex justify-between items-center text-xs text-slate-700 font-semibold mb-1">
-              <span>Ocena ${grade}</span>
-              <span class="text-slate-900 font-bold">${count} (${Math.round(pct)}%)</span>
-            </div>
-            <div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200">
-              <div class="bg-indigo-600 h-full rounded-full" style="width: ${(count/maxCount)*100}%"></div>
-            </div>
-          </div>
-        `;
+        distContainer.innerHTML += `<div><div class="flex justify-between items-center text-xs text-slate-700 font-semibold mb-1"><span>Ocena ${grade}</span><span class="text-slate-900 font-bold">${count} (${Math.round(pct)}%)</span></div><div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200"><div class="bg-indigo-600 h-full rounded-full" style="width:${(count/maxCount)*100}%"></div></div></div>`;
       });
-
-      // Označi nesačuvane promene samo ako je korisnik već ulogovan i radi izmene
       if (currentUser) markUnsaved();
-
       renderSemesters();
       updateChart();
     }
 
-    // Renderovanje semestara (1-8)
     function renderSemesters() {
       const container = document.getElementById('semesters-container');
-
-      // Zapamti koji semestri su otvoreni pre ponovnog renderovanja
       const openSemesters = new Set();
-      for (let s = 1; s <= 8; s++) {
-        const el = document.getElementById(`sem-content-${s}`);
-        if (el && !el.classList.contains('hidden')) openSemesters.add(s);
-      }
-
+      for (let s = 1; s <= 8; s++) { const el = document.getElementById(`sem-content-${s}`); if (el && !el.classList.contains('hidden')) openSemesters.add(s); }
       container.innerHTML = '';
-
       const query = document.getElementById('search-input').value.toLowerCase();
       const yearFilter = document.getElementById('filter-year').value;
-
       for (let s = 1; s <= 8; s++) {
         const yearOfSemester = Math.ceil(s / 2);
-        if (yearFilter !== 'all' && yearOfSemester.toString() !== yearFilter) {
-          continue;
-        }
-
+        if (yearFilter !== 'all' && yearOfSemester.toString() !== yearFilter) continue;
         const semSubjects = subjects.filter(sub => sub.semester === s);
         const filteredSemSubjects = semSubjects.filter(sub => sub.name.toLowerCase().includes(query));
-
-        // Kada pretražujemo, preskoči semestar ako nema rezultata
-        if (query !== '' && filteredSemSubjects.length === 0) {
-          continue;
-        }
-
+        if (query !== '' && filteredSemSubjects.length === 0) continue;
         const passedSem = semSubjects.filter(sub => sub.grade !== null && sub.grade >= 6);
         const semESPB = passedSem.reduce((acc, curr) => acc + curr.espb, 0);
         const semGradeSum = passedSem.reduce((acc, curr) => acc + curr.grade, 0);
         const semAvg = passedSem.length > 0 ? (semGradeSum / passedSem.length).toFixed(2) : "0.00";
-
         const semCard = document.createElement('div');
-        semCard.className = "bg-white rounded-2xl shadow-md border border-slate-300/70 overflow-hidden transition-all duration-200";
+        semCard.className = "bg-white rounded-2xl shadow-md border border-slate-300/70 overflow-hidden";
         semCard.innerHTML = `
-          <!-- Semestar Header -->
           <div class="bg-slate-100 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 cursor-pointer" onclick="toggleSemesterCollapse(${s})">
-            <div>
-              <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base">
-                <i data-lucide="folder" class="w-5 h-5 text-slate-500"></i>
-                ${s}. Semestar <span class="text-xs text-slate-500 font-medium">(${yearOfSemester}. Godina)</span>
-              </h3>
-            </div>
+            <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base"><i data-lucide="folder" class="w-5 h-5 text-slate-500"></i>${s}. Semestar <span class="text-xs text-slate-500 font-medium">(${yearOfSemester}. Godina)</span></h3>
             <div class="flex flex-wrap items-center gap-3 text-xs">
-              <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full border border-emerald-200 flex items-center gap-1">
-                <i data-lucide="calculator" class="w-3.5 h-3.5"></i> Prosek: ${semAvg}
-              </span>
-              <span class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full border border-blue-200 flex items-center gap-1">
-                <i data-lucide="award" class="w-3.5 h-3.5"></i> ESPB: ${semESPB}
-              </span>
-              <button onclick="event.stopPropagation(); openAddModal(${s})" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 ml-2 bg-slate-50 border border-slate-300 rounded px-2 py-1 hover:bg-white transition">
-                <i data-lucide="plus" class="w-4 h-4"></i> Dodaj
-              </button>
+              <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full border border-emerald-200 flex items-center gap-1"><i data-lucide="calculator" class="w-3.5 h-3.5"></i> Prosek: ${semAvg}</span>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full border border-blue-200 flex items-center gap-1"><i data-lucide="award" class="w-3.5 h-3.5"></i> ESPB: ${semESPB}</span>
+              <button onclick="event.stopPropagation(); openAddModal(${s})" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 ml-2 bg-slate-50 border border-slate-300 rounded px-2 py-1 hover:bg-white transition"><i data-lucide="plus" class="w-4 h-4"></i> Dodaj</button>
             </div>
           </div>
-
-          <!-- Tabela predmeta -->
           <div id="sem-content-${s}" class="overflow-x-auto${openSemesters.has(s) ? '' : ' hidden'}">
             <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
-              <thead class="bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider">
-                <tr>
-                  <th scope="col" class="px-6 py-3">Predmet</th>
-                  <th scope="col" class="px-6 py-3 w-28 text-center">Ocena</th>
-                  <th scope="col" class="px-6 py-3 w-24 text-center">ESPB</th>
-                  <th scope="col" class="px-6 py-3 w-24 text-center">Status</th>
-                  <th scope="col" class="px-6 py-3 w-28 text-right">Akcije</th>
-                </tr>
-              </thead>
+              <thead class="bg-slate-50 text-slate-600 font-bold text-xs uppercase tracking-wider"><tr><th class="px-6 py-3">Predmet</th><th class="px-6 py-3 w-28 text-center">Ocena</th><th class="px-6 py-3 w-24 text-center">ESPB</th><th class="px-6 py-3 w-24 text-center">Status</th><th class="px-6 py-3 w-28 text-right">Akcije</th></tr></thead>
               <tbody class="divide-y divide-slate-100 bg-white">
-                ${filteredSemSubjects.length === 0 ? `
-                  <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-slate-500 font-medium">U ovom semestru nema unetih predmeta. Kliknite na "Dodaj" desno da unesete svoj prvi ispit.</td>
-                  </tr>
-                ` : filteredSemSubjects.map(sub => {
-                  const isPassed = sub.grade !== null && sub.grade >= 6;
-                  return `
-                    <tr class="hover:bg-slate-50 transition">
+                ${filteredSemSubjects.length === 0 ? `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 font-medium">Nema predmeta u ovom semestru.</td></tr>` :
+                  filteredSemSubjects.map(sub => {
+                    const isPassed = sub.grade !== null && sub.grade >= 6;
+                    return `<tr class="hover:bg-slate-50 transition">
                       <td class="px-6 py-4 font-semibold text-slate-900">${sub.name}</td>
-                      <td class="px-6 py-4 text-center">
-                        <span class="inline-block px-3 py-1 text-sm font-black rounded-lg ${
-                          isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
-                        }">
-                          ${sub.grade || '—'}
-                        </span>
-                      </td>
+                      <td class="px-6 py-4 text-center"><span class="inline-block px-3 py-1 text-sm font-black rounded-lg ${isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}">${sub.grade || '—'}</span></td>
                       <td class="px-6 py-4 text-center font-bold text-slate-700">${sub.espb}</td>
-                      <td class="px-6 py-4 text-center">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
-                        }">
-                          <span class="w-1.5 h-1.5 rounded-full ${isPassed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>
-                          ${isPassed ? 'Položen' : 'Sluša se'}
-                        </span>
-                      </td>
+                      <td class="px-6 py-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}"><span class="w-1.5 h-1.5 rounded-full ${isPassed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>${isPassed ? 'Položen' : 'Sluša se'}</span></td>
                       <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                        <button onclick="openEditModal('${sub.id}')" class="text-slate-600 hover:text-indigo-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Uredi">
-                          <i data-lucide="edit-3" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteSubject('${sub.id}')" class="text-slate-500 hover:text-rose-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Obriši">
-                          <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                        <button onclick="openEditModal('${sub.id}')" class="text-slate-600 hover:text-indigo-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Uredi"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="deleteSubject('${sub.id}')" class="text-slate-500 hover:text-rose-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Obriši"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                       </td>
-                    </tr>
-                  `;
-                }).join('')}
+                    </tr>`;
+                  }).join('')}
               </tbody>
             </table>
-          </div>
-        `;
+          </div>`;
         container.appendChild(semCard);
       }
       lucide.createIcons();
     }
 
-    // Filtriranje
-    function filterSubjects() {
-      renderSemesters();
-    }
+    function filterSubjects() { renderSemesters(); }
+    function toggleSemesterCollapse(s) { document.getElementById(`sem-content-${s}`).classList.toggle('hidden'); }
 
-    // Postavi mod modalnog prozora (elective ili manual)
+    // =============================================
+    // MODAL
+    // =============================================
     function setModalMode(mode) {
       const electiveSection = document.getElementById('modal-elective-section');
-      const nameInput = document.getElementById('modal-name');
-      const espbInput = document.getElementById('modal-espb');
       const btnElective = document.getElementById('btn-mode-elective');
       const btnManual = document.getElementById('btn-mode-manual');
-
       if (mode === 'elective') {
         electiveSection.classList.remove('hidden');
         btnElective.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700';
@@ -1165,22 +809,17 @@
         electiveSection.classList.add('hidden');
         btnElective.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-slate-200 bg-white text-slate-600';
         btnManual.className = 'flex-1 py-2 text-xs font-bold rounded-lg border-2 border-emerald-500 bg-emerald-50 text-emerald-700';
-        nameInput.value = '';
-        espbInput.value = '3';
+        document.getElementById('modal-name').value = '';
+        document.getElementById('modal-espb').value = '3';
       }
     }
-
-    // Kada korisnik bira iz liste izbornih predmeta
     function onElectiveSelected() {
       const sel = document.getElementById('modal-elective-select');
       const opt = sel.options[sel.selectedIndex];
       if (!opt.value) return;
-      const espb = opt.dataset.espb;
       document.getElementById('modal-name').value = opt.value;
-      document.getElementById('modal-espb').value = espb;
+      document.getElementById('modal-espb').value = opt.dataset.espb;
     }
-
-    // Otvaranje modalnog prozora za dodavanje
     function openAddModal(defaultSem = 1) {
       document.getElementById('modal-title').textContent = "Dodaj Predmet";
       document.getElementById('modal-subject-id').value = "";
@@ -1188,141 +827,79 @@
       document.getElementById('modal-grade').value = "null";
       document.getElementById('modal-espb').value = "3";
       document.getElementById('modal-semester').value = defaultSem.toString();
-
-      // Pokaži/sakrij elective sekciju i mode picker
-      const modePicker = document.getElementById('modal-mode-picker');
-      const electiveSection = document.getElementById('modal-elective-section');
       const module = currentUser ? currentUser.module : null;
-
       if (module && CURRICULUM[module]) {
-        modePicker.classList.remove('hidden');
-        electiveSection.classList.remove('hidden');
+        document.getElementById('modal-mode-picker').classList.remove('hidden');
+        document.getElementById('modal-elective-section').classList.remove('hidden');
         setModalMode('elective');
-
-        // Popuni dropdown izbornih predmeta za taj semestar
         const electives = getElectivesForSemester(module, parseInt(defaultSem));
         const sel = document.getElementById('modal-elective-select');
         sel.innerHTML = '<option value="">— Izaberi predmet —</option>';
-        electives.forEach(e => {
-          const opt = document.createElement('option');
-          opt.value = e.name;
-          opt.dataset.espb = e.espb;
-          opt.textContent = `${e.name} (${e.espb} ESPB)`;
-          sel.appendChild(opt);
-        });
-        if (electives.length === 0) {
-          sel.innerHTML = '<option value="">Nema izbornih za ovaj semestar</option>';
-        }
+        electives.forEach(e => { const opt = document.createElement('option'); opt.value = e.name; opt.dataset.espb = e.espb; opt.textContent = `${e.name} (${e.espb} ESPB)`; sel.appendChild(opt); });
+        if (electives.length === 0) sel.innerHTML = '<option value="">Nema izbornih za ovaj semestar</option>';
       } else {
-        modePicker.classList.add('hidden');
-        electiveSection.classList.add('hidden');
+        document.getElementById('modal-mode-picker').classList.add('hidden');
+        document.getElementById('modal-elective-section').classList.add('hidden');
         setModalMode('manual');
       }
-
       document.getElementById('subject-modal').classList.remove('hidden');
     }
-
-    // Otvaranje modalnog prozora za promenu
     function openEditModal(id) {
       const sub = subjects.find(s => s.id === id);
       if (!sub) return;
-
       document.getElementById('modal-title').textContent = "Izmeni Predmet";
       document.getElementById('modal-subject-id').value = sub.id;
       document.getElementById('modal-name').value = sub.name;
       document.getElementById('modal-grade').value = sub.grade === null ? "null" : sub.grade.toString();
       document.getElementById('modal-espb').value = sub.espb.toString();
       document.getElementById('modal-semester').value = sub.semester.toString();
-
-      // Sakrij mode picker i elective sekciju pri izmeni
       document.getElementById('modal-mode-picker').classList.add('hidden');
       document.getElementById('modal-elective-section').classList.add('hidden');
-
       document.getElementById('subject-modal').classList.remove('hidden');
     }
+    function closeModal() { document.getElementById('subject-modal').classList.add('hidden'); }
 
-    function closeModal() {
-      document.getElementById('subject-modal').classList.add('hidden');
-    }
-
-    // Animacija slavlja kada se unese ocena
     function triggerGradeCelebration() {
-      // Checkmark overlay
       const overlay = document.createElement('div');
       overlay.className = 'grade-celebration';
-      overlay.innerHTML = `
-        <div class="checkmark-circle">
-          <svg viewBox="0 0 52 52">
-            <polyline points="14,26 22,34 38,18" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
-      `;
+      overlay.innerHTML = `<div class="checkmark-circle"><svg viewBox="0 0 52 52"><polyline points="14,26 22,34 38,18" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`;
       document.body.appendChild(overlay);
       setTimeout(() => overlay.remove(), 1500);
-
-      // Firework particles
-      const colors = ['#10b981','#6366f1','#f59e0b','#ef4444','#3b82f6','#ec4899','#14b8a6'];
-      const cx = window.innerWidth / 2;
-      const cy = window.innerHeight / 2;
-      const count = 28;
-
-      for (let i = 0; i < count; i++) {
-        const angle = (360 / count) * i;
-        const dist = 80 + Math.random() * 120;
-        const rad = (angle * Math.PI) / 180;
-        const tx = Math.cos(rad) * dist + (Math.random() - 0.5) * 40;
-        const ty = Math.sin(rad) * dist + (Math.random() - 0.5) * 40;
-
+      const colors = ['#10b981','#6366f1','#f59e0b','#ef4444','#3b82f6','#ec4899'];
+      const cx = window.innerWidth/2, cy = window.innerHeight/2;
+      for (let i = 0; i < 28; i++) {
+        const angle = (360/28)*i, dist = 80 + Math.random()*120, rad = (angle*Math.PI)/180;
+        const tx = Math.cos(rad)*dist + (Math.random()-0.5)*40, ty = Math.sin(rad)*dist + (Math.random()-0.5)*40;
         const p = document.createElement('div');
         p.className = 'particle';
-        p.style.cssText = `
-          left: ${cx}px; top: ${cy}px;
-          background: ${colors[i % colors.length]};
-          width: ${5 + Math.random() * 7}px;
-          height: ${5 + Math.random() * 7}px;
-          --tx: ${tx}px; --ty: ${ty}px;
-          animation-duration: ${0.6 + Math.random() * 0.5}s;
-          animation-delay: ${Math.random() * 0.15}s;
-        `;
+        p.style.cssText = `left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};width:${5+Math.random()*7}px;height:${5+Math.random()*7}px;--tx:${tx}px;--ty:${ty}px;animation-duration:${0.6+Math.random()*0.5}s;animation-delay:${Math.random()*0.15}s;`;
         document.body.appendChild(p);
         setTimeout(() => p.remove(), 1200);
       }
     }
 
-    // Čuvanje ispita (novi ili izmenjeni)
     function saveSubject(event) {
       event.preventDefault();
-      
       const id = document.getElementById('modal-subject-id').value;
       const name = document.getElementById('modal-name').value.trim();
       const gradeVal = document.getElementById('modal-grade').value;
       const grade = gradeVal === "null" ? null : parseInt(gradeVal);
       const espb = parseInt(document.getElementById('modal-espb').value);
       const semester = parseInt(document.getElementById('modal-semester').value);
-
       if (id) {
         const index = subjects.findIndex(s => s.id === id);
-        if (index !== -1) {
-          subjects[index] = { ...subjects[index], name, grade, espb, semester };
-          if (grade !== null) triggerGradeCelebration();
-          showToast("Predmet uspešno izmenjen!");
-        }
+        if (index !== -1) { subjects[index] = {...subjects[index], name, grade, espb, semester}; if (grade !== null) triggerGradeCelebration(); showToast("Predmet uspešno izmenjen!"); }
       } else {
-        const newId = 'custom-' + Date.now();
-        subjects.push({ id: newId, name, grade, espb, semester });
-        if (grade !== null) triggerGradeCelebration();
-        showToast("Novi predmet je uspešno dodat!");
+        subjects.push({ id: 'custom-' + Date.now(), name, grade, espb, semester });
+        if (grade !== null) triggerGradeCelebration(); showToast("Novi predmet je dodat!");
       }
-
       closeModal();
       calculateStatistics();
     }
 
-    // Brisanje predmeta
     function deleteSubject(id) {
       const sub = subjects.find(s => s.id === id);
       if (!sub) return;
-      
       if (confirm(`Da li ste sigurni da želite da obrišete predmet "${sub.name}"?`)) {
         subjects = subjects.filter(s => s.id !== id);
         showToast("Predmet je obrisan.", "info");
@@ -1330,140 +907,52 @@
       }
     }
 
-    // Prikupljanje prosečnih ocena po semestrima za grafikon
+    // =============================================
+    // CHART
+    // =============================================
     function getSemesterGPAs() {
       const semGPAs = [];
       for (let s = 1; s <= 8; s++) {
         const semSubs = subjects.filter(sub => sub.semester === s && sub.grade !== null && sub.grade >= 6);
-        if (semSubs.length > 0) {
-          const sum = semSubs.reduce((acc, curr) => acc + curr.grade, 0);
-          semGPAs.push((sum / semSubs.length).toFixed(2));
-        } else {
-          semGPAs.push(0);
-        }
+        semGPAs.push(semSubs.length > 0 ? (semSubs.reduce((acc, curr) => acc + curr.grade, 0) / semSubs.length).toFixed(2) : 0);
       }
       return semGPAs;
     }
-
-    // Renderovanje / ažuriranje grafikona
     function updateChart() {
       const data = getSemesterGPAs();
-      const labels = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8'];
-
-      if (gpaChart) {
-        gpaChart.destroy();
-        gpaChart = null;
-      }
-
+      if (gpaChart) { gpaChart.destroy(); gpaChart = null; }
       const canvas = document.getElementById('gpaChart');
       if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      gpaChart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Prosečna ocena',
-              data: data,
-              borderColor: 'rgb(79, 70, 229)',
-              backgroundColor: 'rgba(79, 70, 229, 0.1)',
-              tension: 0.3,
-              fill: true,
-              borderWidth: 3,
-              pointBackgroundColor: 'rgb(79, 70, 229)',
-              pointHoverRadius: 7
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: {
-                min: 5,
-                max: 10,
-                grid: {
-                  color: 'rgba(148, 163, 184, 0.1)'
-                },
-                ticks: {
-                  stepSize: 1
-                }
-              },
-              x: {
-                grid: { display: false }
-              }
-            }
-          }
-        });
+      gpaChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: { labels:['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6','Sem 7','Sem 8'], datasets:[{label:'Prosečna ocena',data,borderColor:'rgb(79,70,229)',backgroundColor:'rgba(79,70,229,0.1)',tension:0.3,fill:true,borderWidth:3,pointBackgroundColor:'rgb(79,70,229)',pointHoverRadius:7}] },
+        options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{min:5,max:10,grid:{color:'rgba(148,163,184,0.1)'},ticks:{stepSize:1}},x:{grid:{display:false}}} }
+      });
     }
 
-    // "Šta-ako" simulator
+    // =============================================
+    // WHAT-IF
+    // =============================================
     function calculateWhatIf() {
       const target = parseFloat(document.getElementById('target-gpa').value);
-      if (isNaN(target) || target < 6.0 || target > 10.0) {
-        showToast("Unesite ispravan ciljani prosek (6.0 - 10.0)", "error");
-        return;
-      }
-
+      if (isNaN(target) || target < 6.0 || target > 10.0) { showToast("Unesite ispravan ciljani prosek (6.0 - 10.0)", "error"); return; }
       const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
       const remaining = subjects.filter(s => s.grade === null);
-
       const resultBox = document.getElementById('whatif-result');
       const messageDiv = document.getElementById('whatif-message');
       resultBox.classList.remove('hidden');
-
-      if (remaining.length === 0) {
-        messageDiv.innerHTML = `
-          <div class="text-amber-400 font-bold mb-1">Nema preostalih ispita!</div>
-          <p class="text-xs text-slate-300">Već imate unete sve ocene. Vaš trenutni prosek je <span class="text-emerald-400 font-bold">${document.getElementById('gpa-simple').textContent}</span>.</p>
-        `;
-        return;
-      }
-
+      if (remaining.length === 0) { messageDiv.innerHTML = `<div class="text-amber-400 font-bold mb-1">Nema preostalih ispita!</div><p class="text-xs text-slate-300">Vaš trenutni prosek je <span class="text-emerald-400 font-bold">${document.getElementById('gpa-simple').textContent}</span>.</p>`; return; }
       const totalCount = passed.length + remaining.length;
-      const targetSum = target * totalCount;
       const currentSum = passed.reduce((acc, curr) => acc + curr.grade, 0);
-      const neededSum = targetSum - currentSum;
-      const neededAverage = neededSum / remaining.length;
-
-      if (neededAverage <= 6.0) {
-        messageDiv.innerHTML = `
-          <div class="text-emerald-400 font-bold text-base mb-1">Cilj je lako dostižan!</div>
-          <p class="text-xs text-slate-300">
-            Da biste ostvarili ukupan prosek od <strong class="text-white">${target.toFixed(2)}</strong>, na preostalih <strong>${remaining.length} ispita</strong> potreban Vam je prosek od samo <strong class="text-emerald-400 text-sm">6.00</strong> (dovoljno je samo da položite).
-          </p>
-        `;
-      } else if (neededAverage > 10.0) {
-        messageDiv.innerHTML = `
-          <div class="text-rose-400 font-bold text-base mb-1">Cilj je matematički nemoguće</div>
-          <p class="text-xs text-slate-300">
-            Čak i da dobijete sve same <strong class="text-white">desetke (10)</strong> na preostalih ${remaining.length} ispita, Vaš maksimalni mogući prosek bi bio <strong class="text-amber-400 font-bold">${((currentSum + (10 * remaining.length)) / totalCount).toFixed(2)}</strong>.
-          </p>
-        `;
-      } else {
-        messageDiv.innerHTML = `
-          <div class="text-indigo-400 font-bold text-base mb-1">Cilj je dostižan!</div>
-          <p class="text-xs text-slate-300">
-            Da biste ostvarili željeni prosek od <strong class="text-white">${target.toFixed(2)}</strong>, na preostalih <strong>${remaining.length} ispita</strong> morate ostvariti prosečnu ocenu od najmanje <strong class="text-emerald-400 text-sm">${neededAverage.toFixed(2)}</strong>.
-          </p>
-        `;
-      }
+      const neededAverage = (target * totalCount - currentSum) / remaining.length;
+      if (neededAverage <= 6.0) messageDiv.innerHTML = `<div class="text-emerald-400 font-bold text-base mb-1">Cilj je lako dostižan!</div><p class="text-xs text-slate-300">Na preostalih <strong>${remaining.length} ispita</strong> dovoljno je samo da položite.</p>`;
+      else if (neededAverage > 10.0) { const maxAvg = ((currentSum + 10*remaining.length)/totalCount).toFixed(2); messageDiv.innerHTML = `<div class="text-rose-400 font-bold text-base mb-1">Cilj je matematički nemoguće</div><p class="text-xs text-slate-300">Čak i sa svim desetkama, maksimalni prosek bi bio <strong class="text-amber-400">${maxAvg}</strong>.</p>`; }
+      else messageDiv.innerHTML = `<div class="text-indigo-400 font-bold text-base mb-1">Cilj je dostižan!</div><p class="text-xs text-slate-300">Na preostalih <strong>${remaining.length} ispita</strong> potrebna prosečna ocena: <strong class="text-emerald-400 text-sm">${neededAverage.toFixed(2)}</strong>.</p>`;
     }
 
-    // Skupljanje i širenje semestara na klik
-    function toggleSemesterCollapse(s) {
-      const content = document.getElementById(`sem-content-${s}`);
-      if (content.classList.contains('hidden')) {
-        content.classList.remove('hidden');
-      } else {
-        content.classList.add('hidden');
-      }
-    }
-
-    // --- ADMIN FUNKCIONALNOSTI ---
-
+    // =============================================
+    // ADMIN PANEL
+    // =============================================
     function openAdminPasswordModal() {
       document.getElementById('admin-password-input').value = '';
       document.getElementById('admin-password-error').classList.add('hidden');
@@ -1471,51 +960,26 @@
       document.getElementById('admin-step-panel').classList.add('hidden');
       document.getElementById('admin-master-modal').classList.remove('hidden');
     }
-
-    function closeAdminMasterModal() {
-      document.getElementById('admin-master-modal').classList.add('hidden');
-    }
-
-    // Keep old names working just in case
-    function closeAdminPasswordModal() { closeAdminMasterModal(); }
-    function closeAdminModal() { closeAdminMasterModal(); }
-    function openAdminModal() {
-      document.getElementById('admin-step-password').classList.add('hidden');
-      document.getElementById('admin-step-panel').classList.remove('hidden');
-      renderAdminUsersList();
-    }
-
+    function closeAdminMasterModal() { document.getElementById('admin-master-modal').classList.add('hidden'); }
     function checkAdminPassword() {
       const pwd = document.getElementById('admin-password-input').value;
       if (pwd === 'admin') {
         document.getElementById('admin-password-error').classList.add('hidden');
-        openAdminModal();
+        document.getElementById('admin-step-password').classList.add('hidden');
+        document.getElementById('admin-step-panel').classList.remove('hidden');
+        renderAdminUsersList();
       } else {
         document.getElementById('admin-password-error').classList.remove('hidden');
       }
     }
 
-
-
-    const MODULE_LABELS = {
-      kamera: 'Kamera',
-      montaza: 'Montaža',
-      dizajn_zvuka: 'Dizajn zvuka',
-      dizajn_svetla: 'Dizajn svetla',
-      animacija: 'Animacija i VFX',
-      produkcija: 'Produkcija'
-    };
+    const MODULE_LABELS = { kamera:'Kamera', montaza:'Montaža', dizajn_zvuka:'Dizajn zvuka', dizajn_svetla:'Dizajn svetla', animacija:'Animacija i VFX', produkcija:'Produkcija' };
 
     function renderAdminUsersList() {
       const container = document.getElementById('admin-users-list');
       container.innerHTML = '';
-
       const keys = Object.keys(customUsers);
-      if (keys.length === 0) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema registrovanih studenata.</p>';
-        return;
-      }
-
+      if (keys.length === 0) { container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema registrovanih studenata.</p>'; return; }
       keys.forEach(key => {
         const u = customUsers[key];
         const moduleLabel = u.module ? MODULE_LABELS[u.module] || u.module : '—';
@@ -1523,24 +987,16 @@
         row.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm";
         row.innerHTML = `
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs uppercase">
-              ${u.displayName.charAt(0)}
-            </div>
+            <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs uppercase">${u.displayName.charAt(0)}</div>
             <div>
               <p class="text-xs font-bold text-slate-900">${u.displayName}</p>
               <p class="text-[10px] text-slate-500">Indeks: ${u.index} · Modul: ${moduleLabel}</p>
             </div>
           </div>
-          <div>
-            ${u.isSystem
-              ? `<span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold px-2 py-1 rounded-lg">Sistemski</span>`
-              : `<div class="flex gap-1">
-                   <button onclick="openEditStudentModal('${key}')" class="text-indigo-500 hover:text-indigo-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-50 transition">Izmeni</button>
-                   <button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-rose-100 hover:bg-rose-50 transition">Ukloni</button>
-                 </div>`
-            }
-          </div>
-        `;
+          <div>${u.isSystem
+            ? `<span class="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-100 font-bold px-2 py-1 rounded-lg">Sistemski</span>`
+            : `<div class="flex gap-1"><button onclick="openEditStudentModal('${key}')" class="text-indigo-500 hover:text-indigo-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-indigo-100 hover:bg-indigo-50 transition">Izmeni</button><button onclick="adminDeleteUser('${key}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-rose-100 hover:bg-rose-50 transition">Ukloni</button></div>`
+          }</div>`;
         container.appendChild(row);
       });
     }
@@ -1550,35 +1006,30 @@
       const indexInput = document.getElementById('admin-new-index').value.trim();
       const moduleInput = document.getElementById('admin-new-module').value;
       const errDiv = document.getElementById('admin-add-error');
-
-      if (!nameInput || !indexInput) {
-        errDiv.textContent = 'Molimo popunite ime i broj indeksa.';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-      if (!moduleInput) {
-        errDiv.textContent = 'Molimo izaberite modul (smer) za studenta.';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
+      if (!nameInput || !indexInput) { errDiv.textContent = 'Molimo popunite ime i broj indeksa.'; errDiv.classList.remove('hidden'); return; }
+      if (!moduleInput) { errDiv.textContent = 'Molimo izaberite modul.'; errDiv.classList.remove('hidden'); return; }
       const normalizedKey = nameInput.toLowerCase();
-      if (customUsers[normalizedKey]) {
-        errDiv.textContent = 'Korisnik sa tim imenom već postoji!';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
+      if (customUsers[normalizedKey]) { errDiv.textContent = 'Korisnik već postoji!'; errDiv.classList.remove('hidden'); return; }
       errDiv.classList.add('hidden');
-      customUsers[normalizedKey] = { index: indexInput, displayName: nameInput, module: moduleInput, isSystem: false };
-      cloudData.users = customUsers;
-      await cloudSave(cloudData);
-
-      document.getElementById('admin-new-name').value = '';
-      document.getElementById('admin-new-index').value = '';
+      const userData = {
+        displayName: nameInput, index: indexInput, module: moduleInput,
+        parentName: document.getElementById('admin-new-parent-name').value.trim(),
+        birthDate: document.getElementById('admin-new-birth-date').value,
+        birthPlace: document.getElementById('admin-new-birth-place').value.trim(),
+        fundingStatus: document.getElementById('admin-new-funding').value,
+        currentYearOfStudy: parseInt(document.getElementById('admin-new-study-year').value),
+        enrollmentSchoolYear: document.getElementById('admin-new-enrollment-year').value.trim(),
+        firstEnrollmentYear: document.getElementById('admin-new-first-enrollment').value.trim(),
+        studyProgramDetailed: document.getElementById('admin-new-study-program').value.trim()
+      };
+      const ok = await cloudAddUser(normalizedKey, userData);
+      if (!ok) { errDiv.textContent = 'Greška pri čuvanju u bazu.'; errDiv.classList.remove('hidden'); return; }
+      customUsers[normalizedKey] = { ...userData, isSystem: false };
+      // Reset form
+      ['admin-new-name','admin-new-index','admin-new-parent-name','admin-new-birth-date','admin-new-birth-place','admin-new-enrollment-year','admin-new-first-enrollment','admin-new-study-program'].forEach(id => { document.getElementById(id).value = ''; });
       document.getElementById('admin-new-module').value = '';
       renderAdminUsersList();
-      showToast(`Student ${nameInput} je uspešno registrovan!`);
+      showToast(`Student ${nameInput} je registrovan!`);
     }
 
     function openEditStudentModal(key) {
@@ -1587,427 +1038,323 @@
       document.getElementById('edit-student-key').value = key;
       document.getElementById('edit-student-name').value = u.displayName;
       document.getElementById('edit-student-index').value = u.index;
+      document.getElementById('edit-student-parent-name').value = u.parentName || '';
+      document.getElementById('edit-student-birth-date').value = u.birthDate || '';
+      document.getElementById('edit-student-birth-place').value = u.birthPlace || '';
+      document.getElementById('edit-student-funding').value = u.fundingStatus || 'budzet';
+      document.getElementById('edit-student-study-year').value = u.currentYearOfStudy || 1;
+      document.getElementById('edit-student-enrollment-year').value = u.enrollmentSchoolYear || '';
+      document.getElementById('edit-student-first-enrollment').value = u.firstEnrollmentYear || '';
       document.getElementById('edit-student-module').value = u.module || '';
+      document.getElementById('edit-student-study-program').value = u.studyProgramDetailed || '';
       document.getElementById('edit-student-error').classList.add('hidden');
       document.getElementById('admin-edit-modal').classList.remove('hidden');
     }
-
-    function closeEditStudentModal() {
-      document.getElementById('admin-edit-modal').classList.add('hidden');
-    }
+    function closeEditStudentModal() { document.getElementById('admin-edit-modal').classList.add('hidden'); }
 
     async function saveEditedStudent() {
       const oldKey = document.getElementById('edit-student-key').value;
       const newName = document.getElementById('edit-student-name').value.trim();
       const newIndex = document.getElementById('edit-student-index').value.trim();
-      const newModule = document.getElementById('edit-student-module').value;
       const errDiv = document.getElementById('edit-student-error');
-
-      if (!newName || !newIndex) {
-        errDiv.textContent = 'Ime i broj indeksa su obavezni.';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
+      if (!newName || !newIndex) { errDiv.textContent = 'Ime i broj indeksa su obavezni.'; errDiv.classList.remove('hidden'); return; }
       const newKey = newName.toLowerCase();
-
-      // If name changed, check for conflict
-      if (newKey !== oldKey && customUsers[newKey]) {
-        errDiv.textContent = 'Korisnik sa tim imenom već postoji.';
-        errDiv.classList.remove('hidden');
-        return;
-      }
-
+      if (newKey !== oldKey && customUsers[newKey]) { errDiv.textContent = 'Korisnik sa tim imenom već postoji.'; errDiv.classList.remove('hidden'); return; }
       errDiv.classList.add('hidden');
-
-      const oldUser = customUsers[oldKey];
-
-      // If name changed, migrate the subjects data to new key
-      if (newKey !== oldKey) {
-        const oldCloudKey = 'subjects_' + oldKey.replace(/\s+/g, '_');
-        const newCloudKey = 'subjects_' + newKey.replace(/\s+/g, '_');
-        if (cloudData[oldCloudKey]) {
-          cloudData[newCloudKey] = cloudData[oldCloudKey];
-          delete cloudData[oldCloudKey];
-        }
-        delete customUsers[oldKey];
-      }
-
-      customUsers[newKey] = {
-        ...oldUser,
-        displayName: newName,
-        index: newIndex,
-        module: newModule || oldUser.module
+      const userData = {
+        displayName: newName, index: newIndex,
+        module: document.getElementById('edit-student-module').value,
+        parentName: document.getElementById('edit-student-parent-name').value.trim(),
+        birthDate: document.getElementById('edit-student-birth-date').value,
+        birthPlace: document.getElementById('edit-student-birth-place').value.trim(),
+        fundingStatus: document.getElementById('edit-student-funding').value,
+        currentYearOfStudy: parseInt(document.getElementById('edit-student-study-year').value),
+        enrollmentSchoolYear: document.getElementById('edit-student-enrollment-year').value.trim(),
+        firstEnrollmentYear: document.getElementById('edit-student-first-enrollment').value.trim(),
+        studyProgramDetailed: document.getElementById('edit-student-study-program').value.trim()
       };
-
-      cloudData.users = customUsers;
-      await cloudSave(cloudData);
-
+      const ok = await cloudUpdateUser(oldKey, newKey, userData);
+      if (!ok) { errDiv.textContent = 'Greška pri ažuriranju u bazi.'; errDiv.classList.remove('hidden'); return; }
+      const oldUser = customUsers[oldKey];
+      if (newKey !== oldKey) delete customUsers[oldKey];
+      customUsers[newKey] = { ...oldUser, ...userData };
       closeEditStudentModal();
       renderAdminUsersList();
-      showToast(`Podaci studenta ${newName} su ažurirani.`);
-    }
-
-    // =============================================
-    // ŠTAMPANJE UVERENJA O OCENAMA
-    // =============================================
-    function printGradeStatement() {
-      if (!currentUser) return;
-
-      const MODULE_FULL_LABELS = {
-        kamera: 'Kamera',
-        montaza: 'Montaža u audiovizuelnim medijima',
-        dizajn_zvuka: 'Dizajn zvuka',
-        dizajn_svetla: 'Dizajn svetla',
-        animacija: 'Animacija i vizuelni efekti',
-        produkcija: 'Produkcija za audiovizuelne medije'
-      };
-
-      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
-      const totalESPB = passed.reduce((a, c) => a + c.espb, 0);
-      const simpleAvg = passed.length > 0
-        ? (passed.reduce((a, c) => a + c.grade, 0) / passed.length).toFixed(2)
-        : '0.00';
-      const moduleLabel = MODULE_FULL_LABELS[currentUser.module] || '—';
-
-      // Build rows grouped by semester
-      let semRows = '';
-      for (let s = 1; s <= 8; s++) {
-        const semSubjects = subjects.filter(sub => sub.semester === s && sub.grade !== null && sub.grade >= 6);
-        if (semSubjects.length === 0) continue;
-        const yearNum = Math.ceil(s / 2);
-
-        semRows += `
-          <tr class="sem-header">
-            <td colspan="4">${s}. Semestar — ${yearNum}. Godina</td>
-          </tr>
-        `;
-        semSubjects.forEach((sub, idx) => {
-          const gradeLabel = sub.grade === 10 ? 'Odličan (10)'
-            : sub.grade === 9 ? 'Odličan (9)'
-            : sub.grade === 8 ? 'Vrlo dobar (8)'
-            : sub.grade === 7 ? 'Dobar (7)'
-            : sub.grade === 6 ? 'Dovoljan (6)'
-            : sub.grade;
-          semRows += `
-            <tr class="${idx % 2 === 0 ? 'even' : 'odd'}">
-              <td>${sub.name}</td>
-              <td class="center">${sub.espb}</td>
-              <td class="center grade-${sub.grade}">${gradeLabel}</td>
-              <td class="center">Položen</td>
-            </tr>
-          `;
-        });
-      }
-
-      const today = new Date();
-      const dateStr = today.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
-
-      // Determine enrollment year from index (last 2 digits after /)
-      const indexParts = currentUser.index.split('/');
-      const enrollmentYear = indexParts.length > 1
-        ? '20' + indexParts[indexParts.length - 1].trim()
-        : null;
-
-      // Determine current study year from highest semester with a passed grade
-      let highestPassedSemester = 0;
-      passed.forEach(s => {
-        if (s.semester > highestPassedSemester) highestPassedSemester = s.semester;
-      });
-      const currentStudyYear = highestPassedSemester > 0
-        ? Math.ceil(highestPassedSemester / 2)
-        : 1;
-      const studyYearLabel = currentStudyYear === 1 ? 'Prva (I)'
-        : currentStudyYear === 2 ? 'Druga (II)'
-        : currentStudyYear === 3 ? 'Treća (III)'
-        : currentStudyYear === 4 ? 'Četvrta (IV)'
-        : `${currentStudyYear}.`;
-
-      const printWindow = window.open('', '_blank', 'width=850,height=1100');
-      printWindow.document.write(`<!DOCTYPE html>
-<html lang="sr">
-<head>
-  <meta charset="UTF-8">
-  <title>Uverenje o položenim ispitima — ${currentUser.name}</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      font-size: 11px;
-      color: #1e293b;
-      background: #fff;
-      padding: 40px 50px;
-    }
-
-    /* HEADER */
-    .doc-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 3px solid #0f172a;
-      padding-bottom: 16px;
-      margin-bottom: 20px;
-    }
-    .doc-header .institution {
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-      line-height: 1.4;
-    }
-    .doc-header .institution .subtitle {
-      font-weight: 400;
-      font-size: 11px;
-      color: #475569;
-    }
-    .doc-header .doc-meta {
-      text-align: right;
-      font-size: 10px;
-      color: #64748b;
-    }
-    .doc-header .doc-meta strong {
-      display: block;
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 4px;
-    }
-
-    /* TITLE */
-    .doc-title {
-      text-align: center;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: #0f172a;
-      margin: 24px 0 6px;
-    }
-    .doc-subtitle {
-      text-align: center;
-      font-size: 10px;
-      color: #94a3b8;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
-    }
-
-    /* STUDENT INFO */
-    .student-info {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 16px 20px;
-      margin-bottom: 24px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px 30px;
-    }
-    .info-row { display: flex; gap: 6px; align-items: baseline; }
-    .info-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.06em; min-width: 95px; }
-    .info-value { font-size: 12px; font-weight: 700; color: #0f172a; }
-
-    /* TABLE */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 24px;
-    }
-    thead th {
-      background: #0f172a;
-      color: #f8fafc;
-      font-size: 9px;
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-      font-weight: 700;
-      padding: 10px 12px;
-      text-align: left;
-    }
-    thead th.center { text-align: center; }
-    tbody td { padding: 8px 12px; vertical-align: middle; border-bottom: 1px solid #e2e8f0; }
-    tbody td.center { text-align: center; }
-    tr.even td { background: #fff; }
-    tr.odd td { background: #f8fafc; }
-    tr.sem-header td {
-      background: #1e293b;
-      color: #e2e8f0;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 8px 12px;
-      letter-spacing: 0.04em;
-    }
-
-    .grade-10 { color: #059669; font-weight: 700; }
-    .grade-9  { color: #0284c7; font-weight: 700; }
-    .grade-8  { color: #7c3aed; font-weight: 700; }
-    .grade-7  { color: #d97706; font-weight: 700; }
-    .grade-6  { color: #dc2626; font-weight: 700; }
-
-    /* SUMMARY */
-    .summary-box {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    .summary-item {
-      flex: 1;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 14px 16px;
-      text-align: center;
-    }
-    .summary-item .s-label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: #94a3b8; letter-spacing: 0.06em; margin-bottom: 6px; }
-    .summary-item .s-value { font-size: 22px; font-weight: 800; color: #0f172a; }
-    .summary-item.highlight { border-color: #10b981; background: #f0fdf4; }
-    .summary-item.highlight .s-value { color: #059669; }
-
-    /* SIGNATURE */
-    .signature-area {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 48px;
-      padding-top: 16px;
-      border-top: 1px solid #e2e8f0;
-    }
-    .sig-block { text-align: center; width: 200px; }
-    .sig-line { border-bottom: 1px solid #1e293b; margin-bottom: 6px; height: 32px; }
-    .sig-label { font-size: 10px; color: #64748b; font-weight: 600; }
-
-    /* FOOTER */
-    .doc-footer {
-      margin-top: 24px;
-      font-size: 8.5px;
-      color: #94a3b8;
-      text-align: center;
-      border-top: 1px solid #e2e8f0;
-      padding-top: 12px;
-    }
-
-    @media print {
-      body { padding: 20px 30px; }
-      @page { margin: 1cm; size: A4; }
-    }
-  </style>
-</head>
-<body>
-  <div class="doc-header">
-    <div class="institution">
-      Akademski Profil — Studentski Portal<br>
-      <span class="subtitle">Sistem za praćenje akademskog napretka</span>
-    </div>
-    <div class="doc-meta">
-      <strong>UVERENJE O OCENAMA</strong>
-      Datum izdavanja: ${dateStr}<br>
-      Dokument broj: STU-${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}
-    </div>
-  </div>
-
-  <div class="doc-title">Uverenje o položenim ispitima</div>
-  <div class="doc-subtitle">Akademska evidencija · Nije zvanični dokument institucije</div>
-
-  <div class="student-info">
-    <div class="info-row">
-      <span class="info-label">Ime i Prezime:</span>
-      <span class="info-value">${currentUser.name}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Broj Indeksa:</span>
-      <span class="info-value">${currentUser.index}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Modul / Smer:</span>
-      <span class="info-value">${moduleLabel}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Studijska godina:</span>
-      <span class="info-value">${today.getFullYear()}. / ${today.getFullYear() + 1}.</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Godina upisa:</span>
-      <span class="info-value">${enrollmentYear ? enrollmentYear + '. godina' : '—'}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Trenutna godina studija:</span>
-      <span class="info-value">${studyYearLabel}</span>
-    </div>
-  </div>
-
-  <div class="summary-box">
-    <div class="summary-item highlight">
-      <div class="s-label">Prosek ocena</div>
-      <div class="s-value">${simpleAvg}</div>
-    </div>
-    <div class="summary-item">
-      <div class="s-label">Položeni ispiti</div>
-      <div class="s-value">${passed.length} / ${subjects.length}</div>
-    </div>
-    <div class="summary-item">
-      <div class="s-label">Ostvareni ESPB</div>
-      <div class="s-value">${totalESPB} / 240</div>
-    </div>
-    <div class="summary-item">
-      <div class="s-label">Napredak studija</div>
-      <div class="s-value">${Math.min(Math.round((totalESPB / 240) * 100), 100)}%</div>
-    </div>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Naziv predmeta</th>
-        <th class="center" style="width:70px">ESPB</th>
-        <th class="center" style="width:140px">Ocena</th>
-        <th class="center" style="width:80px">Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${semRows || '<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;">Nema položenih ispita.</td></tr>'}
-    </tbody>
-  </table>
-
-  <div class="signature-area">
-    <div class="sig-block">
-      <div class="sig-line"></div>
-      <div class="sig-label">Student</div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-line"></div>
-      <div class="sig-label">Overio / Studentska služba</div>
-    </div>
-    <div class="sig-block">
-      <div class="sig-line"></div>
-      <div class="sig-label">Pečat institucije</div>
-    </div>
-  </div>
-
-  <div class="doc-footer">
-    Ovaj dokument je generisan automatski na osnovu podataka u sistemu i nije zvanično uverenje institucije.<br>
-    Za zvanično uverenje obratite se studentskoj službi. · Datum generisanja: ${dateStr}
-  </div>
-
-  <script>
-    window.onload = function() { window.print(); };
-  <\/script>
-</body>
-</html>`);
-      printWindow.document.close();
+      showToast(`Student ${newName} je ažuriran.`);
     }
 
     async function adminDeleteUser(key) {
       const user = customUsers[key];
       if (!user) return;
       if (confirm(`Obrisati korisnika "${user.displayName}" i sve njegove podatke?`)) {
-        const userCloudKey = 'subjects_' + key.replace(/\s+/g, '_');
-        delete cloudData[userCloudKey];
+        const ok = await cloudDeleteUser(key);
+        if (!ok) { showToast("Greška pri brisanju.", "error"); return; }
         delete customUsers[key];
-        cloudData.users = customUsers;
-        await cloudSave(cloudData);
-        const savedUser = JSON.parse(localStorage.getItem('active_student_user'));
-        if (savedUser && savedUser.name.toLowerCase() === key) handleLogout();
+        if (currentUser && currentUser.key === key) handleLogout();
         renderAdminUsersList();
         showToast('Korisnik je obrisan.', 'info');
       }
     }
+
+    // =============================================
+    // ŠTAMPANJE 1: LISTING OCENA
+    // =============================================
+    function printGradeStatement() {
+      if (!currentUser) return;
+      const MODULE_FULL_LABELS = { kamera:'Kamera', montaza:'Montaža u audiovizuelnim medijima', dizajn_zvuka:'Dizajn zvuka', dizajn_svetla:'Dizajn svetla', animacija:'Animacija i vizuelni efekti', produkcija:'Produkcija za audiovizuelne medije' };
+      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
+      const totalESPB = passed.reduce((a, c) => a + c.espb, 0);
+      const simpleAvg = passed.length > 0 ? (passed.reduce((a, c) => a + c.grade, 0) / passed.length).toFixed(2) : '0.00';
+      const moduleLabel = MODULE_FULL_LABELS[currentUser.module] || '—';
+      let semRows = '';
+      for (let s = 1; s <= 8; s++) {
+        const semSubjects = subjects.filter(sub => sub.semester === s && sub.grade !== null && sub.grade >= 6);
+        if (semSubjects.length === 0) continue;
+        semRows += `<tr class="sem-header"><td colspan="4">${s}. Semestar — ${Math.ceil(s/2)}. Godina</td></tr>`;
+        semSubjects.forEach((sub, idx) => {
+          const gradeLabel = sub.grade===10?'Odličan (10)':sub.grade===9?'Odličan (9)':sub.grade===8?'Vrlo dobar (8)':sub.grade===7?'Dobar (7)':'Dovoljan (6)';
+          semRows += `<tr class="${idx%2===0?'even':'odd'}"><td>${sub.name}</td><td class="center">${sub.espb}</td><td class="center grade-${sub.grade}">${gradeLabel}</td><td class="center">Položen</td></tr>`;
+        });
+      }
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('sr-RS', {day:'2-digit',month:'2-digit',year:'numeric'});
+      const printWindow = window.open('', '_blank', 'width=850,height=1100');
+      printWindow.document.write(`<!DOCTYPE html><html lang="sr"><head><meta charset="UTF-8"><title>Listing Ocena — ${currentUser.name}</title>
+      <style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:Arial,sans-serif;font-size:11px;color:#1e293b;background:#fff;padding:40px 50px;}.doc-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #0f172a;padding-bottom:16px;margin-bottom:20px;}.doc-title{text-align:center;font-size:18px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#0f172a;margin:24px 0 6px;}.doc-subtitle{text-align:center;font-size:10px;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:28px;}.student-info{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px 20px;margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:10px 30px;}.info-row{display:flex;gap:6px;align-items:baseline;}.info-label{font-size:9px;text-transform:uppercase;font-weight:700;color:#94a3b8;letter-spacing:.06em;min-width:95px;}.info-value{font-size:12px;font-weight:700;color:#0f172a;}table{width:100%;border-collapse:collapse;margin-bottom:24px;}thead th{background:#0f172a;color:#f8fafc;font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:700;padding:10px 12px;text-align:left;}thead th.center{text-align:center;}tbody td{padding:8px 12px;vertical-align:middle;border-bottom:1px solid #e2e8f0;}tbody td.center{text-align:center;}tr.even td{background:#fff;}tr.odd td{background:#f8fafc;}tr.sem-header td{background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:700;padding:8px 12px;}.grade-10{color:#059669;font-weight:700;}.grade-9{color:#0284c7;font-weight:700;}.grade-8{color:#7c3aed;font-weight:700;}.grade-7{color:#d97706;font-weight:700;}.grade-6{color:#dc2626;font-weight:700;}.summary-box{display:flex;gap:16px;margin-bottom:32px;}.summary-item{flex:1;border:1.5px solid #e2e8f0;border-radius:8px;padding:14px 16px;text-align:center;}.summary-item .s-label{font-size:9px;text-transform:uppercase;font-weight:700;color:#94a3b8;letter-spacing:.06em;margin-bottom:6px;}.summary-item .s-value{font-size:22px;font-weight:800;color:#0f172a;}.summary-item.highlight{border-color:#10b981;background:#f0fdf4;}.summary-item.highlight .s-value{color:#059669;}.doc-footer{margin-top:24px;font-size:8.5px;color:#94a3b8;text-align:center;border-top:1px solid #e2e8f0;padding-top:12px;}@media print{body{padding:20px 30px;}@page{margin:1cm;size:A4;}}</style></head>
+      <body>
+      <div class="doc-header"><div><strong style="font-size:13px;">Akademski Profil — Studentski Portal</strong><br><span style="font-size:11px;color:#475569;">Sistem za praćenje akademskog napretka</span></div><div style="text-align:right;font-size:10px;color:#64748b;"><strong style="display:block;font-size:13px;font-weight:800;color:#0f172a;">LISTING OCENA</strong>Datum: ${dateStr}</div></div>
+      <div class="doc-title">Pregled položenih ispita</div>
+      <div class="doc-subtitle">Neformalni pregled • Akademska evidencija</div>
+      <div class="student-info">
+        <div class="info-row"><span class="info-label">Ime i Prezime:</span><span class="info-value">${currentUser.name}</span></div>
+        <div class="info-row"><span class="info-label">Broj Indeksa:</span><span class="info-value">${currentUser.index}</span></div>
+        <div class="info-row"><span class="info-label">Modul / Smer:</span><span class="info-value">${moduleLabel}</span></div>
+      </div>
+      <div class="summary-box">
+        <div class="summary-item highlight"><div class="s-label">Prosek ocena</div><div class="s-value">${simpleAvg}</div></div>
+        <div class="summary-item"><div class="s-label">Položeni ispiti</div><div class="s-value">${passed.length} / ${subjects.length}</div></div>
+        <div class="summary-item"><div class="s-label">Ostvareni ESPB</div><div class="s-value">${totalESPB} / 240</div></div>
+      </div>
+      <table><thead><tr><th>Naziv predmeta</th><th class="center" style="width:70px">ESPB</th><th class="center" style="width:140px">Ocena</th><th class="center" style="width:80px">Status</th></tr></thead>
+      <tbody>${semRows||'<tr><td colspan="4" style="text-align:center;padding:20px;color:#94a3b8;">Nema položenih ispita.</td></tr>'}</tbody></table>
+      <div class="doc-footer">Ovaj dokument je neformalni pregled ocena generisan automatski. Nije zvanično uverenje. · ${dateStr}</div>
+      <script>window.onload=function(){window.print();};<\/script></body></html>`);
+      printWindow.document.close();
+    }
+
+    // =============================================
+    // ŠTAMPANJE 2: ZVANIČNO UVERENJE (identično PDF-u)
+    // =============================================
+    function printOfficialUverenje() {
+      if (!currentUser) return;
+      const userMeta = customUsers[currentUser.key] || {};
+
+      // Student data from DB
+      const studentFullName = currentUser.name;
+      const parentName = userMeta.parentName || '___________';
+      const birthDate = userMeta.birthDate ? formatDateSr(userMeta.birthDate) : '___________';
+      const birthPlace = userMeta.birthPlace || '___________';
+      const fundingStatus = userMeta.fundingStatus === 'samofinansiranje' ? 'samofinansiranje' : 'budžet';
+      const fundingText = userMeta.fundingStatus === 'samofinansiranje' ? 'koji se samofinansira' : 'koji se finansira iz budžeta';
+      const currentStudyYear = userMeta.currentYearOfStudy || 1;
+      const enrollmentSchoolYear = userMeta.enrollmentSchoolYear || '____/____';
+      const firstEnrollmentYear = userMeta.firstEnrollmentYear || '____/____';
+      const studyProgramDetailed = userMeta.studyProgramDetailed || (MODULE_LABELS[currentUser.module] || '___________');
+      const studyYearOrdinal = ['','prvoj (I)','drugoj (II)','trećoj (III)','četvrtoj (IV)'][currentStudyYear] || `${currentStudyYear}.`;
+      const studyYearEnrollmentOrdinal = currentStudyYear; // "1. put" refers to first enrollment
+
+      // Document number = index number
+      const indexNum = currentUser.index;
+      const today = new Date();
+      const dateStrLong = today.toLocaleDateString('sr-RS', {day:'2-digit',month:'2-digit',year:'numeric'}) + '. godine';
+      const cityDate = `Novi Sad, ${today.toLocaleDateString('sr-RS', {day:'2-digit',month:'2-digit',year:'numeric'})}.`;
+
+      const printWindow = window.open('', '_blank', 'width=850,height=1200');
+      printWindow.document.write(`<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<title>Уверење — ${studentFullName}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+    padding: 2cm 2.5cm;
+    line-height: 1.5;
+  }
+  .header-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .header-logo {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+  }
+  .header-logo svg {
+    width: 70px;
+    height: 70px;
+  }
+  .header-text {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+  .header-text strong {
+    font-size: 12pt;
+    display: block;
+  }
+  .meta-block {
+    margin-bottom: 30px;
+    font-size: 11pt;
+  }
+  .meta-block table {
+    border: none;
+  }
+  .meta-block td {
+    padding: 1px 6px 1px 0;
+    border: none;
+    vertical-align: top;
+  }
+  .title-block {
+    text-align: center;
+    margin: 40px 0 30px;
+  }
+  .title-block h1 {
+    font-size: 20pt;
+    font-weight: bold;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .body-text {
+    font-size: 11.5pt;
+    text-align: justify;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .body-text p {
+    margin-bottom: 16px;
+    text-indent: 0;
+  }
+  .footer-area {
+    margin-top: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .footer-left {
+    font-size: 11pt;
+  }
+  .footer-right {
+    text-align: center;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+  .footer-right .role {
+    font-size: 10.5pt;
+    margin-bottom: 30px;
+  }
+  .signature-line {
+    border-bottom: 1px solid #000;
+    width: 200px;
+    margin: 0 auto 4px;
+  }
+  .signature-name {
+    font-style: italic;
+    font-size: 11pt;
+  }
+  @media print {
+    body { padding: 1.5cm 2cm; }
+    @page { margin: 0; size: A4 portrait; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER: Logo + Institution name -->
+<div class="header-block">
+  <div class="header-logo">
+    <!-- SVG Logo mimicking the triangular art academy logo -->
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="50,5 95,90 5,90" fill="none" stroke="#000" stroke-width="6"/>
+      <polygon points="50,25 80,80 20,80" fill="none" stroke="#000" stroke-width="4"/>
+      <line x1="50" y1="5" x2="50" y2="90" stroke="#000" stroke-width="3"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <strong>УНИВЕРЗИТЕТ У НОВОМ САДУ</strong>
+    Академија уметности у Новом Саду<br>
+    Ђуре Јакшића 7, 21000 Нови Сад, Република Србија<br>
+    Тел: (021) 422-177, Факс: (021) 420-187 www.akademija.uns.ac.rs
+  </div>
+</div>
+
+<!-- Document number and index -->
+<div class="meta-block">
+  <table>
+    <tr><td style="padding-right:4px;">·:</td><td><strong>${today.getFullYear()}/${today.getFullYear()+1}</strong></td></tr>
+    <tr><td style="padding-right:4px;">:</td><td>${indexNum}</td></tr>
+  </table>
+</div>
+
+<p class="body-text" style="margin-bottom:0;">По молби ${studentFullName} од ${dateStrLong} издаје се</p>
+
+<!-- TITLE -->
+<div class="title-block">
+  <h1>У В Е Р Е Њ Е</h1>
+</div>
+
+<!-- BODY -->
+<div class="body-text">
+  <p>
+    којим се потврђује да је ${studentFullName}, рођена ${birthDate} у месту ${birthPlace},
+    општина ${birthPlace}, држава Република Србија студент ${fundingText}.
+    Уписана је на ${studyYearOrdinal} годину (1. пут) основних студија Академије уметности Универзитета у Новом Саду, на
+    студијском програму ${studyProgramDetailed}, школске ${enrollmentSchoolYear}. године.
+  </p>
+
+  <p>
+    ${studentFullName} уписана је први пут школске ${firstEnrollmentYear}. године, на Академији
+    уметности, на студијском програму Аудиовизуелни медији.
+  </p>
+
+  <p>Уверење се издаје на лични захтев именоване.</p>
+</div>
+
+<!-- FOOTER -->
+<div class="footer-area">
+  <div class="footer-left">
+    ${cityDate}
+  </div>
+  <div class="footer-right">
+    <div class="role">Стручнотехнички сарадник за студије и<br>студентска питања</div>
+    <div class="signature-line"></div>
+    <div class="signature-name">М.П.</div>
+  </div>
+</div>
+
+<script>window.onload = function(){ window.print(); };<\/script>
+</body>
+</html>`);
+      printWindow.document.close();
+    }
+
+    function formatDateSr(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d)) return dateStr;
+      const day = String(d.getDate()).padStart(2,'0');
+      const month = String(d.getMonth()+1).padStart(2,'0');
+      const year = d.getFullYear();
+      return `${day}.${month}.${year}. године`;
+    }
+
   </script>
 </body>
 </html>
+HTMLEOF
+echo "Done"
