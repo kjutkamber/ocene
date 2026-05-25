@@ -330,12 +330,6 @@
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
               <select id="admin-new-module" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
                 <option value="">— Izaberi modul —</option>
-                <option value="kamera">Kamera</option>
-                <option value="montaza">Montaža u audiovizuelnim medijima</option>
-                <option value="dizajn_zvuka">Dizajn zvuka</option>
-                <option value="dizajn_svetla">Dizajn svetla</option>
-                <option value="animacija">Animacija i vizuelni efekti</option>
-                <option value="produkcija">Produkcija za audiovizuelne medije</option>
               </select>
             </div>
             <div class="sm:col-span-2">
@@ -414,12 +408,6 @@
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
           <select id="edit-student-module" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
             <option value="">— Izaberi modul —</option>
-            <option value="kamera">Kamera</option>
-            <option value="montaza">Montaža u audiovizuelnim medijima</option>
-            <option value="dizajn_zvuka">Dizajn zvuka</option>
-            <option value="dizajn_svetla">Dizajn svetla</option>
-            <option value="animacija">Animacija i vizuelni efekti</option>
-            <option value="produkcija">Produkcija za audiovizuelne medije</option>
           </select>
         </div>
         <div class="sm:col-span-2">
@@ -551,34 +539,54 @@
     function markUnsaved() { unsavedChanges = true; }
 
     // =============================================
-    // CURRICULUM (unchanged)
+    // CURRICULUM — učitava se iz curriculum.json
     // =============================================
-    const CURRICULUM = {
-      kamera: { mandatory: [
-        {name:"Osnovi snimanja slike",espb:3,semester:1},{name:"Osnovi montaže",espb:3,semester:1},{name:"Osnovi dizajna svetla za scenu",espb:3,semester:1},{name:"Uvod u snimanje zvuka",espb:3,semester:1},{name:"Filmska i televizijska produkcija 1",espb:3,semester:1},{name:"Razvoj i tehnike animacije",espb:3,semester:1},{name:"Osnovi scenske režije",espb:3,semester:1},{name:"Istorija filma 1",espb:3,semester:1},{name:"Tehnologija audio-vizuelnih medija 1",espb:3,semester:1},{name:"Osnovi snimanja slike - praktikum",espb:3,semester:1},
-        {name:"Snimanje kamerom",espb:3,semester:2},{name:"Snimanje kamerom - praktikum",espb:3,semester:2},{name:"Montaža u audio-vizuelnim medijima",espb:3,semester:2},{name:"Osnovi dizajna svetla za film i televiziju",espb:3,semester:2},{name:"Snimanje zvuka",espb:3,semester:2},{name:"Pozorišna produkcija 1",espb:3,semester:2},{name:"Razvoj i tehnike vizuelnih efekata",espb:3,semester:2},{name:"Režija u audio-vizuelnim medijima",espb:3,semester:2},{name:"Istorija filma 2",espb:3,semester:2},{name:"Tehnologija audio-vizuelnih medija 2",espb:3,semester:2},
-        {name:"Filmska kamera",espb:3,semester:3},{name:"Filmska kamera - praktikum",espb:2,semester:3},{name:"Osnovi vizuelne kulture",espb:2,semester:3},{name:"Osnovi dramaturgije",espb:2,semester:3},{name:"Filmska i televizijska režija 1",espb:3,semester:3},{name:"Istorija filma 3",espb:3,semester:3},{name:"Sociologija kulture 1",espb:2,semester:3},{name:"Fotografska istraživačka praksa 1",espb:3,semester:3},{name:"Optika 1",espb:2,semester:3},
-        {name:"Elektronska kamera",espb:3,semester:4},{name:"Elektronska kamera - praktikum",espb:2,semester:4},{name:"Vizuelne komunikacije",espb:2,semester:4},{name:"Osnovi scenarija",espb:2,semester:4},{name:"Fotografska istraživačka praksa 2",espb:3,semester:4},{name:"Sociologija kulture 2",espb:2,semester:4},{name:"Filmska i televizijska režija 2",espb:3,semester:4},{name:"Optika 2",espb:2,semester:4},{name:"Istorija filma 4",espb:3,semester:4},
-        {name:"Umetnost snimanja kamerom 1",espb:3,semester:5},{name:"Umetnost snimanja kamerom 1 - praktikum",espb:2,semester:5},{name:"Dizajn produkcije",espb:2,semester:5},{name:"Fotografska istraživačka praksa 3",espb:3,semester:5},{name:"Mediji masovne komunikacije",espb:2,semester:5},{name:"Istorija umetnosti srednjeg veka 1",espb:3,semester:5},{name:"Pokretna grafika",espb:3,semester:5},{name:"Profesionalna praksa",espb:2,semester:5},{name:"Osnove estetike 1",espb:2,semester:5},
-        {name:"Umetnost snimanja kamerom 2",espb:3,semester:6},{name:"Umetnost snimanja kamerom 2 - praktikum",espb:2,semester:6},{name:"Dizajn produkcije",espb:2,semester:6},{name:"Interaktivna animacija",espb:3,semester:6},{name:"Mediji masovne komunikacije",espb:2,semester:6},{name:"Osnove estetike 2",espb:2,semester:6},{name:"Fotografska istraživačka praksa 4",espb:3,semester:6},{name:"Profesionalna praksa",espb:2,semester:6},{name:"Istorija umetnosti srednjeg veka 2",espb:3,semester:6},
-        {name:"Kamera - analiza i sinteza 1",espb:3,semester:7},{name:"Kamera - analiza i sinteza 1 - praktikum",espb:3,semester:7},{name:"Teorija filma",espb:3,semester:7},{name:"Teorija medija",espb:3,semester:7},{name:"Profesionalna praksa",espb:3,semester:7},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:7},{name:"Dokumentarni film 1",espb:3,semester:7},{name:"Završni projekat",espb:2,semester:7},
-        {name:"Kamera - analiza i sinteza 2",espb:3,semester:8},{name:"Kamera - analiza i sinteza 2 - praktikum",espb:3,semester:8},{name:"Teorija filma",espb:3,semester:8},{name:"Teorija medija",espb:3,semester:8},{name:"Dokumentarni film 2",espb:3,semester:8},{name:"Profesionalna praksa",espb:3,semester:8},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:8},{name:"Završni projekat 2",espb:2,semester:8}
-      ], electives:{3:[{name:"Muzika kao kultura",espb:2},{name:"Maska i sminka",espb:2},{name:"Filmska montaža",espb:3},{name:"Dizajn svetla za film i televiziju 1",espb:3},{name:"Osnovi obrade zvuka",espb:3},{name:"Produkcija zvuka u audio-vizuelnim medijima",espb:3},{name:"Filmska i televizijska produkcija 2",espb:3},{name:"Multimedijalna produkcija 1",espb:3},{name:"Animacija 1",espb:3},{name:"Engleski jezik 1",espb:2}],4:[{name:"Muzika kao kultura",espb:2},{name:"Dizajn scenskog zvuka",espb:3},{name:"Montaža dijaloga u audio-vizuelnim medijima",espb:3},{name:"Kostimografija",espb:2},{name:"Montaža zvuka za film i televiziju",espb:3},{name:"Pozorišna produkcija 2",espb:3},{name:"Multimedijalna produkcija 2",espb:3},{name:"Vizuelni efekti 1",espb:3},{name:"Dizajn svetla za film i televiziju 2",espb:3},{name:"Engleski jezik 2",espb:2}],5:[{name:"Montaža audiovizuelnih formi 1",espb:3},{name:"Likovni elementi 2",espb:2},{name:"Scenografija 1",espb:2},{name:"Dizajn svetla za scenu 1",espb:3},{name:"Uvod u snimanje muzike",espb:3},{name:"Dizajn i montaža zvučnih efekata i muzike",espb:3},{name:"Pozorišna produkcija 3",espb:2},{name:"Multimedijalna produkcija 3",espb:3},{name:"Vizuelni efekti 2",espb:3},{name:"Engleski jezik 3",espb:2}],6:[{name:"Scenografija 2",espb:2},{name:"Muzička pismenost 1",espb:2},{name:"Montaža audiovizuelnih formi 2",espb:3},{name:"Dizajn svetla za scenu 2",espb:3},{name:"Snimanje muzike",espb:3},{name:"Postprodukcija zvuka u audio-vizuelnim medijima",espb:3},{name:"Filmska i televizijska produkcija 3",espb:3},{name:"Multimedijalna produkcija 4",espb:2},{name:"Animacija 2",espb:3},{name:"Engleski jezik 4",espb:2}],7:[{name:"Muzička pismenost 1",espb:2},{name:"Montažne artikulacije 1",espb:3},{name:"Primenjena elektrotehnika",espb:2},{name:"Opšta psihologija",espb:2},{name:"Digitalna slika 1",espb:3},{name:"Kreativni svetlopis 1",espb:3},{name:"Pozorišna produkcija 4",espb:3},{name:"Vizuelni efekti 3",espb:3},{name:"Istorija umetnosti novog veka 1",espb:3}],8:[{name:"Psihologija ličnosti",espb:2},{name:"Muzička pismenost 2",espb:2},{name:"Montažne artikulacije 2",espb:3},{name:"Kreativni svetlopis 2",espb:3},{name:"Muzički instrumenti",espb:2},{name:"Osnovi dikcije",espb:2},{name:"Analiza i sinteza zvučne slike",espb:3},{name:"Filmska i televizijska produkcija 4",espb:3},{name:"Animacija 3",espb:3},{name:"Digitalna slika 2",espb:3}]}},
-      produkcija: { mandatory: [
-        {name:"Filmska i televizijska produkcija 1",espb:3,semester:1},{name:"Filmska i televizijska produkcija 1 - praktikum",espb:3,semester:1},{name:"Osnovi montaže",espb:3,semester:1},{name:"Osnovi snimanja slike",espb:3,semester:1},{name:"Osnovi dizajna svetla za scenu",espb:3,semester:1},{name:"Uvod u snimanje zvuka",espb:3,semester:1},{name:"Osnovi scenske režije",espb:3,semester:1},{name:"Istorija filma 1",espb:3,semester:1},{name:"Tehnologija audio-vizuelnih medija 1",espb:3,semester:1},{name:"Razvoj i tehnike animacije",espb:3,semester:1},
-        {name:"Pozorišna produkcija 1",espb:3,semester:2},{name:"Pozorišna produkcija 1 - praktikum",espb:3,semester:2},{name:"Montaža u audio-vizuelnim medijima",espb:3,semester:2},{name:"Snimanje kamerom",espb:3,semester:2},{name:"Osnovi dizajna svetla za film i televiziju",espb:3,semester:2},{name:"Snimanje zvuka",espb:3,semester:2},{name:"Režija u audio-vizuelnim medijima",espb:3,semester:2},{name:"Istorija filma 2",espb:3,semester:2},{name:"Tehnologija audio-vizuelnih medija 2",espb:3,semester:2},{name:"Razvoj i tehnike vizuelnih efekata",espb:3,semester:2},
-        {name:"Filmska i televizijska produkcija 2",espb:3,semester:3},{name:"Filmska i televizijska produkcija 2 - praktikum",espb:3,semester:3},{name:"Multimedijalna produkcija 1",espb:3,semester:3},{name:"Multimedijalna produkcija 1 - praktikum",espb:3,semester:3},{name:"Istorija filma 3",espb:3,semester:3},{name:"Sociologija kulture 1",espb:2,semester:3},{name:"Osnovi dramaturgije",espb:2,semester:3},{name:"Istorija svetske drame i pozorišta 1",espb:3,semester:3},
-        {name:"Pozorišna produkcija 2",espb:3,semester:4},{name:"Pozorišna produkcija 2 - praktikum",espb:3,semester:4},{name:"Multimedijalna produkcija 2",espb:3,semester:4},{name:"Multimedijalna produkcija 2 - praktikum",espb:3,semester:4},{name:"Istorija filma 4",espb:3,semester:4},{name:"Sociologija kulture 2",espb:2,semester:4},{name:"Osnovi scenarija",espb:2,semester:4},{name:"Istorija svetske drame i pozorišta 2",espb:2,semester:4},
-        {name:"Pozorišna produkcija 3",espb:2,semester:5},{name:"Pozorišna produkcija 3 - praktikum",espb:3,semester:5},{name:"Multimedijalna produkcija 3",espb:3,semester:5},{name:"Multimedijalna produkcija 3 - praktikum",espb:3,semester:5},{name:"Opšta psihologija",espb:2,semester:5},{name:"Profesionalna praksa",espb:2,semester:5},{name:"Primenjena muzika 1",espb:2,semester:5},{name:"Osnove estetike 1",espb:2,semester:5},{name:"Istorija svetske drame i pozorišta 3",espb:3,semester:5},
-        {name:"Filmska i televizijska produkcija 3",espb:3,semester:6},{name:"Filmska i televizijska produkcija 3 - praktikum",espb:3,semester:6},{name:"Multimedijalna produkcija 4",espb:2,semester:6},{name:"Multimedijalna produkcija 4 - praktikum",espb:3,semester:6},{name:"Psihologija ličnosti",espb:2,semester:6},{name:"Profesionalna praksa",espb:2,semester:6},{name:"Primenjena muzika 2",espb:2,semester:6},{name:"Osnove estetike 2",espb:2,semester:6},{name:"Istorija svetske drame i pozorišta 4",espb:3,semester:6},
-        {name:"Pozorišna produkcija 4",espb:3,semester:7},{name:"Pozorišna produkcija 4 - praktikum",espb:3,semester:7},{name:"Dokumentarni film 1",espb:3,semester:7},{name:"Teorija filma",espb:3,semester:7},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:7},{name:"Istorija južnoslovenske drame i pozorišta 1",espb:3,semester:7},{name:"Profesionalna praksa",espb:3,semester:7},{name:"Završni projekat",espb:2,semester:7},
-        {name:"Filmska i televizijska produkcija 4",espb:3,semester:8},{name:"Filmska i televizijska produkcija 4 - praktikum",espb:4,semester:8},{name:"Dokumentarni film 2",espb:3,semester:8},{name:"Teorija filma",espb:3,semester:8},{name:"Istorija južnoslovenske drame i pozorišta 2",espb:3,semester:8},{name:"Primena savremenih tehnologija u audio-vizuelnim medijima",espb:2,semester:8},{name:"Profesionalna praksa",espb:3,semester:8},{name:"Završni projekat",espb:2,semester:8}
-      ], electives:{3:[],4:[],5:[],6:[],7:[],8:[]}},
-      montaza: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} },
-      dizajn_zvuka: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} },
-      dizajn_svetla: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} },
-      animacija: { mandatory: [], electives: {3:[],4:[],5:[],6:[],7:[],8:[]} }
-    };
+    // ⬇️ ZA LOKALNO TESTIRANJE: ostavi ovako (curriculum.json u istom folderu)
+    // ⬇️ ZA GITHUB: zameni sa 'https://raw.githubusercontent.com/USERNAME/REPO/main/curriculum.json'
+    const CURRICULUM_JSON_URL = './curriculum.json';
+
+    let CURRICULUM = {};
+    let MODULE_LABELS = {};
+
+    async function loadCurriculumFromJSON() {
+      try {
+        const resp = await fetch(CURRICULUM_JSON_URL);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const data = await resp.json();
+        CURRICULUM = {};
+        MODULE_LABELS = {};
+        (data.departments || []).forEach(dept => {
+          (dept.modules || []).forEach(mod => {
+            MODULE_LABELS[mod.key] = mod.label;
+            const electives = {};
+            for (let s = 1; s <= 8; s++) electives[s] = [];
+            if (mod.electives) {
+              Object.entries(mod.electives).forEach(([sem, arr]) => {
+                electives[parseInt(sem)] = arr;
+              });
+            }
+            CURRICULUM[mod.key] = {
+              mandatory: mod.mandatory || [],
+              electives: electives
+            };
+          });
+        });
+        populateModuleSelects();
+        console.log('Kurikulum učitan:', Object.keys(MODULE_LABELS).length, 'modula');
+      } catch (err) {
+        console.error('Greška pri učitavanju curriculum.json:', err);
+        showToast('Greška pri učitavanju kurikuluma!', 'error');
+      }
+    }
+
+    function populateModuleSelects() {
+      const opts = '<option value="">— Izaberi modul —</option>' +
+        Object.entries(MODULE_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+      ['admin-new-module', 'edit-student-module'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { const cur = el.value; el.innerHTML = opts; el.value = cur; }
+      });
+    }
 
     function generateSubjectsFromCurriculum(module) {
       const c = CURRICULUM[module];
@@ -595,8 +603,11 @@
     // =============================================
     window.onload = async function() {
       lucide.createIcons();
-      showToast("Učitavanje podataka iz baze...", "info");
-      customUsers = await cloudLoadUsers();
+      showToast("Učitavanje podataka...", "info");
+      await Promise.all([
+        loadCurriculumFromJSON(),
+        cloudLoadUsers().then(u => { customUsers = u; })
+      ]);
     };
 
     window.addEventListener('beforeunload', function(e) {
@@ -969,7 +980,7 @@
       }
     }
 
-    const MODULE_LABELS = { kamera:'Kamera', montaza:'Montaža', dizajn_zvuka:'Dizajn zvuka', dizajn_svetla:'Dizajn svetla', animacija:'Animacija i VFX', produkcija:'Produkcija' };
+    // MODULE_LABELS — popunjava se iz curriculum.json (videti loadCurriculumFromJSON)
 
     function renderAdminUsersList() {
       const container = document.getElementById('admin-users-list');
@@ -1041,6 +1052,7 @@
       document.getElementById('edit-student-study-year').value = u.currentYearOfStudy || 1;
       document.getElementById('edit-student-enrollment-year').value = u.enrollmentSchoolYear || '';
       document.getElementById('edit-student-first-enrollment').value = u.firstEnrollmentYear || '';
+      populateModuleSelects();
       document.getElementById('edit-student-module').value = u.module || '';
       document.getElementById('edit-student-study-program').value = u.studyProgramDetailed || '';
       document.getElementById('edit-student-error').classList.add('hidden');
@@ -1097,11 +1109,10 @@
     // =============================================
     function printGradeStatement() {
       if (!currentUser) return;
-      const MODULE_FULL_LABELS = { kamera:'Kamera', montaza:'Montaža u audiovizuelnim medijima', dizajn_zvuka:'Dizajn zvuka', dizajn_svetla:'Dizajn svetla', animacija:'Animacija i vizuelni efekti', produkcija:'Produkcija za audiovizuelne medije' };
       const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
       const totalESPB = passed.reduce((a, c) => a + c.espb, 0);
       const simpleAvg = passed.length > 0 ? (passed.reduce((a, c) => a + c.grade, 0) / passed.length).toFixed(2) : '0.00';
-      const moduleLabel = MODULE_FULL_LABELS[currentUser.module] || '—';
+      const moduleLabel = MODULE_LABELS[currentUser.module] || currentUser.module || '—';
       let semRows = '';
       for (let s = 1; s <= 8; s++) {
         const semSubjects = subjects.filter(sub => sub.semester === s && sub.grade !== null && sub.grade >= 6);
