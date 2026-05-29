@@ -93,7 +93,9 @@
               </button>
             </div>
           </div>
-          <button onclick="manualSave()" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition shadow-lg text-white">
+          <button onclick="requestNotificationPermission()" id="notif-btn" class="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-bold rounded-lg transition shadow-lg text-white" title="Uključi obaveštenja">
+            <i data-lucide="bell" class="w-4 h-4"></i> <span id="notif-btn-label">Obaveštenja</span>
+          </button>
             <i data-lucide="save" class="w-4 h-4"></i> Sačuvaj izmene
           </button>
           <button onclick="handleLogout()" class="flex items-center gap-2 px-3 py-1.5 bg-rose-600/95 hover:bg-rose-500 text-xs font-bold rounded-lg transition text-white">
@@ -194,6 +196,13 @@
             <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena</h3>
             <div class="space-y-3" id="grade-distribution"></div>
           </div>
+          <!-- ISPITNI ROKOVI za studenta -->
+          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60" id="exam-periods-widget">
+            <h3 class="text-md font-bold text-slate-900 mb-1 flex items-center gap-2"><i data-lucide="calendar-check" class="text-emerald-500"></i> Ispitni rokovi</h3>
+            <div id="exam-periods-student-list" class="space-y-3 mt-3">
+              <p class="text-xs text-slate-400 text-center py-2">Učitavanje...</p>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -278,8 +287,13 @@
     </div>
     <div id="admin-step-panel" class="hidden bg-white rounded-3xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[90vh]">
       <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0 rounded-t-3xl">
-        <div class="flex items-center gap-2"><i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i><h3 class="font-black text-lg">Admin Panel: Studenti</h3></div>
+        <div class="flex items-center gap-2"><i data-lucide="shield" class="text-emerald-400 w-5 h-5"></i><h3 class="font-black text-lg">Admin Panel</h3></div>
         <button onclick="closeAdminMasterModal()" class="text-slate-400 hover:text-white transition text-xl font-bold">✕</button>
+      </div>
+      <!-- Admin Tabs -->
+      <div class="flex border-b border-slate-200 shrink-0 bg-white px-2 pt-2 gap-1">
+        <button onclick="switchAdminTab('studenti')" id="tab-studenti" class="px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-emerald-500 text-emerald-600 bg-white transition">👥 Studenti</button>
+        <button onclick="switchAdminTab('rokovi')" id="tab-rokovi" class="px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition">📅 Ispitni rokovi</button>
       </div>
       <div class="p-6 space-y-6 overflow-y-auto flex-grow">
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
@@ -345,6 +359,38 @@
           <div id="admin-users-list" class="space-y-2"></div>
         </div>
       </div>
+
+      <!-- TAB: ISPITNI ROKOVI -->
+      <div id="admin-tab-rokovi" class="hidden p-6 space-y-5 overflow-y-auto flex-grow">
+        <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">➕ Novi ispitni rok</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Naziv roka</label>
+              <input type="text" id="ep-name" placeholder="npr. Januarski rok 2025" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Početak prijava</label>
+              <input type="date" id="ep-start" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Kraj prijava</label>
+              <input type="date" id="ep-end" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dani za unos ocene (posle roka)</label>
+              <input type="number" id="ep-grade-days" value="14" min="1" max="60" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+          </div>
+          <button onclick="adminSaveExamPeriod()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shadow-md mt-3">✓ Sačuvaj rok</button>
+          <div id="ep-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg mt-2"></div>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">📋 Svi rokovi</h4>
+          <div id="ep-list" class="space-y-2"><p class="text-xs text-slate-400 text-center py-4">Učitavanje...</p></div>
+        </div>
+      </div>
+
       <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-3xl">
         <button onclick="closeAdminMasterModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Zatvori panel</button>
       </div>
@@ -419,6 +465,42 @@
       <div class="flex gap-2 pt-4 mt-2 border-t border-slate-100">
         <button onclick="closeEditStudentModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
         <button onclick="saveEditedStudent()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Sačuvaj izmene</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRIJAVA NA ISPIT -->
+  <div id="exam-register-modal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 max-h-[85vh] flex flex-col">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white rounded-t-2xl shrink-0">
+        <div class="flex items-center gap-2"><i data-lucide="calendar-check" class="text-emerald-400 w-5 h-5"></i><h3 class="font-black text-base" id="exam-register-title">Prijava ispita</h3></div>
+        <button onclick="closeExamRegisterModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+      </div>
+      <div class="p-4 border-b border-slate-100 shrink-0">
+        <p class="text-xs text-slate-500">Izaberi predmete koje prijavljuješ za ovaj ispitni rok:</p>
+      </div>
+      <div id="exam-register-subjects" class="overflow-y-auto flex-grow p-4 space-y-2"></div>
+      <div class="px-4 py-4 bg-slate-50 border-t border-slate-100 flex gap-2 shrink-0 rounded-b-2xl">
+        <button onclick="closeExamRegisterModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition">Otkaz</button>
+        <button onclick="submitExamRegistration()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition shadow-md">✓ Prijavi izabrane</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: UNOS OCENE -->
+  <div id="grade-entry-modal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 max-h-[85vh] flex flex-col">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white rounded-t-2xl shrink-0">
+        <div class="flex items-center gap-2"><i data-lucide="pen-line" class="text-amber-400 w-5 h-5"></i><h3 class="font-black text-base" id="grade-entry-title">Unos ocena</h3></div>
+        <button onclick="closeGradeEntryModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+      </div>
+      <div class="p-4 border-b border-slate-100 shrink-0">
+        <p class="text-xs text-slate-500">Unesi ocene za položene ispite iz ovog roka. Ocena se čuva i na tvojoj kartici predmeta.</p>
+      </div>
+      <div id="grade-entry-subjects" class="overflow-y-auto flex-grow p-4 space-y-3"></div>
+      <div class="px-4 py-4 bg-slate-50 border-t border-slate-100 flex gap-2 shrink-0 rounded-b-2xl">
+        <button onclick="closeGradeEntryModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition">Zatvori</button>
+        <button onclick="submitGradeEntry()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-amber-500 hover:bg-amber-400 rounded-lg transition shadow-md">✓ Sačuvaj ocene</button>
       </div>
     </div>
   </div>
@@ -675,6 +757,9 @@
       }
       lucide.createIcons();
       calculateStatistics();
+      checkNotifStatus();
+      startExamPeriodPolling();
+      registerServiceWorker();
     }
 
     function handleLogout() {
@@ -1358,6 +1443,457 @@
       const month = String(d.getMonth()+1).padStart(2,'0');
       const year = d.getFullYear();
       return `${day}.${month}.${year}. године`;
+    }
+
+    // =============================================
+    // ADMIN TABS
+    // =============================================
+    function switchAdminTab(tab) {
+      // Update tab buttons
+      ['studenti','rokovi'].forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        if (t === tab) {
+          btn.classList.add('border-emerald-500','text-emerald-600');
+          btn.classList.remove('border-transparent','text-slate-500');
+        } else {
+          btn.classList.remove('border-emerald-500','text-emerald-600');
+          btn.classList.add('border-transparent','text-slate-500');
+        }
+      });
+      // Show/hide content
+      const studentiContent = document.querySelector('#admin-step-panel .p-6.space-y-6.overflow-y-auto.flex-grow');
+      const rokoviContent = document.getElementById('admin-tab-rokovi');
+      if (tab === 'studenti') {
+        if (studentiContent) studentiContent.classList.remove('hidden');
+        if (rokoviContent) rokoviContent.classList.add('hidden');
+      } else {
+        if (studentiContent) studentiContent.classList.add('hidden');
+        if (rokoviContent) { rokoviContent.classList.remove('hidden'); loadAdminExamPeriods(); }
+      }
+    }
+
+    // =============================================
+    // EXAM PERIODS — SUPABASE
+    // =============================================
+    async function cloudLoadExamPeriods() {
+      const { data, error } = await sb.from('exam_periods').select('*').order('start_date', { ascending: false });
+      if (error) { console.error(error); return []; }
+      return data;
+    }
+
+    async function cloudSaveExamPeriod(period) {
+      if (period.id) {
+        const { error } = await sb.from('exam_periods').update(period).eq('id', period.id);
+        return !error;
+      } else {
+        const { error } = await sb.from('exam_periods').insert(period);
+        return !error;
+      }
+    }
+
+    async function cloudDeleteExamPeriod(id) {
+      const { error } = await sb.from('exam_periods').delete().eq('id', id);
+      return !error;
+    }
+
+    async function cloudToggleExamPeriod(id, isActive) {
+      const { error } = await sb.from('exam_periods').update({ is_active: isActive }).eq('id', id);
+      return !error;
+    }
+
+    // =============================================
+    // EXAM REGISTRATIONS — SUPABASE
+    // =============================================
+    async function cloudLoadMyRegistrations(userKey, periodId) {
+      const q = sb.from('exam_registrations').select('*').eq('user_key', userKey);
+      if (periodId) q.eq('exam_period_id', periodId);
+      const { data, error } = await q;
+      if (error) { console.error(error); return []; }
+      return data;
+    }
+
+    async function cloudRegisterForExams(userKey, periodId, selectedSubjects) {
+      const rows = selectedSubjects.map(s => ({
+        user_key: userKey,
+        exam_period_id: periodId,
+        subject_name: s.name,
+        subject_id: s.id,
+        espb: s.espb,
+        semester: s.semester
+      }));
+      const { error } = await sb.from('exam_registrations').upsert(rows, { onConflict: 'user_key,exam_period_id,subject_id' });
+      return !error;
+    }
+
+    async function cloudSaveRegistrationGrade(regId, grade, subjectId, userKey) {
+      // Save grade in exam_registrations
+      const { error } = await sb.from('exam_registrations')
+        .update({ grade, grade_entered_at: new Date().toISOString() })
+        .eq('id', regId);
+      if (error) return false;
+      // Also update student_subjects
+      if (grade >= 6) {
+        const { error: e2 } = await sb.from('student_subjects')
+          .update({ grade, updated_at: new Date().toISOString() })
+          .eq('user_key', userKey).eq('subject_id', subjectId);
+        if (e2) console.warn('Greška ažuriranja student_subjects:', e2);
+      }
+      return true;
+    }
+
+    // =============================================
+    // ADMIN: EXAM PERIODS UI
+    // =============================================
+    async function adminSaveExamPeriod() {
+      const name = document.getElementById('ep-name').value.trim();
+      const start = document.getElementById('ep-start').value;
+      const end = document.getElementById('ep-end').value;
+      const gradeDays = parseInt(document.getElementById('ep-grade-days').value) || 14;
+      const errEl = document.getElementById('ep-error');
+      errEl.classList.add('hidden');
+      if (!name || !start || !end) { errEl.textContent = 'Popuni sva polja.'; errEl.classList.remove('hidden'); return; }
+      if (start > end) { errEl.textContent = 'Početak mora biti pre kraja.'; errEl.classList.remove('hidden'); return; }
+      const ok = await cloudSaveExamPeriod({ name, start_date: start, end_date: end, grade_entry_days: gradeDays, is_active: false });
+      if (ok) {
+        showToast('Rok sačuvan!', 'success');
+        document.getElementById('ep-name').value = '';
+        document.getElementById('ep-start').value = '';
+        document.getElementById('ep-end').value = '';
+        loadAdminExamPeriods();
+      } else {
+        errEl.textContent = 'Greška pri čuvanju.'; errEl.classList.remove('hidden');
+      }
+    }
+
+    async function loadAdminExamPeriods() {
+      const list = document.getElementById('ep-list');
+      list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Učitavanje...</p>';
+      const periods = await cloudLoadExamPeriods();
+      if (!periods.length) { list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema rokova.</p>'; return; }
+      list.innerHTML = periods.map(p => {
+        const today = new Date().toISOString().split('T')[0];
+        const gradeDeadline = new Date(p.end_date);
+        gradeDeadline.setDate(gradeDeadline.getDate() + (p.grade_entry_days || 14));
+        const gradeDeadlineStr = gradeDeadline.toISOString().split('T')[0];
+        let statusBadge = p.is_active
+          ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Aktivan</span>'
+          : '<span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">⚫ Neaktivan</span>';
+        return `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap"><span class="font-bold text-sm text-slate-900">${p.name}</span>${statusBadge}</div>
+            <p class="text-[11px] text-slate-500 mt-1">Prijave: <b>${p.start_date}</b> → <b>${p.end_date}</b></p>
+            <p class="text-[11px] text-slate-400">Unos ocena do: <b>${gradeDeadlineStr}</b> (${p.grade_entry_days || 14} dana)</p>
+          </div>
+          <div class="flex flex-col gap-1 shrink-0">
+            <button onclick="toggleExamPeriod('${p.id}', ${!p.is_active})" class="text-[10px] font-bold px-2 py-1 rounded-lg border ${p.is_active ? 'border-rose-200 text-rose-600 hover:bg-rose-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'} transition">${p.is_active ? '⏸ Zatvori' : '▶ Otvori'}</button>
+            <button onclick="deleteExamPeriod('${p.id}')" class="text-[10px] font-bold px-2 py-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition">🗑 Briši</button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function toggleExamPeriod(id, newState) {
+      const ok = await cloudToggleExamPeriod(id, newState);
+      if (ok) {
+        showToast(newState ? 'Rok otvoren! Studenti mogu da se prijave.' : 'Rok zatvoren.', 'success');
+        if (newState) sendNotificationToAll('Otvoren ispitni rok', 'Prijave za ispite su otvorene. Prijavite se što pre!');
+        loadAdminExamPeriods();
+      }
+    }
+
+    async function deleteExamPeriod(id) {
+      if (!confirm('Obriši ovaj rok i sve prijave?')) return;
+      const ok = await cloudDeleteExamPeriod(id);
+      if (ok) { showToast('Rok obrisan.', 'info'); loadAdminExamPeriods(); }
+    }
+
+    // =============================================
+    // STUDENT: EXAM PERIODS WIDGET
+    // =============================================
+    async function loadStudentExamPeriods() {
+      if (!currentUser) return;
+      const container = document.getElementById('exam-periods-student-list');
+      if (!container) return;
+      const periods = await cloudLoadExamPeriods();
+      const today = new Date().toISOString().split('T')[0];
+      const myRegs = await cloudLoadMyRegistrations(currentUser.key);
+      const registeredPeriodIds = new Set(myRegs.map(r => r.exam_period_id));
+
+      // Filter relevant periods (active, or grade entry window)
+      const relevant = periods.filter(p => {
+        const gradeDeadline = new Date(p.end_date);
+        gradeDeadline.setDate(gradeDeadline.getDate() + (p.grade_entry_days || 14));
+        const gradeDeadlineStr = gradeDeadline.toISOString().split('T')[0];
+        return p.is_active || (today > p.end_date && today <= gradeDeadlineStr);
+      });
+
+      if (!relevant.length) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Nema aktivnih rokova.</p>';
+        return;
+      }
+
+      container.innerHTML = relevant.map(p => {
+        const isRegOpen = p.is_active && today >= p.start_date && today <= p.end_date;
+        const gradeDeadline = new Date(p.end_date);
+        gradeDeadline.setDate(gradeDeadline.getDate() + (p.grade_entry_days || 14));
+        const gradeDeadlineStr = gradeDeadline.toISOString().split('T')[0];
+        const isGradeWindow = today > p.end_date && today <= gradeDeadlineStr;
+        const isRegistered = registeredPeriodIds.has(p.id);
+
+        let actionBtn = '';
+        if (isRegOpen && !isRegistered)
+          actionBtn = `<button onclick="openExamRegisterModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', false)" class="w-full mt-2 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition">📝 Prijavi se</button>`;
+        else if (isRegOpen && isRegistered)
+          actionBtn = `<button onclick="openExamRegisterModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', false)" class="w-full mt-2 py-1.5 text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition">✏️ Izmeni prijavu</button>`;
+        else if (isGradeWindow && isRegistered)
+          actionBtn = `<button onclick="openGradeEntryModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', '${gradeDeadlineStr}')" class="w-full mt-2 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition">🎓 Unesi ocene</button>`;
+
+        const badge = isRegOpen
+          ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Prijave otvorene</span>'
+          : isGradeWindow
+            ? '<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">✍️ Unos ocena</span>'
+            : '';
+
+        return `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <div class="flex items-start justify-between gap-1">
+            <span class="font-bold text-sm text-slate-900 leading-tight">${p.name}</span>
+            ${badge}
+          </div>
+          <p class="text-[11px] text-slate-500 mt-1">${isRegOpen ? `Rok za prijavu: do <b>${p.end_date}</b>` : isGradeWindow ? `Unos ocena do: <b>${gradeDeadlineStr}</b>` : ''}</p>
+          ${actionBtn}
+        </div>`;
+      }).join('');
+    }
+
+    // =============================================
+    // EXAM REGISTER MODAL
+    // =============================================
+    let currentExamPeriodId = null;
+
+    async function openExamRegisterModal(periodId, periodName, editMode) {
+      currentExamPeriodId = periodId;
+      document.getElementById('exam-register-title').textContent = `Prijava: ${periodName}`;
+      const container = document.getElementById('exam-register-subjects');
+      container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Učitavanje predmeta...</p>';
+      document.getElementById('exam-register-modal').classList.remove('hidden');
+
+      // Get subjects without grade
+      const unpassed = subjects.filter(s => s.grade === null || s.grade < 6);
+      // Get already registered
+      const existing = await cloudLoadMyRegistrations(currentUser.key, periodId);
+      const existingIds = new Set(existing.map(r => r.subject_id));
+
+      if (!unpassed.length) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema nepoloženih predmeta za prijavu.</p>';
+        return;
+      }
+
+      // Group by semester
+      const bySem = {};
+      unpassed.forEach(s => { if (!bySem[s.semester]) bySem[s.semester] = []; bySem[s.semester].push(s); });
+
+      container.innerHTML = Object.entries(bySem).sort(([a],[b]) => a-b).map(([sem, subs]) =>
+        `<div class="mb-3">
+          <p class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">${sem}. semestar</p>
+          <div class="space-y-1.5">
+            ${subs.map(s => `
+              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 cursor-pointer transition">
+                <input type="checkbox" value="${s.id}" data-name="${s.name}" data-espb="${s.espb}" data-semester="${s.semester}" class="exam-check accent-emerald-600 w-4 h-4 shrink-0" ${existingIds.has(s.id) ? 'checked' : ''}>
+                <span class="text-xs text-slate-700 flex-1">${s.name}</span>
+                <span class="text-[10px] text-slate-400 shrink-0">${s.espb} ESPB</span>
+              </label>`).join('')}
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    function closeExamRegisterModal() {
+      document.getElementById('exam-register-modal').classList.add('hidden');
+      currentExamPeriodId = null;
+    }
+
+    async function submitExamRegistration() {
+      const checks = document.querySelectorAll('.exam-check:checked');
+      if (!checks.length) { showToast('Izaberi bar jedan predmet.', 'error'); return; }
+      const selected = Array.from(checks).map(c => ({
+        id: c.value,
+        name: c.dataset.name,
+        espb: parseInt(c.dataset.espb),
+        semester: parseInt(c.dataset.semester)
+      }));
+      const ok = await cloudRegisterForExams(currentUser.key, currentExamPeriodId, selected);
+      if (ok) {
+        showToast(`Prijavljeno ${selected.length} predmeta!`, 'success');
+        closeExamRegisterModal();
+        loadStudentExamPeriods();
+      } else {
+        showToast('Greška pri prijavi.', 'error');
+      }
+    }
+
+    // =============================================
+    // GRADE ENTRY MODAL
+    // =============================================
+    let currentGradePeriodId = null;
+
+    async function openGradeEntryModal(periodId, periodName, deadline) {
+      currentGradePeriodId = periodId;
+      document.getElementById('grade-entry-title').textContent = `Ocene: ${periodName}`;
+      const container = document.getElementById('grade-entry-subjects');
+      container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Učitavanje...</p>';
+      document.getElementById('grade-entry-modal').classList.remove('hidden');
+
+      const regs = await cloudLoadMyRegistrations(currentUser.key, periodId);
+      if (!regs.length) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema prijavljenih predmeta za ovaj rok.</p>';
+        return;
+      }
+
+      container.innerHTML = regs.map(r => `
+        <div class="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold text-slate-800 truncate">${r.subject_name}</p>
+            <p class="text-[10px] text-slate-400">${r.espb} ESPB · ${r.semester}. semestar</p>
+          </div>
+          <select data-reg-id="${r.id}" data-subject-id="${r.subject_id}" class="grade-entry-select text-sm bg-white border border-slate-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-900 shrink-0">
+            <option value="">— Ocena —</option>
+            <option value="nije" ${!r.grade ? 'selected':''}>Nisam položio/la</option>
+            ${[6,7,8,9,10].map(g => `<option value="${g}" ${r.grade===g?'selected':''}>${g}</option>`).join('')}
+          </select>
+        </div>`).join('');
+
+      // Deadline notice
+      container.insertAdjacentHTML('afterbegin', `<div class="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-1">
+        <p class="text-xs text-amber-700 font-bold">⏰ Rok za unos ocena: ${deadline}</p>
+        <p class="text-[10px] text-amber-600 mt-0.5">Ocene se automatski prenose na tvoj kalkulator.</p>
+      </div>`);
+    }
+
+    function closeGradeEntryModal() {
+      document.getElementById('grade-entry-modal').classList.add('hidden');
+      currentGradePeriodId = null;
+    }
+
+    async function submitGradeEntry() {
+      const selects = document.querySelectorAll('.grade-entry-select');
+      let saved = 0;
+      for (const sel of selects) {
+        const val = sel.value;
+        if (!val || val === 'nije') continue;
+        const grade = parseInt(val);
+        const regId = sel.dataset.regId;
+        const subjectId = sel.dataset.subjectId;
+        const ok = await cloudSaveRegistrationGrade(regId, grade, subjectId, currentUser.key);
+        if (ok) saved++;
+      }
+      if (saved > 0) {
+        showToast(`${saved} ocena sačuvano!`, 'success');
+        // Reload subjects from DB
+        const fresh = await cloudLoadSubjects(currentUser.key);
+        subjects = fresh;
+        renderSubjects();
+        updateStats();
+        closeGradeEntryModal();
+        loadStudentExamPeriods();
+      } else {
+        showToast('Ništa nije promenjeno.', 'info');
+        closeGradeEntryModal();
+      }
+    }
+
+    // =============================================
+    // PUSH NOTIFIKACIJE
+    // =============================================
+    async function requestNotificationPermission() {
+      if (!('Notification' in window)) { showToast('Tvoj browser ne podržava notifikacije.', 'error'); return; }
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        updateNotifButton('granted');
+        showToast('Notifikacije uključene! ✅', 'success');
+        registerServiceWorker();
+        if (currentUser) saveNotificationSubscription();
+      } else {
+        updateNotifButton('denied');
+        showToast('Notifikacije blokirane. Dozvoli ih u podešavanjima browsera.', 'error');
+      }
+    }
+
+    function updateNotifButton(state) {
+      const btn = document.getElementById('notif-btn');
+      const lbl = document.getElementById('notif-btn-label');
+      if (!btn) return;
+      if (state === 'granted') {
+        btn.classList.replace('bg-slate-700','bg-emerald-700');
+        lbl.textContent = 'Notif ON';
+      } else if (state === 'denied') {
+        btn.classList.replace('bg-slate-700','bg-rose-700');
+        lbl.textContent = 'Blokirano';
+      }
+    }
+
+    function checkNotifStatus() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'granted') updateNotifButton('granted');
+      else if (Notification.permission === 'denied') updateNotifButton('denied');
+    }
+
+    function showPushNotification(title, body) {
+      if (Notification.permission !== 'granted') return;
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SHOW_NOTIFICATION', title, body });
+      } else {
+        new Notification(title, { body, icon: '/favicon.ico', badge: '/favicon.ico' });
+      }
+    }
+
+    function sendNotificationToAll(title, body) {
+      // For now, show local notification to admin too
+      showPushNotification(title, body);
+    }
+
+    async function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        try {
+          await navigator.serviceWorker.register('./sw.js');
+          console.log('✓ Service Worker registrovan');
+        } catch(e) { console.warn('SW greška:', e); }
+      }
+    }
+
+    async function saveNotificationSubscription() {
+      if (!currentUser || !('serviceWorker' in navigator)) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await sb.from('push_subscriptions').upsert({
+            user_key: currentUser.key,
+            subscription: sub.toJSON()
+          }, { onConflict: 'user_key' });
+        }
+      } catch(e) { console.warn('Push sub greška:', e); }
+    }
+
+    // Poll za nove rokove svakih 5 min
+    function startExamPeriodPolling() {
+      loadStudentExamPeriods();
+      setInterval(async () => {
+        if (!currentUser) return;
+        const periods = await cloudLoadExamPeriods();
+        const today = new Date().toISOString().split('T')[0];
+        const lastCheck = localStorage.getItem('lastPeriodCheck') || '2000-01-01';
+        periods.forEach(p => {
+          if (p.is_active && p.start_date === today && today > lastCheck) {
+            showPushNotification('📅 Otvoren ispitni rok!', `Prijave za "${p.name}" su otvorene.`);
+          }
+          const gradeStart = p.end_date;
+          if (!p.is_active && today > gradeStart && today <= gradeStart && today > lastCheck) {
+            showPushNotification('✍️ Unesi ocene!', `Rok za unos ocena za "${p.name}" je otvoren.`);
+          }
+        });
+        localStorage.setItem('lastPeriodCheck', today);
+        loadStudentExamPeriods();
+      }, 5 * 60 * 1000);
     }
 
   </script>
