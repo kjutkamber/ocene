@@ -378,6 +378,10 @@
               <input type="date" id="ep-end" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
             </div>
             <div>
+              <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">📅 Datum polaganja ispita</label>
+              <input type="date" id="ep-exam-date" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+            </div>
+            <div>
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Dani za unos ocene (posle roka)</label>
               <input type="number" id="ep-grade-days" value="14" min="1" max="60" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
             </div>
@@ -469,24 +473,6 @@
     </div>
   </div>
 
-  <!-- MODAL: PRIJAVA NA ISPIT -->
-  <div id="exam-register-modal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 max-h-[85vh] flex flex-col">
-      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white rounded-t-2xl shrink-0">
-        <div class="flex items-center gap-2"><i data-lucide="calendar-check" class="text-emerald-400 w-5 h-5"></i><h3 class="font-black text-base" id="exam-register-title">Prijava ispita</h3></div>
-        <button onclick="closeExamRegisterModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
-      </div>
-      <div class="p-4 border-b border-slate-100 shrink-0">
-        <p class="text-xs text-slate-500">Izaberi predmete koje prijavljuješ za ovaj ispitni rok:</p>
-      </div>
-      <div id="exam-register-subjects" class="overflow-y-auto flex-grow p-4 space-y-2"></div>
-      <div class="px-4 py-4 bg-slate-50 border-t border-slate-100 flex gap-2 shrink-0 rounded-b-2xl">
-        <button onclick="closeExamRegisterModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition">Otkaz</button>
-        <button onclick="submitExamRegistration()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition shadow-md">✓ Prijavi izabrane</button>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL: UNOS OCENE -->
   <div id="grade-entry-modal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 max-h-[85vh] flex flex-col">
@@ -554,13 +540,21 @@
     }
 
     async function cloudSaveSubjects(userKey, subjectsList) {
+      if (!currentUser) return false;
       const rows = subjectsList.map(s => ({ user_key: userKey, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, updated_at: new Date().toISOString() }));
       if (rows.length === 0) return true;
       const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
-      if (error) { console.error(error); return false; }
-      const currentIds = subjectsList.map(s => s.id);
-      const { error: delErr } = await sb.from('student_subjects').delete().eq('user_key', userKey).not('subject_id', 'in', `(${currentIds.join(',')})`);
-      if (delErr) console.warn(delErr);
+      if (error) { console.error('Upsert greška:', error); return false; }
+      // Delete removed subjects one by one to avoid IN query issues
+      const currentIds = new Set(subjectsList.map(s => s.id));
+      const { data: existing } = await sb.from('student_subjects').select('subject_id').eq('user_key', userKey);
+      if (existing) {
+        for (const row of existing) {
+          if (!currentIds.has(row.subject_id)) {
+            await sb.from('student_subjects').delete().eq('user_key', userKey).eq('subject_id', row.subject_id);
+          }
+        }
+      }
       return true;
     }
 
@@ -779,9 +773,12 @@
       unsavedChanges = false;
     }
     async function manualSave() {
-      showToast("Čuvanje u bazu...", "info");
-      await saveUserData();
-      showToast("Sve izmene su sačuvane!");
+      if (!currentUser) { showToast('Nisi ulogovan/a.', 'error'); return; }
+      showToast('Čuvanje u bazu...', 'info');
+      const ok = await cloudSaveSubjects(currentUser.key, subjects);
+      unsavedChanges = false;
+      if (ok) showToast('Sve izmene su sačuvane! ✓', 'success');
+      else showToast('Greška pri čuvanju! Pokušaj ponovo.', 'error');
     }
 
     function showToast(text, type = "success") {
@@ -1548,17 +1545,19 @@
       const name = document.getElementById('ep-name').value.trim();
       const start = document.getElementById('ep-start').value;
       const end = document.getElementById('ep-end').value;
+      const examDate = document.getElementById('ep-exam-date').value;
       const gradeDays = parseInt(document.getElementById('ep-grade-days').value) || 14;
       const errEl = document.getElementById('ep-error');
       errEl.classList.add('hidden');
-      if (!name || !start || !end) { errEl.textContent = 'Popuni sva polja.'; errEl.classList.remove('hidden'); return; }
+      if (!name || !start || !end) { errEl.textContent = 'Popuni naziv i datume prijava.'; errEl.classList.remove('hidden'); return; }
       if (start > end) { errEl.textContent = 'Početak mora biti pre kraja.'; errEl.classList.remove('hidden'); return; }
-      const ok = await cloudSaveExamPeriod({ name, start_date: start, end_date: end, grade_entry_days: gradeDays, is_active: false });
+      const ok = await cloudSaveExamPeriod({ name, start_date: start, end_date: end, exam_date: examDate || null, grade_entry_days: gradeDays, is_active: false });
       if (ok) {
         showToast('Rok sačuvan!', 'success');
         document.getElementById('ep-name').value = '';
         document.getElementById('ep-start').value = '';
         document.getElementById('ep-end').value = '';
+        document.getElementById('ep-exam-date').value = '';
         loadAdminExamPeriods();
       } else {
         errEl.textContent = 'Greška pri čuvanju.'; errEl.classList.remove('hidden');
@@ -1571,18 +1570,18 @@
       const periods = await cloudLoadExamPeriods();
       if (!periods.length) { list.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema rokova.</p>'; return; }
       list.innerHTML = periods.map(p => {
-        const today = new Date().toISOString().split('T')[0];
         const gradeDeadline = new Date(p.end_date);
         gradeDeadline.setDate(gradeDeadline.getDate() + (p.grade_entry_days || 14));
         const gradeDeadlineStr = gradeDeadline.toISOString().split('T')[0];
-        let statusBadge = p.is_active
+        const statusBadge = p.is_active
           ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Aktivan</span>'
           : '<span class="bg-slate-100 text-slate-500 text-[10px] font-bold px-2 py-0.5 rounded-full">⚫ Neaktivan</span>';
         return `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-start justify-between gap-2">
           <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap"><span class="font-bold text-sm text-slate-900">${p.name}</span>${statusBadge}</div>
-            <p class="text-[11px] text-slate-500 mt-1">Prijave: <b>${p.start_date}</b> → <b>${p.end_date}</b></p>
-            <p class="text-[11px] text-slate-400">Unos ocena do: <b>${gradeDeadlineStr}</b> (${p.grade_entry_days || 14} dana)</p>
+            <div class="flex items-center gap-2 flex-wrap mb-1"><span class="font-bold text-sm text-slate-900">${p.name}</span>${statusBadge}</div>
+            <p class="text-[11px] text-slate-500">Prijave: <b>${p.start_date}</b> → <b>${p.end_date}</b></p>
+            ${p.exam_date ? `<p class="text-[11px] text-indigo-600 font-bold">📅 Polaganje: ${p.exam_date}</p>` : ''}
+            <p class="text-[11px] text-slate-400">Unos ocena do: <b>${gradeDeadlineStr}</b></p>
           </div>
           <div class="flex flex-col gap-1 shrink-0">
             <button onclick="toggleExamPeriod('${p.id}', ${!p.is_active})" class="text-[10px] font-bold px-2 py-1 rounded-lg border ${p.is_active ? 'border-rose-200 text-rose-600 hover:bg-rose-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'} transition">${p.is_active ? '⏸ Zatvori' : '▶ Otvori'}</button>
@@ -1619,12 +1618,10 @@
       const myRegs = await cloudLoadMyRegistrations(currentUser.key);
       const registeredPeriodIds = new Set(myRegs.map(r => r.exam_period_id));
 
-      // Filter relevant periods (active, or grade entry window)
       const relevant = periods.filter(p => {
         const gradeDeadline = new Date(p.end_date);
         gradeDeadline.setDate(gradeDeadline.getDate() + (p.grade_entry_days || 14));
-        const gradeDeadlineStr = gradeDeadline.toISOString().split('T')[0];
-        return p.is_active || (today > p.end_date && today <= gradeDeadlineStr);
+        return p.is_active || (today > p.end_date && today <= gradeDeadline.toISOString().split('T')[0]);
       });
 
       if (!relevant.length) {
@@ -1637,97 +1634,67 @@
         const gradeDeadline = new Date(p.end_date);
         gradeDeadline.setDate(gradeDeadline.getDate() + (p.grade_entry_days || 14));
         const gradeDeadlineStr = gradeDeadline.toISOString().split('T')[0];
-        const isGradeWindow = today > p.end_date && today <= gradeDeadlineStr;
+        const isGradeWindow = !p.is_active && today > p.end_date && today <= gradeDeadlineStr;
         const isRegistered = registeredPeriodIds.has(p.id);
-
-        let actionBtn = '';
-        if (isRegOpen && !isRegistered)
-          actionBtn = `<button onclick="openExamRegisterModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', false)" class="w-full mt-2 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition">📝 Prijavi se</button>`;
-        else if (isRegOpen && isRegistered)
-          actionBtn = `<button onclick="openExamRegisterModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', false)" class="w-full mt-2 py-1.5 text-xs font-bold bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg transition">✏️ Izmeni prijavu</button>`;
-        else if (isGradeWindow && isRegistered)
-          actionBtn = `<button onclick="openGradeEntryModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', '${gradeDeadlineStr}')" class="w-full mt-2 py-1.5 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition">🎓 Unesi ocene</button>`;
 
         const badge = isRegOpen
           ? '<span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">🟢 Prijave otvorene</span>'
-          : isGradeWindow
-            ? '<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">✍️ Unos ocena</span>'
-            : '';
+          : '<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">✍️ Unos ocena</span>';
+
+        let actionArea = '';
+        if (isRegOpen) {
+          // Simple toggle - did you register or not
+          if (!isRegistered) {
+            actionArea = `<button onclick="markExamRegistered('${p.id}', true)" class="w-full mt-2 py-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition flex items-center justify-center gap-2">
+              <i data-lucide="check" class="w-3.5 h-3.5"></i> Prijavio/la sam se
+            </button>`;
+          } else {
+            actionArea = `<div class="mt-2 space-y-1.5">
+              <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+                <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+                <span class="text-xs font-bold text-emerald-700">Prijavljen/a si</span>
+              </div>
+              <button onclick="markExamRegistered('${p.id}', false)" class="w-full py-1.5 text-[10px] font-bold text-slate-400 hover:text-rose-500 transition">Otkaži prijavu</button>
+            </div>`;
+          }
+        } else if (isGradeWindow && isRegistered) {
+          actionArea = `<button onclick="openGradeEntryModal('${p.id}', '${p.name.replace(/'/g,"\\'")}', '${gradeDeadlineStr}')" class="w-full mt-2 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition flex items-center justify-center gap-2">
+            <i data-lucide="pen-line" class="w-3.5 h-3.5"></i> Unesi ocene
+          </button>`;
+        }
 
         return `<div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
-          <div class="flex items-start justify-between gap-1">
+          <div class="flex items-start justify-between gap-1 mb-1">
             <span class="font-bold text-sm text-slate-900 leading-tight">${p.name}</span>
             ${badge}
           </div>
-          <p class="text-[11px] text-slate-500 mt-1">${isRegOpen ? `Rok za prijavu: do <b>${p.end_date}</b>` : isGradeWindow ? `Unos ocena do: <b>${gradeDeadlineStr}</b>` : ''}</p>
-          ${actionBtn}
+          ${p.exam_date ? `<p class="text-[11px] text-indigo-600 font-bold">📅 Polaganje: ${p.exam_date}</p>` : ''}
+          <p class="text-[11px] text-slate-500">${isRegOpen ? `Prijave do: <b>${p.end_date}</b>` : `Unos ocena do: <b>${gradeDeadlineStr}</b>`}</p>
+          ${actionArea}
         </div>`;
       }).join('');
+      lucide.createIcons();
     }
 
-    // =============================================
-    // EXAM REGISTER MODAL
-    // =============================================
-    let currentExamPeriodId = null;
-
-    async function openExamRegisterModal(periodId, periodName, editMode) {
-      currentExamPeriodId = periodId;
-      document.getElementById('exam-register-title').textContent = `Prijava: ${periodName}`;
-      const container = document.getElementById('exam-register-subjects');
-      container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Učitavanje predmeta...</p>';
-      document.getElementById('exam-register-modal').classList.remove('hidden');
-
-      // Get subjects without grade
-      const unpassed = subjects.filter(s => s.grade === null || s.grade < 6);
-      // Get already registered
-      const existing = await cloudLoadMyRegistrations(currentUser.key, periodId);
-      const existingIds = new Set(existing.map(r => r.subject_id));
-
-      if (!unpassed.length) {
-        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema nepoloženih predmeta za prijavu.</p>';
-        return;
-      }
-
-      // Group by semester
-      const bySem = {};
-      unpassed.forEach(s => { if (!bySem[s.semester]) bySem[s.semester] = []; bySem[s.semester].push(s); });
-
-      container.innerHTML = Object.entries(bySem).sort(([a],[b]) => a-b).map(([sem, subs]) =>
-        `<div class="mb-3">
-          <p class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">${sem}. semestar</p>
-          <div class="space-y-1.5">
-            ${subs.map(s => `
-              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-slate-200 hover:bg-emerald-50 hover:border-emerald-300 cursor-pointer transition">
-                <input type="checkbox" value="${s.id}" data-name="${s.name}" data-espb="${s.espb}" data-semester="${s.semester}" class="exam-check accent-emerald-600 w-4 h-4 shrink-0" ${existingIds.has(s.id) ? 'checked' : ''}>
-                <span class="text-xs text-slate-700 flex-1">${s.name}</span>
-                <span class="text-[10px] text-slate-400 shrink-0">${s.espb} ESPB</span>
-              </label>`).join('')}
-          </div>
-        </div>`
-      ).join('');
-    }
-
-    function closeExamRegisterModal() {
-      document.getElementById('exam-register-modal').classList.add('hidden');
-      currentExamPeriodId = null;
-    }
-
-    async function submitExamRegistration() {
-      const checks = document.querySelectorAll('.exam-check:checked');
-      if (!checks.length) { showToast('Izaberi bar jedan predmet.', 'error'); return; }
-      const selected = Array.from(checks).map(c => ({
-        id: c.value,
-        name: c.dataset.name,
-        espb: parseInt(c.dataset.espb),
-        semester: parseInt(c.dataset.semester)
-      }));
-      const ok = await cloudRegisterForExams(currentUser.key, currentExamPeriodId, selected);
-      if (ok) {
-        showToast(`Prijavljeno ${selected.length} predmeta!`, 'success');
-        closeExamRegisterModal();
-        loadStudentExamPeriods();
+    async function markExamRegistered(periodId, registered) {
+      if (!currentUser) return;
+      if (registered) {
+        // Insert a single "registered" row with no specific subject
+        const { error } = await sb.from('exam_registrations').upsert({
+          user_key: currentUser.key,
+          exam_period_id: periodId,
+          subject_name: '__registered__',
+          subject_id: '__registered__',
+          espb: 0,
+          semester: 0
+        }, { onConflict: 'user_key,exam_period_id,subject_id' });
+        if (!error) { showToast('Prijava zabeležena! ✓', 'success'); loadStudentExamPeriods(); }
+        else { showToast('Greška pri prijavi.', 'error'); console.error(error); }
       } else {
-        showToast('Greška pri prijavi.', 'error');
+        const { error } = await sb.from('exam_registrations').delete()
+          .eq('user_key', currentUser.key).eq('exam_period_id', periodId);
+        if (!error) { showToast('Prijava otkazana.', 'info'); loadStudentExamPeriods(); }
+        else showToast('Greška.', 'error');
       }
     }
 
