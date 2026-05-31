@@ -478,6 +478,27 @@
     </div>
   </div>
 
+  <!-- MODAL: PRILAGOĐENA NOTIFIKACIJA -->
+  <div id="custom-notif-modal" class="hidden fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4 text-amber-500"></i> Prilagođena notifikacija</h3>
+        <button onclick="document.getElementById('custom-notif-modal').classList.add('hidden')" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Naslov</label>
+          <input type="text" id="custom-notif-title" placeholder="npr. Važno obaveštenje" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Poruka</label>
+          <textarea id="custom-notif-body" rows="3" placeholder="Tekst obaveštenja..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-900 resize-none"></textarea>
+        </div>
+        <button onclick="sendCustomNotif()" class="w-full py-2.5 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition">📨 Pošalji svim studentima</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: UNOS OCENE -->
   <div id="grade-entry-modal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 max-h-[85vh] flex flex-col">
@@ -3482,6 +3503,17 @@
             <div class="flex items-center gap-2 flex-wrap mb-1"><span class="font-bold text-sm text-slate-900">${p.name}</span>${badge}</div>
             <p class="text-[11px] text-slate-500">Prijave: <b>${p.start_date}</b> → <b>${p.end_date}</b></p>
             ${(p.exam_date_start || p.exam_date) ? `<p class="text-[11px] text-indigo-600 font-bold">📅 Polaganje: ${p.exam_date_start ? p.exam_date_start + ' → ' : ''}${p.exam_date || ''}</p>` : ''}
+            <!-- Inline notif sender -->
+            <div class="mt-2 pt-2 border-t border-slate-200">
+              <p class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">📨 Pošalji obaveštenje studentima</p>
+              <div class="flex flex-wrap gap-1">
+                <button onclick="sendPeriodNotif('${p.id}','${p.name.replace(/'/g,"\\'")}','prijava_pocela')" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition">🟢 Prijave otvorene</button>
+                <button onclick="sendPeriodNotif('${p.id}','${p.name.replace(/'/g,"\\'")}','prijava_uskoro')" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 transition">⏰ Uskoro kraj prijava</button>
+                <button onclick="sendPeriodNotif('${p.id}','${p.name.replace(/'/g,"\\'")}','prijava_zavrsena')" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 border border-slate-300 text-slate-600 hover:bg-slate-200 transition">🔴 Prijave zatvorene</button>
+                <button onclick="sendPeriodNotif('${p.id}','${p.name.replace(/'/g,"\\'")}','polaganje_uskoro')" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition">🎓 Polaganje uskoro</button>
+                <button onclick="sendPeriodNotif('${p.id}','${p.name.replace(/'/g,"\\'")}','custom')" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition">✏️ Prilagođeno</button>
+              </div>
+            </div>
           </div>
           <div class="flex flex-col gap-1 shrink-0">
             <button onclick="toggleExamPeriod('${p.id}', ${!p.is_active})" class="text-[10px] font-bold px-2 py-1 rounded-lg border ${p.is_active ? 'border-rose-200 text-rose-600 hover:bg-rose-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'} transition">${p.is_active ? '⏸ Zatvori' : '▶ Otvori'}</button>
@@ -3498,6 +3530,56 @@
         loadAdminExamPeriods();
       }
     }
+    async function callEdgeFunction(title, body) {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/rapid-handler`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+        body: JSON.stringify({ test: true, title, body })
+      });
+      return resp.json();
+    }
+
+    async function sendPeriodNotif(periodId, periodName, type) {
+      const templates = {
+        prijava_pocela:   { title: `📅 Prijave otvorene: ${periodName}`,        body: `Prijave za ispitni rok "${periodName}" su otvorene. Prijavi se na vreme!` },
+        prijava_uskoro:   { title: `⚠️ Uskoro ističu prijave: ${periodName}`,   body: `Rok za prijavu ispita "${periodName}" uskoro ističe. Ne zaboravi da se prijaviš!` },
+        prijava_zavrsena: { title: `🔴 Prijave zatvorene: ${periodName}`,        body: `Prijave za ispitni rok "${periodName}" su zatvorene.` },
+        polaganje_uskoro: { title: `🎓 Uskoro polaganje: ${periodName}`,         body: `Ispitni rok "${periodName}" počinje uskoro. Srećno na ispitima!` },
+      };
+
+      if (type === 'custom') {
+        document.getElementById('custom-notif-title').value = `📢 ${periodName}`;
+        document.getElementById('custom-notif-body').value = '';
+        document.getElementById('custom-notif-modal').classList.remove('hidden');
+        lucide.createIcons();
+        return;
+      }
+
+      const t = templates[type];
+      if (!t) return;
+      showToast('Šalje se...', 'info');
+      try {
+        const data = await callEdgeFunction(t.title, t.body);
+        showToast(`Poslato ${data.sent || 0} studentima! ✓`, 'success');
+      } catch(e) {
+        showToast('Greška: ' + e.message, 'error');
+      }
+    }
+
+    async function sendCustomNotif() {
+      const title = document.getElementById('custom-notif-title').value.trim();
+      const body = document.getElementById('custom-notif-body').value.trim();
+      if (!title || !body) { showToast('Popuni naslov i poruku.', 'error'); return; }
+      document.getElementById('custom-notif-modal').classList.add('hidden');
+      showToast('Šalje se...', 'info');
+      try {
+        const data = await callEdgeFunction(title, body);
+        showToast(`Poslato ${data.sent || 0} studentima! ✓`, 'success');
+      } catch(e) {
+        showToast('Greška: ' + e.message, 'error');
+      }
+    }
+
     async function sendTestNotification() {
       const btn = document.getElementById('test-notif-btn');
       const result = document.getElementById('test-notif-result');
