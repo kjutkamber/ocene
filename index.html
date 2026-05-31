@@ -3776,8 +3776,10 @@
       if (!('Notification' in window)) { showToast('Browser ne podržava notifikacije.', 'error'); return; }
       if (Notification.permission === 'denied') { showToast('Dozvoli notifikacije u podešavanjima browsera.', 'error'); return; }
       if (Notification.permission === 'granted') {
+        showToast('Čuvanje pretplate...', 'info');
+        await registerServiceWorker();
         await subscribeToVapid();
-        showToast('Notifikacije su već uključene! ✓', 'success');
+        showToast('Pretplata sačuvana! ✓', 'success');
         return;
       }
       const perm = await Notification.requestPermission();
@@ -3785,7 +3787,7 @@
         checkNotifStatus();
         await registerServiceWorker();
         await subscribeToVapid();
-        showToast('Notifikacije uključene! Primićeš ih i kad je sajt zatvoren. ✓', 'success');
+        showToast('Notifikacije uključene! ✓', 'success');
       } else {
         checkNotifStatus();
         showToast('Dozvoli notifikacije u podešavanjima browsera.', 'error');
@@ -3793,24 +3795,37 @@
     }
 
     async function subscribeToVapid() {
-      if (!('serviceWorker' in navigator) || !currentUser) return;
+      if (!('serviceWorker' in navigator) || !currentUser) {
+        console.warn('SW not supported or no user');
+        return;
+      }
       try {
         const reg = await navigator.serviceWorker.ready;
-        let sub = await reg.pushManager.getSubscription();
-        if (!sub) {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-          });
-        }
-        const { error } = await sb.from('push_subscriptions').upsert({
+        // Unsubscribe existing first to force fresh subscription
+        const existing = await reg.pushManager.getSubscription();
+        if (existing) await existing.unsubscribe();
+        // Create new subscription
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        const subJson = sub.toJSON();
+        console.log('New subscription:', subJson.endpoint);
+        // Save to Supabase — delete old first then insert
+        await sb.from('push_subscriptions').delete().eq('user_key', currentUser.key);
+        const { error } = await sb.from('push_subscriptions').insert({
           user_key: currentUser.key,
-          subscription: sub.toJSON()
-        }, { onConflict: 'user_key' });
-        if (error) console.warn('Push sub save error:', error);
-        else console.log('✓ Push subscription saved');
+          subscription: subJson
+        });
+        if (error) {
+          console.error('Push sub save error:', error);
+          showToast('Greška čuvanja pretplate: ' + error.message, 'error');
+        } else {
+          console.log('✓ Push subscription saved for', currentUser.key);
+        }
       } catch(e) {
-        console.warn('VAPID subscribe error:', e);
+        console.error('VAPID subscribe error:', e);
+        showToast('Greška pretplate: ' + e.message, 'error');
       }
     }
 
