@@ -3505,7 +3505,7 @@
       btn.disabled = true;
       try {
         const resp = await fetch(
-          `${SUPABASE_URL}/functions/v1/send-push-notifications`,
+          `${SUPABASE_URL}/functions/v1/rapid-handler`,
           {
             method: 'POST',
             headers: {
