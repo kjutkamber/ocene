@@ -3535,6 +3535,7 @@
       btn.textContent = '🔔 Pošalji test notifikaciju';
       btn.disabled = false;
     }
+    async function deleteExamPeriod(id) {
       if (!confirm('Obriši ovaj rok i sve prijave studenata?')) return;
       // First delete all registrations for this period (FK constraint)
       const { error: regErr } = await sb.from('exam_registrations').delete().eq('exam_period_id', id);
