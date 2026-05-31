@@ -1,34 +1,13 @@
-// Service Worker za push notifikacije
-// Verzija: 1.0
+// Service Worker — verzija 2.0 (VAPID push)
 
-self.addEventListener('install', e => {
-  self.skipWaiting();
-});
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(clients.claim()));
 
-self.addEventListener('activate', e => {
-  e.waitUntil(clients.claim());
-});
-
-// Prima poruku od glavne stranice i prikazuje notifikaciju
-self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'SHOW_NOTIFICATION') {
-    self.registration.showNotification(e.data.title, {
-      body: e.data.body,
-      icon: './favicon.ico',
-      badge: './favicon.ico',
-      vibrate: [200, 100, 200],
-      tag: 'akademski-portal',
-      renotify: true,
-      data: { url: self.location.origin }
-    });
-  }
-});
-
-// Prikazuje push notifikaciju primljenu sa servera (Supabase Edge Function)
+// Prima push sa servera (Supabase Edge Function)
 self.addEventListener('push', e => {
-  let data = { title: 'Akademski portal', body: 'Imate novo obaveštenje.' };
+  let data = { title: 'Studentski portal', body: 'Novo obaveštenje.' };
   if (e.data) {
-    try { data = e.data.json(); } catch(_) { data.body = e.data.text(); }
+    try { data = e.data.json(); } catch { data.body = e.data.text(); }
   }
   e.waitUntil(
     self.registration.showNotification(data.title, {
@@ -36,20 +15,34 @@ self.addEventListener('push', e => {
       icon: './favicon.ico',
       badge: './favicon.ico',
       vibrate: [200, 100, 200],
-      tag: 'akademski-portal',
+      tag: 'studentski-portal',
       renotify: true,
       data: { url: self.location.origin }
     })
   );
 });
 
-// Klik na notifikaciju otvara stranicu
+// Prima poruku od stranice (za instant notifikacije)
+self.addEventListener('message', e => {
+  if (e.data?.type === 'SHOW_NOTIFICATION') {
+    self.registration.showNotification(e.data.title, {
+      body: e.data.body,
+      icon: './favicon.ico',
+      vibrate: [200, 100, 200],
+      tag: 'studentski-portal',
+      renotify: true,
+      data: { url: self.location.origin }
+    });
+  }
+});
+
+// Klik na notifikaciju otvara sajt
 self.addEventListener('notificationclick', e => {
   e.notification.close();
   e.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) return client.focus();
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if (c.url.includes(self.location.origin) && 'focus' in c) return c.focus();
       }
       if (clients.openWindow) return clients.openWindow(e.notification.data?.url || '/');
     })

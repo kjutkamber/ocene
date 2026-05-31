@@ -390,6 +390,15 @@
           <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">📋 Svi rokovi</h4>
           <div id="ep-list" class="space-y-2"><p class="text-xs text-slate-400 text-center py-4">Učitavanje...</p></div>
         </div>
+        <!-- TEST DUGME -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <h4 class="text-xs font-black text-amber-700 uppercase tracking-widest mb-2">🧪 Test notifikacija</h4>
+          <p class="text-[11px] text-amber-600 mb-3">Pošalji test push notifikaciju svim pretplaćenim uređajima da proveriš da li radi.</p>
+          <button onclick="sendTestNotification()" id="test-notif-btn" class="w-full py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition">
+            🔔 Pošalji test notifikaciju
+          </button>
+          <p id="test-notif-result" class="text-[11px] mt-2 hidden"></p>
+        </div>
       </div>
       <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-3xl">
         <button onclick="closeAdminMasterModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Zatvori panel</button>
@@ -3489,7 +3498,43 @@
         loadAdminExamPeriods();
       }
     }
-    async function deleteExamPeriod(id) {
+    async function sendTestNotification() {
+      const btn = document.getElementById('test-notif-btn');
+      const result = document.getElementById('test-notif-result');
+      btn.textContent = '⏳ Šalje se...';
+      btn.disabled = true;
+      try {
+        const resp = await fetch(
+          `${SUPABASE_URL}/functions/v1/send-push-notifications`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ test: true, title: '🔔 Test notifikacija', body: 'Push notifikacije rade! Studentski portal.' })
+          }
+        );
+        const data = await resp.json();
+        result.classList.remove('hidden');
+        if (resp.ok) {
+          result.className = 'text-[11px] mt-2 text-emerald-700 font-bold';
+          result.textContent = `✓ Poslato! Odgovor: ${JSON.stringify(data)}`;
+          showToast('Test notifikacija poslata! ✓', 'success');
+        } else {
+          result.className = 'text-[11px] mt-2 text-rose-600 font-bold';
+          result.textContent = `Greška: ${JSON.stringify(data)}`;
+          showToast('Greška pri slanju.', 'error');
+        }
+      } catch(e) {
+        result.classList.remove('hidden');
+        result.className = 'text-[11px] mt-2 text-rose-600 font-bold';
+        result.textContent = `Greška: ${e.message}`;
+        showToast('Greška: ' + e.message, 'error');
+      }
+      btn.textContent = '🔔 Pošalji test notifikaciju';
+      btn.disabled = false;
+    }
       if (!confirm('Obriši ovaj rok i sve prijave studenata?')) return;
       // First delete all registrations for this period (FK constraint)
       const { error: regErr } = await sb.from('exam_registrations').delete().eq('exam_period_id', id);
@@ -3702,34 +3747,72 @@
     }
 
     // =============================================
-    // PUSH NOTIFIKACIJE
+    // PUSH NOTIFIKACIJE (VAPID)
     // =============================================
+    const VAPID_PUBLIC_KEY = 'BEP0E_HvIrm2qR-FC881AgHrWqXRlH3xH5Qt2PpuvAC-rhy2i-pPgDTkEdZMb8115d8J1t-r1vHn9QPZ08oZnW0';
+
+    function urlBase64ToUint8Array(b) {
+      const pad = '='.repeat((4 - b.length % 4) % 4);
+      const base64 = (b + pad).replace(/-/g, '+').replace(/_/g, '/');
+      return Uint8Array.from([...atob(base64)].map(c => c.charCodeAt(0)));
+    }
+
     function checkNotifStatus() {
       if (!('Notification' in window)) return;
       const btn = document.getElementById('notif-btn');
       const lbl = document.getElementById('notif-btn-label');
       if (!btn) return;
       if (Notification.permission === 'granted') {
-        btn.classList.replace('bg-slate-700','bg-emerald-700');
+        btn.classList.remove('bg-slate-700','bg-rose-700'); btn.classList.add('bg-emerald-700');
         lbl.textContent = 'Notif ON';
       } else if (Notification.permission === 'denied') {
-        btn.classList.replace('bg-slate-700','bg-rose-700');
+        btn.classList.remove('bg-slate-700','bg-emerald-700'); btn.classList.add('bg-rose-700');
         lbl.textContent = 'Blokirano';
       }
     }
+
     async function requestNotificationPermission() {
       if (!('Notification' in window)) { showToast('Browser ne podržava notifikacije.', 'error'); return; }
-      if (Notification.permission === 'granted') { showToast('Notifikacije su već uključene! ✓', 'success'); return; }
+      if (Notification.permission === 'denied') { showToast('Dozvoli notifikacije u podešavanjima browsera.', 'error'); return; }
+      if (Notification.permission === 'granted') {
+        await subscribeToVapid();
+        showToast('Notifikacije su već uključene! ✓', 'success');
+        return;
+      }
       const perm = await Notification.requestPermission();
       if (perm === 'granted') {
         checkNotifStatus();
-        showToast('Notifikacije uključene! ✓', 'success');
-        registerServiceWorker();
+        await registerServiceWorker();
+        await subscribeToVapid();
+        showToast('Notifikacije uključene! Primićeš ih i kad je sajt zatvoren. ✓', 'success');
       } else {
         checkNotifStatus();
         showToast('Dozvoli notifikacije u podešavanjima browsera.', 'error');
       }
     }
+
+    async function subscribeToVapid() {
+      if (!('serviceWorker' in navigator) || !currentUser) return;
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+          });
+        }
+        const { error } = await sb.from('push_subscriptions').upsert({
+          user_key: currentUser.key,
+          subscription: sub.toJSON()
+        }, { onConflict: 'user_key' });
+        if (error) console.warn('Push sub save error:', error);
+        else console.log('✓ Push subscription saved');
+      } catch(e) {
+        console.warn('VAPID subscribe error:', e);
+      }
+    }
+
     function showPushNotification(title, body) {
       if (Notification.permission !== 'granted') return;
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -3738,12 +3821,15 @@
         new Notification(title, { body, icon: '/favicon.ico' });
       }
     }
+
     async function registerServiceWorker() {
-      if ('serviceWorker' in navigator) {
-        try { await navigator.serviceWorker.register('./sw.js'); }
-        catch(e) { console.warn('SW greška:', e); }
-      }
+      if (!('serviceWorker' in navigator)) return;
+      try {
+        await navigator.serviceWorker.register('./sw.js');
+        console.log('✓ Service Worker registrovan');
+      } catch(e) { console.warn('SW greška:', e); }
     }
+
     function startExamPeriodPolling() {
       loadStudentExamPeriods();
       setInterval(async () => {
@@ -3754,7 +3840,7 @@
         if (lastCheck !== today) {
           periods.forEach(p => {
             if (p.is_active && p.start_date === today) {
-              showPushNotification('📅 ' + p.name, 'Prijave za ispit su otvorene! Označi da si se prijavio/la.');
+              showPushNotification('📅 ' + p.name, 'Prijave za ispit su otvorene! Prijavi se na vreme.');
             }
           });
           localStorage.setItem('lastNotifCheck', today);
