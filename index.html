@@ -11,7 +11,8 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     body { font-family: 'Inter', sans-serif; }
-    .grade-celebration { position:fixed;inset:0;z-index:9999;pointer-events:none;display:flex;align-items:center;justify-content:center; }
+    .badge-unlock { animation: badgePop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
+    @keyframes badgePop { 0%{transform:scale(0) rotate(-10deg);opacity:0;} 70%{transform:scale(1.2) rotate(3deg);opacity:1;} 100%{transform:scale(1) rotate(0deg);opacity:1;} } position:fixed;inset:0;z-index:9999;pointer-events:none;display:flex;align-items:center;justify-content:center; }
     .checkmark-circle { width:100px;height:100px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards,pulseRing 0.6s ease 0.3s forwards,fadeOut 0.4s ease 1s forwards; }
     .checkmark-circle svg { width:52px;height:52px;stroke:white;stroke-width:3;fill:none;stroke-dasharray:80;stroke-dashoffset:80;animation:drawCheck 0.35s ease 0.2s forwards; }
     @keyframes popIn { 0%{transform:scale(0);opacity:0;} 70%{transform:scale(1.15);opacity:1;} 100%{transform:scale(1);opacity:1;} }
@@ -196,6 +197,11 @@
           <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
             <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena</h3>
             <div class="space-y-3" id="grade-distribution"></div>
+          </div>
+          <!-- BEDŽEVI -->
+          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
+            <h3 class="text-md font-bold text-slate-900 mb-1 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="award" class="text-yellow-500"></i> Bedževi</h3>
+            <div id="badges-container" class="mt-3"></div>
           </div>
           <!-- ISPITNI ROKOVI -->
           <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
@@ -2778,6 +2784,7 @@
       if (currentUser) markUnsaved();
       renderSemesters();
       updateChart();
+      checkBadges();
     }
 
     function renderSemesters() {
@@ -3947,6 +3954,112 @@
         }
         loadStudentExamPeriods();
       }, 5 * 60 * 1000);
+    }
+
+    // =============================================
+    // BEDŽEVI / BADGES
+    // =============================================
+    const BADGE_DEFINITIONS = [
+      // Akademski
+      { id: 'prvi_ispit',     emoji: '🐣', name: 'Prve korake!',       desc: 'Položio/la si prvi ispit.',                         check: (s,p) => p.length >= 1 },
+      { id: 'pet_ispita',     emoji: '📖', name: 'Marljiv/a student',  desc: 'Položio/la si 5 ispita.',                           check: (s,p) => p.length >= 5 },
+      { id: 'deset_ispita',   emoji: '📚', name: 'Bookworm',           desc: 'Položio/la si 10 ispita.',                          check: (s,p) => p.length >= 10 },
+      { id: 'dvadeset_ispita',emoji: '🎒', name: 'Pravi student',      desc: 'Položio/la si 20 ispita.',                          check: (s,p) => p.length >= 20 },
+      { id: 'espb_60',        emoji: '🎯', name: 'Četvrtina puta',     desc: 'Ostvario/la 60 ESPB bodova.',                       check: (s,p) => p.reduce((a,c)=>a+c.espb,0) >= 60 },
+      { id: 'espb_120',       emoji: '🎓', name: 'Polovina puta',      desc: 'Ostvario/la 120 ESPB bodova.',                      check: (s,p) => p.reduce((a,c)=>a+c.espb,0) >= 120 },
+      { id: 'espb_240',       emoji: '🏁', name: 'Diplomac!',          desc: 'Ostvario/la svih 240 ESPB bodova.',                 check: (s,p) => p.reduce((a,c)=>a+c.espb,0) >= 240 },
+      { id: 'prosek_8',       emoji: '⭐', name: 'Odličan student',    desc: 'Prosečna ocena iznad 8.0.',                         check: (s,p) => p.length>=5 && (p.reduce((a,c)=>a+c.grade,0)/p.length) >= 8.0 },
+      { id: 'prosek_9',       emoji: '🌟', name: 'Odličan sa pohvalom',desc: 'Prosečna ocena iznad 9.0.',                         check: (s,p) => p.length>=5 && (p.reduce((a,c)=>a+c.grade,0)/p.length) >= 9.0 },
+      { id: 'prosek_10',      emoji: '🥇', name: 'Savršenstvo',        desc: 'Prosečna ocena tačno 10.0!',                        check: (s,p) => p.length>=5 && (p.reduce((a,c)=>a+c.grade,0)/p.length) === 10.0 },
+      // Zabavni
+      { id: 'pet_desetki',    emoji: '💎', name: 'Perfekcionista',     desc: 'Ima 5 desetki.',                                    check: (s,p) => p.filter(x=>x.grade===10).length >= 5 },
+      { id: 'deset_desetki',  emoji: '👑', name: 'Elita',              desc: 'Ima 10 desetki.',                                   check: (s,p) => p.filter(x=>x.grade===10).length >= 10 },
+      { id: 'sem1_cist',      emoji: '🚀', name: 'Raketan start',      desc: 'Položio/la sve predmete u 1. semestru.',            check: (s,p) => { const s1 = s.filter(x=>x.semester===1); return s1.length>0 && s1.every(x=>x.grade>=6); } },
+      { id: 'sem_cist',       emoji: '🔥', name: 'Na pravom putu',     desc: 'Položio/la sve predmete u nekom semestru.',         check: (s,p) => { for(let i=1;i<=8;i++){const si=s.filter(x=>x.semester===i);if(si.length>0&&si.every(x=>x.grade>=6))return true;} return false; } },
+      { id: 'bez_sestice',    emoji: '🦅', name: 'Nema šestice!',      desc: 'Svi položeni ispiti su sa 7 ili više.',             check: (s,p) => p.length>=5 && p.every(x=>x.grade>=7) },
+      { id: 'sve_desetke_sem',emoji: '✨', name: 'Savršen semestar',   desc: 'Ceo semestar samo sa desetkama.',                   check: (s,p) => { for(let i=1;i<=8;i++){const si=s.filter(x=>x.semester===i&&x.grade!==null);if(si.length>=3&&si.every(x=>x.grade===10))return true;} return false; } },
+    ];
+
+    function checkBadges() {
+      if (!currentUser) return;
+      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
+      const storageKey = `badges_${currentUser.key}`;
+      const earned = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const newlyUnlocked = [];
+
+      BADGE_DEFINITIONS.forEach(badge => {
+        if (!earned.includes(badge.id) && badge.check(subjects, passed)) {
+          earned.push(badge.id);
+          newlyUnlocked.push(badge);
+        }
+      });
+
+      if (newlyUnlocked.length > 0) {
+        localStorage.setItem(storageKey, JSON.stringify(earned));
+        // Show unlock animations one by one
+        newlyUnlocked.forEach((badge, i) => {
+          setTimeout(() => showBadgeUnlock(badge), i * 1200);
+        });
+      }
+
+      renderBadges(earned);
+    }
+
+    function renderBadges(earnedIds) {
+      const container = document.getElementById('badges-container');
+      if (!container) return;
+      const earned = earnedIds || JSON.parse(localStorage.getItem(`badges_${currentUser?.key}`) || '[]');
+
+      if (earned.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Položi ispite da otključaš bedževe! 🎯</p>';
+        return;
+      }
+
+      const earnedBadges = BADGE_DEFINITIONS.filter(b => earned.includes(b.id));
+      const lockedBadges = BADGE_DEFINITIONS.filter(b => !earned.includes(b.id));
+
+      container.innerHTML = `
+        <div class="flex flex-wrap gap-2 mb-3">
+          ${earnedBadges.map(b => `
+            <div class="group relative cursor-help" title="${b.name}: ${b.desc}">
+              <div class="w-10 h-10 flex items-center justify-center bg-yellow-50 border-2 border-yellow-300 rounded-xl text-xl shadow-sm hover:scale-110 transition-transform">${b.emoji}</div>
+            </div>`).join('')}
+        </div>
+        <div class="border-t border-slate-100 pt-2 mt-1">
+          <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Zaključani (${lockedBadges.length})</p>
+          <div class="flex flex-wrap gap-2">
+            ${lockedBadges.map(b => `
+              <div class="group relative cursor-help" title="${b.name}: ${b.desc}">
+                <div class="w-10 h-10 flex items-center justify-center bg-slate-100 border-2 border-slate-200 rounded-xl text-xl opacity-30 grayscale">🔒</div>
+              </div>`).join('')}
+          </div>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-2 text-center">${earnedBadges.length} / ${BADGE_DEFINITIONS.length} otključano</p>`;
+    }
+
+    function showBadgeUnlock(badge) {
+      const overlay = document.createElement('div');
+      overlay.className = 'fixed inset-0 z-[9998] flex items-center justify-center pointer-events-none';
+      overlay.innerHTML = `
+        <div class="badge-unlock bg-white rounded-3xl shadow-2xl border-2 border-yellow-300 px-8 py-6 text-center max-w-xs">
+          <div class="text-6xl mb-2">${badge.emoji}</div>
+          <div class="text-xs font-black text-yellow-600 uppercase tracking-widest mb-1">Novi bedž!</div>
+          <div class="text-lg font-black text-slate-900">${badge.name}</div>
+          <div class="text-xs text-slate-500 mt-1">${badge.desc}</div>
+        </div>`;
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.remove(), 2500);
+      // Confetti
+      const colors = ['#f59e0b','#10b981','#6366f1','#ef4444','#ec4899'];
+      const cx = window.innerWidth/2, cy = window.innerHeight/2;
+      for (let i = 0; i < 20; i++) {
+        const angle = (360/20)*i, dist = 80+Math.random()*100, rad = (angle*Math.PI)/180;
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.cssText = `left:${cx}px;top:${cy}px;background:${colors[i%colors.length]};width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;--tx:${Math.cos(rad)*dist}px;--ty:${Math.sin(rad)*dist}px;animation-duration:${0.7+Math.random()*0.4}s;`;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1200);
+      }
     }
 
   </script>
