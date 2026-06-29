@@ -1,0 +1,13 @@
+{
+  "background_color": "#1d7a59",
+  "dir": "ltr",
+  "display": "fullscreen",
+  "name": "Eportal",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "Eportal",
+  "start_url": "https://kjutkamber.github.io/ocene/",
+  "theme_color": "#e4ef73",
+  "id": "kjutkamber",
+  "description": "fake studentski portal"
+}
