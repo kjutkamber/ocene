@@ -4,13 +4,22 @@
   "display": "fullscreen",
   "name": "Eportal",
   "orientation": "portrait",
+  "icons": [
+    {
+      "src": "launchericon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "launchericon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
   "scope": "/",
   "short_name": "Eportal",
   "start_url": "https://kjutkamber.github.io/ocene/",
   "theme_color": "#e4ef73",
   "id": "kjutkamber",
   "description": "fake studentski portal"
-  "src": "/launchericon-512x512.png",
-  "sizes": "512x512",
-  "type": "image/png"
 }
