@@ -252,6 +252,7 @@
               <option value="8">8 (Osam)</option>
               <option value="7">7 (Sedam)</option>
               <option value="6">6 (Šest)</option>
+              <option value="polozen">Položen (bez ocene)</option>
               <option value="null">Nema ocenu / Sluša se</option>
             </select>
           </div>
@@ -2758,11 +2759,17 @@
     // =============================================
     // STATISTICS
     // =============================================
+    // A subject counts as "passed" if it has a numeric grade >= 6, OR is marked
+    // "Položen" (passed, no numeric grade — e.g. pass/fail subjects).
+    function isPassedGrade(grade) {
+      return grade === 'polozen' || (typeof grade === 'number' && grade >= 6);
+    }
     function calculateStatistics() {
-      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
+      const numericPassed = subjects.filter(s => typeof s.grade === 'number' && s.grade >= 6);
+      const passed = subjects.filter(s => isPassedGrade(s.grade));
       const totalExams = subjects.length;
-      const sumGrades = passed.reduce((acc, curr) => acc + curr.grade, 0);
-      const simpleAverage = passed.length > 0 ? (sumGrades / passed.length).toFixed(2) : "0.00";
+      const sumGrades = numericPassed.reduce((acc, curr) => acc + curr.grade, 0);
+      const simpleAverage = numericPassed.length > 0 ? (sumGrades / numericPassed.length).toFixed(2) : "0.00";
       document.getElementById('gpa-simple').textContent = simpleAverage;
       const sumESPB = passed.reduce((acc, curr) => acc + curr.espb, 0);
       document.getElementById('total-espb').textContent = sumESPB;
@@ -2773,13 +2780,13 @@
       document.getElementById('passed-exams').textContent = passed.length;
       document.getElementById('total-exams-count').textContent = `/ ${totalExams}`;
       const distribution = {10:0,9:0,8:0,7:0,6:0};
-      passed.forEach(s => { if (distribution[s.grade] !== undefined) distribution[s.grade]++; });
+      numericPassed.forEach(s => { if (distribution[s.grade] !== undefined) distribution[s.grade]++; });
       const distContainer = document.getElementById('grade-distribution');
       distContainer.innerHTML = '';
       const maxCount = Math.max(...Object.values(distribution), 1);
       Object.keys(distribution).reverse().forEach(grade => {
         const count = distribution[grade];
-        const pct = (count / passed.length) * 100 || 0;
+        const pct = (count / numericPassed.length) * 100 || 0;
         distContainer.innerHTML += `<div><div class="flex justify-between items-center text-xs text-slate-700 font-semibold mb-1"><span>Ocena ${grade}</span><span class="text-slate-900 font-bold">${count} (${Math.round(pct)}%)</span></div><div class="w-full bg-slate-100 rounded-full h-2 border border-slate-200"><div class="bg-indigo-600 h-full rounded-full" style="width:${(count/maxCount)*100}%"></div></div></div>`;
       });
       if (currentUser) markUnsaved();
@@ -2801,10 +2808,11 @@
         const semSubjects = subjects.filter(sub => sub.semester === s);
         const filteredSemSubjects = semSubjects.filter(sub => sub.name.toLowerCase().includes(query));
         if (query !== '' && filteredSemSubjects.length === 0) continue;
-        const passedSem = semSubjects.filter(sub => sub.grade !== null && sub.grade >= 6);
+        const passedSem = semSubjects.filter(sub => isPassedGrade(sub.grade));
+        const numericPassedSem = semSubjects.filter(sub => typeof sub.grade === 'number' && sub.grade >= 6);
         const semESPB = passedSem.reduce((acc, curr) => acc + curr.espb, 0);
-        const semGradeSum = passedSem.reduce((acc, curr) => acc + curr.grade, 0);
-        const semAvg = passedSem.length > 0 ? (semGradeSum / passedSem.length).toFixed(2) : "0.00";
+        const semGradeSum = numericPassedSem.reduce((acc, curr) => acc + curr.grade, 0);
+        const semAvg = numericPassedSem.length > 0 ? (semGradeSum / numericPassedSem.length).toFixed(2) : "0.00";
         const semCard = document.createElement('div');
         semCard.className = "bg-white rounded-2xl shadow-md border border-slate-300/70 overflow-hidden";
         semCard.innerHTML = `
@@ -2822,10 +2830,11 @@
               <tbody class="divide-y divide-slate-100 bg-white">
                 ${filteredSemSubjects.length === 0 ? `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500 font-medium">Nema predmeta u ovom semestru.</td></tr>` :
                   filteredSemSubjects.map(sub => {
-                    const isPassed = sub.grade !== null && sub.grade >= 6;
+                    const isPassed = isPassedGrade(sub.grade);
+                    const gradeDisplay = sub.grade === 'polozen' ? 'Položen' : (sub.grade || '—');
                     return `<tr class="hover:bg-slate-50 transition">
                       <td class="px-6 py-4 font-semibold text-slate-900">${sub.name}</td>
-                      <td class="px-6 py-4 text-center"><span class="inline-block px-3 py-1 text-sm font-black rounded-lg ${isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}">${sub.grade || '—'}</span></td>
+                      <td class="px-6 py-4 text-center"><span class="inline-block px-3 py-1 text-sm font-black rounded-lg ${isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}">${gradeDisplay}</span></td>
                       <td class="px-6 py-4 text-center font-bold text-slate-700">${sub.espb}</td>
                       <td class="px-6 py-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}"><span class="w-1.5 h-1.5 rounded-full ${isPassed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>${isPassed ? 'Položen' : 'Sluša se'}</span></td>
                       <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
@@ -2934,7 +2943,7 @@
       const id = document.getElementById('modal-subject-id').value;
       const name = document.getElementById('modal-name').value.trim();
       const gradeVal = document.getElementById('modal-grade').value;
-      const grade = gradeVal === "null" ? null : parseInt(gradeVal);
+      const grade = gradeVal === "null" ? null : gradeVal === "polozen" ? "polozen" : parseInt(gradeVal);
       const espb = parseInt(document.getElementById('modal-espb').value);
       const semester = parseInt(document.getElementById('modal-semester').value);
       if (id) {
@@ -3153,17 +3162,18 @@
     // =============================================
     function printGradeStatement() {
       if (!currentUser) return;
-      const passed = subjects.filter(s => s.grade !== null && s.grade >= 6);
+      const passed = subjects.filter(s => isPassedGrade(s.grade));
+      const numericPassed = subjects.filter(s => typeof s.grade === 'number' && s.grade >= 6);
       const totalESPB = passed.reduce((a, c) => a + c.espb, 0);
-      const simpleAvg = passed.length > 0 ? (passed.reduce((a, c) => a + c.grade, 0) / passed.length).toFixed(2) : '0.00';
+      const simpleAvg = numericPassed.length > 0 ? (numericPassed.reduce((a, c) => a + c.grade, 0) / numericPassed.length).toFixed(2) : '0.00';
       const moduleLabel = MODULE_LABELS[currentUser.module] || currentUser.module || '—';
       let semRows = '';
       for (let s = 1; s <= 8; s++) {
-        const semSubjects = subjects.filter(sub => sub.semester === s && sub.grade !== null && sub.grade >= 6);
+        const semSubjects = subjects.filter(sub => sub.semester === s && isPassedGrade(sub.grade));
         if (semSubjects.length === 0) continue;
         semRows += `<tr class="sem-header"><td colspan="4">${s}. Semestar — ${Math.ceil(s/2)}. Godina</td></tr>`;
         semSubjects.forEach((sub, idx) => {
-          const gradeLabel = sub.grade===10?'Odličan (10)':sub.grade===9?'Odličan (9)':sub.grade===8?'Vrlo dobar (8)':sub.grade===7?'Dobar (7)':'Dovoljan (6)';
+          const gradeLabel = sub.grade==='polozen'?'Položen':sub.grade===10?'Odličan (10)':sub.grade===9?'Odličan (9)':sub.grade===8?'Vrlo dobar (8)':sub.grade===7?'Dobar (7)':'Dovoljan (6)';
           semRows += `<tr class="${idx%2===0?'even':'odd'}"><td>${sub.name}</td><td class="center">${sub.espb}</td><td class="center grade-${sub.grade}">${gradeLabel}</td><td class="center">Položen</td></tr>`;
         });
       }
@@ -3975,8 +3985,8 @@
       // Zabavni
       { id: 'pet_desetki',    emoji: '💎', name: 'Perfekcionista',     desc: 'Ima 5 desetki.',                                    check: (s,p) => p.filter(x=>x.grade===10).length >= 5 },
       { id: 'deset_desetki',  emoji: '👑', name: 'Elita',              desc: 'Ima 10 desetki.',                                   check: (s,p) => p.filter(x=>x.grade===10).length >= 10 },
-      { id: 'sem1_cist',      emoji: '🚀', name: 'Raketan start',      desc: 'Položio/la sve predmete u 1. semestru.',            check: (s,p) => { const s1 = s.filter(x=>x.semester===1); return s1.length>0 && s1.every(x=>x.grade>=6); } },
-      { id: 'sem_cist',       emoji: '🔥', name: 'Na pravom putu',     desc: 'Položio/la sve predmete u nekom semestru.',         check: (s,p) => { for(let i=1;i<=8;i++){const si=s.filter(x=>x.semester===i);if(si.length>0&&si.every(x=>x.grade>=6))return true;} return false; } },
+      { id: 'sem1_cist',      emoji: '🚀', name: 'Raketan start',      desc: 'Položio/la sve predmete u 1. semestru.',            check: (s,p) => { const s1 = s.filter(x=>x.semester===1); return s1.length>0 && s1.every(x=>isPassedGrade(x.grade)); } },
+      { id: 'sem_cist',       emoji: '🔥', name: 'Na pravom putu',     desc: 'Položio/la sve predmete u nekom semestru.',         check: (s,p) => { for(let i=1;i<=8;i++){const si=s.filter(x=>x.semester===i);if(si.length>0&&si.every(x=>isPassedGrade(x.grade)))return true;} return false; } },
       { id: 'bez_sestice',    emoji: '🦅', name: 'Nema šestice!',      desc: 'Svi položeni ispiti su sa 7 ili više.',             check: (s,p) => p.length>=5 && p.every(x=>x.grade>=7) },
       { id: 'sve_desetke_sem',emoji: '✨', name: 'Savršen semestar',   desc: 'Ceo semestar samo sa desetkama.',                   check: (s,p) => { for(let i=1;i<=8;i++){const si=s.filter(x=>x.semester===i&&x.grade!==null);if(si.length>=3&&si.every(x=>x.grade===10))return true;} return false; } },
     ];
