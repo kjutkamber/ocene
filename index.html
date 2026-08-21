@@ -2677,6 +2677,15 @@
       });
       const pwdInput = document.getElementById('admin-password-input');
       if (pwdInput) pwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPassword(); });
+
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Shift') return;
+        const tag = document.activeElement ? document.activeElement.tagName : '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        const modal = document.getElementById('admin-master-modal');
+        if (modal && !modal.classList.contains('hidden')) return;
+        openAdminPasswordModal();
+      });
     });
 
     async function loginUser(name, index, normalizedKey) {
