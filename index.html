@@ -12,6 +12,12 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     body { font-family: 'Inter', sans-serif; }
+    .modal-color-swatch { border-color: transparent; opacity: 0.55; transition: all 0.15s; }
+    .modal-color-swatch.active { opacity: 1; border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,0.05); transform: scale(1.03); }
+    .subject-color-red { border-left: 4px solid #ef4444 !important; }
+    .subject-color-yellow { border-left: 4px solid #f59e0b !important; }
+    .subject-color-green { border-left: 4px solid #10b981 !important; }
+    .subject-todo-item.done span.todo-text { text-decoration: line-through; color: #94a3b8; }
     .badge-unlock { animation: badgePop 0.5s cubic-bezier(0.175,0.885,0.32,1.275) forwards; }
     @keyframes badgePop { 0%{transform:scale(0) rotate(-10deg);opacity:0;} 70%{transform:scale(1.2) rotate(3deg);opacity:1;} 100%{transform:scale(1) rotate(0deg);opacity:1;} } position:fixed;inset:0;z-index:9999;pointer-events:none;display:flex;align-items:center;justify-content:center; }
     .checkmark-circle { width:100px;height:100px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards,pulseRing 0.6s ease 0.3s forwards,fadeOut 0.4s ease 1s forwards; }
@@ -173,6 +179,16 @@
           <div id="semesters-container" class="space-y-4"></div>
         </div>
         <div class="lg:col-span-4 space-y-6">
+          <!-- ZADACI WIDGET -->
+          <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+              <h3 class="text-md font-bold text-slate-900 flex items-center gap-2"><i data-lucide="list-checks" class="text-indigo-500"></i> Zadaci</h3>
+              <label class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
+                <input type="checkbox" id="tasks-hide-done" onchange="renderTasksWidget()" class="w-3.5 h-3.5 rounded accent-indigo-600"> Sakrij urađeno
+              </label>
+            </div>
+            <div id="tasks-widget-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+          </div>
           <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
             <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima</h3>
             <div class="h-64"><canvas id="gpaChart"></canvas></div>
@@ -267,6 +283,29 @@
             <option value="1">1. Semestar</option><option value="2">2. Semestar</option><option value="3">3. Semestar</option><option value="4">4. Semestar</option>
             <option value="5">5. Semestar</option><option value="6">6. Semestar</option><option value="7">7. Semestar</option><option value="8">8. Semestar</option>
           </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Oznaka / Bitnost</label>
+          <div id="modal-color-picker" class="flex gap-2">
+            <button type="button" data-color="" onclick="setModalColor('')" class="modal-color-swatch flex-1 py-2 rounded-lg border-2 text-xs font-bold text-slate-500 bg-white">Bez oznake</button>
+            <button type="button" data-color="red" onclick="setModalColor('red')" class="modal-color-swatch flex-1 py-2 rounded-lg border-2 text-xs font-bold bg-rose-50 text-rose-700">🔴 Hitno</button>
+            <button type="button" data-color="yellow" onclick="setModalColor('yellow')" class="modal-color-swatch flex-1 py-2 rounded-lg border-2 text-xs font-bold bg-amber-50 text-amber-700">🟡 Pažnja</button>
+            <button type="button" data-color="green" onclick="setModalColor('green')" class="modal-color-swatch flex-1 py-2 rounded-lg border-2 text-xs font-bold bg-emerald-50 text-emerald-700">🟢 Ok</button>
+          </div>
+          <input type="hidden" id="modal-color" value="">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Beleška (bitno da zapamtiš)</label>
+          <textarea id="modal-note" rows="2" placeholder="npr. Ponesi indeks na ispit, profesor traži seminarski..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">To-Do lista za predmet</label>
+          <div class="flex gap-2 mb-2">
+            <input type="text" id="modal-todo-input" placeholder="Dodaj stavku..." onkeydown="if(event.key==='Enter'){event.preventDefault();addModalTodo();}" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50">
+            <input type="date" id="modal-todo-due" title="Do kada" class="border border-slate-300 rounded-lg px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 bg-slate-50 w-[130px]">
+            <button type="button" onclick="addModalTodo()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-bold transition"><i data-lucide="plus" class="w-4 h-4"></i></button>
+          </div>
+          <div id="modal-todo-list" class="space-y-1.5 max-h-32 overflow-y-auto"></div>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
           <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition">Otkaz</button>
@@ -570,11 +609,11 @@
     async function cloudLoadSubjects(userKey) {
       const { data, error } = await sb.from('student_subjects').select('*').eq('user_key', userKey).order('semester', { ascending: true });
       if (error) { console.error(error); return []; }
-      return data.map(r => ({ id: r.subject_id, name: r.name, grade: r.grade, espb: r.espb, semester: r.semester }));
+      return data.map(r => ({ id: r.subject_id, name: r.name, grade: r.grade, espb: r.espb, semester: r.semester, color: r.color || '', note: r.note || '', todos: r.todos || [] }));
     }
 
     async function cloudSaveSubjects(userKey, subjectsList) {
-      const rows = subjectsList.map(s => ({ user_key: userKey, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, updated_at: new Date().toISOString() }));
+      const rows = subjectsList.map(s => ({ user_key: userKey, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
       if (rows.length === 0) return true;
       const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
       if (error) { console.error(error); return false; }
@@ -2727,7 +2766,7 @@
 
     async function saveUserData() {
       if (!currentUser) return false;
-      const rows = subjects.map(s => ({ user_key: currentUser.key, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, updated_at: new Date().toISOString() }));
+      const rows = subjects.map(s => ({ user_key: currentUser.key, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
       if (rows.length === 0) return true;
       const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
       if (error) { console.error('Upsert error:', error); return false; }
@@ -2773,6 +2812,40 @@
     function isPassedGrade(grade) {
       return grade === 'polozen' || (typeof grade === 'number' && grade >= 6);
     }
+    function renderTasksWidget() {
+      const container = document.getElementById('tasks-widget-list');
+      if (!container) return;
+      const hideDone = document.getElementById('tasks-hide-done').checked;
+      let allTasks = [];
+      subjects.forEach(sub => {
+        if (!sub.todos) return;
+        sub.todos.forEach((t, i) => {
+          if (hideDone && t.done) return;
+          allTasks.push({ subId: sub.id, subName: sub.name, idx: i, text: t.text, due: t.due, done: t.done });
+        });
+      });
+      allTasks.sort((a, b) => {
+        if (!!a.done !== !!b.done) return a.done ? 1 : -1;
+        if (!a.due && !b.due) return 0;
+        if (!a.due) return 1;
+        if (!b.due) return -1;
+        return a.due.localeCompare(b.due);
+      });
+      if (allTasks.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema zadataka. Dodaj ih preko dugmeta "Uredi" na predmetu.</p>';
+        return;
+      }
+      container.innerHTML = allTasks.map(t => `
+        <div class="flex items-start gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 ${t.done ? 'opacity-60' : ''}">
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleSubjectTodoDone('${t.subId}', ${t.idx})" class="w-4 h-4 mt-0.5 rounded accent-emerald-600 flex-shrink-0">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-slate-800 ${t.done ? 'line-through text-slate-400' : ''}">${t.text}</p>
+            <p class="text-[10px] text-slate-400 truncate">${t.subName}</p>
+          </div>
+          ${t.due ? `<span class="text-[10px] font-bold ${isOverdue(t.due, t.done) ? 'text-rose-600' : 'text-slate-400'} flex-shrink-0 whitespace-nowrap">do ${fmtDue(t.due)}</span>` : ''}
+        </div>`).join('');
+    }
+
     function calculateStatistics() {
       const numericPassed = subjects.filter(s => typeof s.grade === 'number' && s.grade >= 6);
       const passed = subjects.filter(s => isPassedGrade(s.grade));
@@ -2800,8 +2873,23 @@
       });
       if (currentUser) markUnsaved();
       renderSemesters();
+      renderTasksWidget();
       updateChart();
       checkBadges();
+    }
+
+    let expandedTodoRows = new Set();
+    function toggleSubjectTodoRow(id) {
+      if (expandedTodoRows.has(id)) expandedTodoRows.delete(id); else expandedTodoRows.add(id);
+      renderSemesters();
+    }
+    function toggleSubjectTodoDone(subId, todoIndex) {
+      const sub = subjects.find(s => s.id === subId);
+      if (!sub || !sub.todos || !sub.todos[todoIndex]) return;
+      sub.todos[todoIndex].done = !sub.todos[todoIndex].done;
+      if (currentUser) markUnsaved();
+      renderSemesters();
+      renderTasksWidget();
     }
 
     function renderSemesters() {
@@ -2841,16 +2929,36 @@
                   filteredSemSubjects.map(sub => {
                     const isPassed = isPassedGrade(sub.grade);
                     const gradeDisplay = sub.grade === 'polozen' ? 'Položen' : (sub.grade || '—');
-                    return `<tr class="hover:bg-slate-50 transition">
-                      <td class="px-6 py-4 font-semibold text-slate-900">${sub.name}</td>
+                    const colorClass = sub.color ? `subject-color-${sub.color}` : '';
+                    const todoCount = sub.todos ? sub.todos.length : 0;
+                    const todoDone = sub.todos ? sub.todos.filter(t => t.done).length : 0;
+                    const noteBadge = sub.note ? `<i data-lucide="sticky-note" class="w-3.5 h-3.5 text-amber-500 inline-block align-text-bottom" title="${sub.note.replace(/"/g,'&quot;')}"></i>` : '';
+                    const todoBadge = todoCount > 0 ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${todoDone === todoCount ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'} border border-current/20" title="To-Do lista"><i data-lucide="list-checks" class="w-3 h-3"></i>${todoDone}/${todoCount}</span>` : '';
+                    const isExpanded = expandedTodoRows.has(sub.id);
+                    const chevron = todoCount > 0 ? `<i data-lucide="chevron-${isExpanded ? 'up' : 'down'}" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0"></i>` : '';
+                    const detailRow = (isExpanded && todoCount > 0) ? `
+                      <tr class="${colorClass} bg-slate-50/70">
+                        <td colspan="5" class="px-6 py-3">
+                          <div class="space-y-1.5">
+                            ${sub.todos.map((t, i) => `
+                              <div class="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-1.5">
+                                <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleSubjectTodoDone('${sub.id}', ${i})" class="w-4 h-4 rounded accent-emerald-600 flex-shrink-0">
+                                <span class="flex-1 text-xs text-slate-800 ${t.done ? 'line-through text-slate-400' : ''}">${t.text}</span>
+                                ${t.due ? `<span class="text-[10px] font-bold ${isOverdue(t.due, t.done) ? 'text-rose-600' : 'text-slate-400'} flex-shrink-0">do ${fmtDue(t.due)}</span>` : ''}
+                              </div>`).join('')}
+                          </div>
+                        </td>
+                      </tr>` : '';
+                    return `<tr class="hover:bg-slate-50 transition ${colorClass} ${todoCount > 0 ? 'cursor-pointer' : ''}" ${todoCount > 0 ? `onclick="toggleSubjectTodoRow('${sub.id}')"` : ''}>
+                      <td class="px-6 py-4 font-semibold text-slate-900"><div class="flex items-center gap-2 flex-wrap">${chevron}${sub.name}${noteBadge}${todoBadge}</div></td>
                       <td class="px-6 py-4 text-center"><span class="inline-block px-3 py-1 text-sm font-black rounded-lg ${isPassed ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}">${gradeDisplay}</span></td>
                       <td class="px-6 py-4 text-center font-bold text-slate-700">${sub.espb}</td>
                       <td class="px-6 py-4 text-center"><span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${isPassed ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}"><span class="w-1.5 h-1.5 rounded-full ${isPassed ? 'bg-emerald-500' : 'bg-amber-500'}"></span>${isPassed ? 'Položen' : 'Sluša se'}</span></td>
                       <td class="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                        <button onclick="openEditModal('${sub.id}')" class="text-slate-600 hover:text-indigo-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Uredi"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                        <button onclick="deleteSubject('${sub.id}')" class="text-slate-500 hover:text-rose-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Obriši"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="event.stopPropagation(); openEditModal('${sub.id}')" class="text-slate-600 hover:text-indigo-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Uredi"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                        <button onclick="event.stopPropagation(); deleteSubject('${sub.id}')" class="text-slate-500 hover:text-rose-600 transition inline-flex p-1.5 hover:bg-slate-100 rounded border border-slate-200" title="Obriši"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                       </td>
-                    </tr>`;
+                    </tr>${detailRow}`;
                   }).join('')}
               </tbody>
             </table>
@@ -2889,6 +2997,55 @@
       document.getElementById('modal-name').value = opt.value;
       document.getElementById('modal-espb').value = opt.dataset.espb;
     }
+    let modalTodos = [];
+
+    function setModalColor(color) {
+      document.getElementById('modal-color').value = color;
+      document.querySelectorAll('.modal-color-swatch').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.color === color);
+      });
+    }
+
+    function fmtDue(due) {
+      if (!due) return '';
+      const d = new Date(due + 'T00:00:00');
+      if (isNaN(d)) return '';
+      return d.toLocaleDateString('sr-RS', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    }
+    function isOverdue(due, done) {
+      if (!due || done) return false;
+      const d = new Date(due + 'T23:59:59');
+      return d < new Date();
+    }
+
+    function renderModalTodos() {
+      const list = document.getElementById('modal-todo-list');
+      if (modalTodos.length === 0) {
+        list.innerHTML = '<p class="text-xs text-slate-400 text-center py-1">Nema stavki. Dodaj podsetnik za ovaj predmet.</p>';
+        return;
+      }
+      list.innerHTML = modalTodos.map((t, i) => `
+        <div class="subject-todo-item flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 ${t.done ? 'done' : ''}">
+          <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleModalTodo(${i})" class="w-4 h-4 rounded accent-emerald-600 flex-shrink-0">
+          <span class="todo-text flex-1 text-xs text-slate-800">${t.text}</span>
+          ${t.due ? `<span class="text-[10px] font-bold ${isOverdue(t.due, t.done) ? 'text-rose-600' : 'text-slate-400'} flex-shrink-0">do ${fmtDue(t.due)}</span>` : ''}
+          <button type="button" onclick="deleteModalTodo(${i})" class="text-slate-400 hover:text-rose-600 transition flex-shrink-0"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+        </div>`).join('');
+      lucide.createIcons();
+    }
+    function addModalTodo() {
+      const input = document.getElementById('modal-todo-input');
+      const dueInput = document.getElementById('modal-todo-due');
+      const text = input.value.trim();
+      if (!text) return;
+      modalTodos.push({ text, done: false, due: dueInput.value || '' });
+      input.value = '';
+      dueInput.value = '';
+      renderModalTodos();
+    }
+    function toggleModalTodo(i) { modalTodos[i].done = !modalTodos[i].done; renderModalTodos(); }
+    function deleteModalTodo(i) { modalTodos.splice(i, 1); renderModalTodos(); }
+
     function openAddModal(defaultSem = 1) {
       document.getElementById('modal-title').textContent = "Dodaj Predmet";
       document.getElementById('modal-subject-id').value = "";
@@ -2896,6 +3053,12 @@
       document.getElementById('modal-grade').value = "null";
       document.getElementById('modal-espb').value = "3";
       document.getElementById('modal-semester').value = defaultSem.toString();
+      document.getElementById('modal-note').value = "";
+      setModalColor('');
+      modalTodos = [];
+      renderModalTodos();
+      document.getElementById('modal-todo-input').value = "";
+      document.getElementById('modal-todo-due').value = "";
       const module = currentUser ? currentUser.module : null;
       if (module && CURRICULUM[module]) {
         document.getElementById('modal-mode-picker').classList.remove('hidden');
@@ -2922,6 +3085,12 @@
       document.getElementById('modal-grade').value = sub.grade === null ? "null" : sub.grade.toString();
       document.getElementById('modal-espb').value = sub.espb.toString();
       document.getElementById('modal-semester').value = sub.semester.toString();
+      document.getElementById('modal-note').value = sub.note || "";
+      setModalColor(sub.color || '');
+      modalTodos = sub.todos ? sub.todos.map(t => ({...t})) : [];
+      document.getElementById('modal-todo-input').value = "";
+      document.getElementById('modal-todo-due').value = "";
+      renderModalTodos();
       document.getElementById('modal-mode-picker').classList.add('hidden');
       document.getElementById('modal-elective-section').classList.add('hidden');
       document.getElementById('subject-modal').classList.remove('hidden');
@@ -2955,11 +3124,14 @@
       const grade = gradeVal === "null" ? null : gradeVal === "polozen" ? "polozen" : parseInt(gradeVal);
       const espb = parseInt(document.getElementById('modal-espb').value);
       const semester = parseInt(document.getElementById('modal-semester').value);
+      const color = document.getElementById('modal-color').value;
+      const note = document.getElementById('modal-note').value.trim();
+      const todos = modalTodos.map(t => ({...t}));
       if (id) {
         const index = subjects.findIndex(s => s.id === id);
-        if (index !== -1) { subjects[index] = {...subjects[index], name, grade, espb, semester}; if (grade !== null) triggerGradeCelebration(); showToast("Predmet uspešno izmenjen!"); }
+        if (index !== -1) { subjects[index] = {...subjects[index], name, grade, espb, semester, color, note, todos}; if (grade !== null) triggerGradeCelebration(); showToast("Predmet uspešno izmenjen!"); }
       } else {
-        subjects.push({ id: 'custom-' + Date.now(), name, grade, espb, semester });
+        subjects.push({ id: 'custom-' + Date.now(), name, grade, espb, semester, color, note, todos });
         if (grade !== null) triggerGradeCelebration(); showToast("Novi predmet je dodat!");
       }
       closeModal();
