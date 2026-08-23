@@ -78,7 +78,7 @@
   <!-- MAIN APP -->
   <div id="app-content" class="hidden flex-grow flex flex-col">
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
         <div class="flex items-center gap-3">
           <div class="bg-emerald-500 p-2 rounded-lg text-slate-900"><i data-lucide="graduation-cap" class="w-6 h-6"></i></div>
           <div>
@@ -114,7 +114,7 @@
       </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-grow max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
           <div>
@@ -157,7 +157,7 @@
         </div>
       </div>
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div class="lg:col-span-8 space-y-6">
+        <div class="lg:col-span-7 space-y-6">
           <div class="bg-white p-4 rounded-xl shadow-md border border-slate-300/60 flex flex-col sm:flex-row gap-4 justify-between items-center">
             <div class="relative w-full sm:w-72">
               <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><i data-lucide="search" class="w-4 h-4"></i></span>
@@ -178,52 +178,61 @@
           </div>
           <div id="semesters-container" class="space-y-4"></div>
         </div>
-        <div class="lg:col-span-4 space-y-6">
-          <!-- ZADACI WIDGET -->
-          <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
-              <h3 class="text-md font-bold text-slate-900 flex items-center gap-2"><i data-lucide="list-checks" class="text-indigo-500"></i> Zadaci</h3>
-              <label class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
-                <input type="checkbox" id="tasks-hide-done" onchange="renderTasksWidget()" class="w-3.5 h-3.5 rounded accent-indigo-600"> Sakrij urađeno
-              </label>
+        <div class="lg:col-span-5 space-y-6">
+          <!-- USLOV - zaseban red, stoji sam, prikazuje se samo ako admin dozvoli -->
+          <div id="study-status-wrapper" class="hidden">
+            <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
+              <h3 class="text-md font-bold text-slate-900 mb-2 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="scale" class="text-rose-500"></i> Uslovi</h3>
+              <div id="study-status-content"></div>
             </div>
-            <div id="tasks-widget-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
           </div>
-          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
-            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima</h3>
-            <div class="h-64"><canvas id="gpaChart"></canvas></div>
-          </div>
-          <div class="bg-gradient-to-br from-slate-900 to-slate-850 text-white p-6 rounded-2xl shadow-xl border border-slate-850 relative overflow-hidden">
-            <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none"><i data-lucide="help-circle" class="w-40 h-40"></i></div>
-            <h3 class="text-lg font-bold mb-2 flex items-center gap-2"><i data-lucide="sparkles" class="text-emerald-400"></i> "Šta-Ako" Simulator</h3>
-            <p class="text-xs text-slate-300 mb-4">Unesi ciljani prosek i simulator će ti izračunati prosečnu ocenu potrebnu na preostalim ispitima.</p>
-            <div class="space-y-4 relative z-10">
-              <div>
-                <label class="block text-xs font-semibold text-slate-300 mb-1">Željeni prosek</label>
-                <div class="flex gap-2">
-                  <input type="number" id="target-gpa" min="6.0" max="10.0" step="0.01" value="9.50" class="flex-grow bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                  <button onclick="calculateWhatIf()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition shadow-md">Izračunaj</button>
+          <div class="columns-1 xl:columns-2 gap-6 [&>*]:mb-6 [&>*]:break-inside-avoid">
+            <!-- ZADACI WIDGET -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
+              <div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-3">
+                <h3 class="text-md font-bold text-slate-900 flex items-center gap-2"><i data-lucide="list-checks" class="text-indigo-500"></i> Zadaci</h3>
+                <label class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
+                  <input type="checkbox" id="tasks-hide-done" onchange="renderTasksWidget()" class="w-3.5 h-3.5 rounded accent-indigo-600"> Sakrij urađeno
+                </label>
+              </div>
+              <div id="tasks-widget-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
+              <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima</h3>
+              <div class="h-64"><canvas id="gpaChart"></canvas></div>
+            </div>
+            <div class="bg-gradient-to-br from-slate-900 to-slate-850 text-white p-6 rounded-2xl shadow-xl border border-slate-850 relative overflow-hidden">
+              <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none"><i data-lucide="help-circle" class="w-40 h-40"></i></div>
+              <h3 class="text-lg font-bold mb-2 flex items-center gap-2"><i data-lucide="sparkles" class="text-emerald-400"></i> "Šta-Ako" Simulator</h3>
+              <p class="text-xs text-slate-300 mb-4">Unesi ciljani prosek i simulator će ti izračunati prosečnu ocenu potrebnu na preostalim ispitima.</p>
+              <div class="space-y-4 relative z-10">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1">Željeni prosek</label>
+                  <div class="flex gap-2">
+                    <input type="number" id="target-gpa" min="6.0" max="10.0" step="0.01" value="9.50" class="flex-grow bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <button onclick="calculateWhatIf()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm transition shadow-md">Izračunaj</button>
+                  </div>
+                </div>
+                <div id="whatif-result" class="hidden bg-slate-800/90 border border-slate-700/60 p-4 rounded-xl space-y-2">
+                  <p class="text-xs text-slate-400">Rezultat proračuna:</p>
+                  <div id="whatif-message" class="text-sm font-semibold text-slate-200"></div>
                 </div>
               </div>
-              <div id="whatif-result" class="hidden bg-slate-800/90 border border-slate-700/60 p-4 rounded-xl space-y-2">
-                <p class="text-xs text-slate-400">Rezultat proračuna:</p>
-                <div id="whatif-message" class="text-sm font-semibold text-slate-200"></div>
-              </div>
             </div>
-          </div>
-          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
-            <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena</h3>
-            <div class="space-y-3" id="grade-distribution"></div>
-          </div>
-          <!-- BEDŽEVI -->
-          <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
-            <h3 class="text-md font-bold text-slate-900 mb-1 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="award" class="text-yellow-500"></i> Bedževi</h3>
-            <div id="badges-container" class="mt-3"></div>
-          </div>
-          <!-- ISPITNI ROKOVI -->
-          <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
-            <h3 class="text-md font-bold text-slate-900 mb-3 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="calendar-check" class="text-emerald-500"></i> Ispitni rokovi</h3>
-            <div id="exam-periods-student-list"><p class="text-xs text-slate-400 text-center py-3">Učitavanje...</p></div>
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
+              <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="bar-chart-3" class="text-amber-500"></i> Distribucija Ocena</h3>
+              <div class="space-y-3" id="grade-distribution"></div>
+            </div>
+            <!-- BEDŽEVI -->
+            <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60">
+              <h3 class="text-md font-bold text-slate-900 mb-1 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="award" class="text-yellow-500"></i> Bedževi</h3>
+              <div id="badges-container" class="mt-3"></div>
+            </div>
+            <!-- ISPITNI ROKOVI -->
+            <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
+              <h3 class="text-md font-bold text-slate-900 mb-3 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="calendar-check" class="text-emerald-500"></i> Ispitni rokovi</h3>
+              <div id="exam-periods-student-list"><p class="text-xs text-slate-400 text-center py-3">Učitavanje...</p></div>
+            </div>
           </div>
         </div>
       </div>
@@ -395,6 +404,10 @@
               <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Puni naziv studijskog programa (za uverenje)</label>
               <input type="text" id="admin-new-study-program" placeholder="npr. Аудиовизуелни медији - Продукција за аудиовизуелне медије" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
             </div>
+            <div class="sm:col-span-2 flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2.5">
+              <input type="checkbox" id="admin-new-show-study-status" class="w-4 h-4 rounded accent-rose-600">
+              <label for="admin-new-show-study-status" class="text-xs font-bold text-slate-600 cursor-pointer">⚖️ Dozvoli prikaz "Uslovi za nastavak studija" ovom studentu</label>
+            </div>
           </div>
           <button onclick="adminAddUser()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg transition shadow-md mt-3">✓ Registruj studenta</button>
           <div id="admin-add-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg mt-2"></div>
@@ -516,6 +529,10 @@
           <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Puni naziv studijskog programa</label>
           <input type="text" id="edit-student-study-program" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900">
         </div>
+        <div class="sm:col-span-2 flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5">
+          <input type="checkbox" id="edit-student-show-study-status" class="w-4 h-4 rounded accent-rose-600">
+          <label for="edit-student-show-study-status" class="text-xs font-bold text-slate-600 cursor-pointer">⚖️ Dozvoli prikaz "Uslovi za nastavak studija" ovom studentu</label>
+        </div>
       </div>
       <div id="edit-student-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg mt-3"></div>
       <div class="flex gap-2 pt-4 mt-2 border-t border-slate-100">
@@ -600,7 +617,8 @@
           currentYearOfStudy: u.current_year_of_study || 1,
           enrollmentSchoolYear: u.enrollment_school_year || '',
           firstEnrollmentYear: u.first_enrollment_year || '',
-          studyProgramDetailed: u.study_program_detailed || ''
+          studyProgramDetailed: u.study_program_detailed || '',
+          showStudyStatus: !!u.show_study_status
         };
       });
       return map;
@@ -637,7 +655,8 @@
         current_year_of_study: data.currentYearOfStudy,
         enrollment_school_year: data.enrollmentSchoolYear,
         first_enrollment_year: data.firstEnrollmentYear,
-        study_program_detailed: data.studyProgramDetailed
+        study_program_detailed: data.studyProgramDetailed,
+        show_study_status: !!data.showStudyStatus
       });
       return !error;
     }
@@ -659,7 +678,8 @@
         current_year_of_study: data.currentYearOfStudy,
         enrollment_school_year: data.enrollmentSchoolYear,
         first_enrollment_year: data.firstEnrollmentYear,
-        study_program_detailed: data.studyProgramDetailed
+        study_program_detailed: data.studyProgramDetailed,
+        show_study_status: !!data.showStudyStatus
       }).eq('key', oldKey);
       return !error;
     }
@@ -2736,6 +2756,8 @@
       document.getElementById('user-display-index').textContent = index;
       const userMeta = customUsers[normalizedKey];
       currentUser.module = userMeta ? userMeta.module : null;
+      const statusWrapper = document.getElementById('study-status-wrapper');
+      if (statusWrapper) statusWrapper.classList.toggle('hidden', !(userMeta && userMeta.showStudyStatus));
       showToast("Učitavanje predmeta...", "info");
       const savedSubjects = await cloudLoadSubjects(normalizedKey);
       if (savedSubjects.length > 0) {
@@ -2761,6 +2783,8 @@
       document.getElementById('login-index').value = "";
       document.getElementById('app-content').classList.add('hidden');
       document.getElementById('login-screen').classList.remove('hidden');
+      const statusWrapper = document.getElementById('study-status-wrapper');
+      if (statusWrapper) statusWrapper.classList.add('hidden');
       showToast("Odjavljeni ste.", "info");
     }
 
@@ -2812,6 +2836,78 @@
     function isPassedGrade(grade) {
       return grade === 'polozen' || (typeof grade === 'number' && grade >= 6);
     }
+    function getStudyProgress() {
+      const gradedSemesters = subjects.filter(s => s.grade !== null && s.grade !== undefined).map(s => s.semester);
+      const currentSemester = gradedSemesters.length ? Math.max(...gradedSemesters) : 0;
+      const currentYear = currentSemester > 0 ? Math.ceil(currentSemester / 2) : 1;
+      return { currentSemester, currentYear };
+    }
+
+    function renderStudyStatusWidget() {
+      const container = document.getElementById('study-status-content');
+      if (!container) return;
+      const { currentSemester, currentYear } = getStudyProgress();
+      const yearStartSem = currentYear * 2 - 1, yearEndSem = currentYear * 2;
+      const currentYearSubjects = subjects.filter(s => s.semester === yearStartSem || s.semester === yearEndSem);
+      const espbCurrentYear = currentYearSubjects.filter(s => isPassedGrade(s.grade)).reduce((a, s) => a + s.espb, 0);
+
+      // Proverava SVE prethodne godine (od početka studiranja), ne samo prethodnu godinu
+      let pastUnpassed = [];
+      if (currentYear > 1) {
+        pastUnpassed = subjects.filter(s => s.semester < yearStartSem && !isPassedGrade(s.grade));
+      }
+      const pastCleared = pastUnpassed.length === 0;
+      // Grupisano po godini, za prikaz
+      const pastUnpassedByYear = {};
+      pastUnpassed.forEach(s => {
+        const y = Math.ceil(s.semester / 2);
+        if (!pastUnpassedByYear[y]) pastUnpassedByYear[y] = [];
+        pastUnpassedByYear[y].push(s);
+      });
+
+      const numericPassed = subjects.filter(s => typeof s.grade === 'number' && s.grade >= 6);
+      const avg = numericPassed.length > 0 ? (numericPassed.reduce((a, s) => a + s.grade, 0) / numericPassed.length) : 0;
+
+      const budzetOk = espbCurrentYear >= 48;
+      const samofinOk = espbCurrentYear >= 37;
+      const stipendijaOk = budzetOk && pastCleared && avg >= 9.00;
+      const kreditOk = avg >= 8.50;
+
+      const row = (label, ok, detail) => `
+        <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">
+          <div>
+            <p class="text-xs font-bold text-slate-800">${label}</p>
+            <p class="text-[11px] text-slate-500">${detail}</p>
+          </div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0 ${ok ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+            <i data-lucide="${ok ? 'check' : 'x'}" class="w-3 h-3"></i>${ok ? 'Ispunjeno' : 'Nije ispunjeno'}
+          </span>
+        </div>`;
+
+      let html = `
+        <p class="text-[11px] text-slate-500 mb-3">Na osnovu unetih ocena: <b class="text-slate-700">${currentSemester}. semestar</b> (${currentYear}. godina). Izračunato iz ${espbCurrentYear} ESPB položenih u ovoj godini.</p>
+        ${row('Budžet', budzetOk, `${espbCurrentYear}/48 ESPB u tekućoj godini (i dovoljan rang na listi)`)}
+        ${row('Samofinansiranje', samofinOk, `${espbCurrentYear}/37 ESPB u tekućoj godini` + (!samofinOk ? ' — godina se obnavlja' : ''))}
+        ${row('Stipendija', stipendijaOk, `Budžet + sve prethodne godine položene + prosek ≥ 9.00 (trenutno ${avg.toFixed(2)})`)}
+        ${row('Studentski kredit', kreditOk, `Prosek ≥ 8.50 (trenutno ${avg.toFixed(2)})`)}
+      `;
+
+      if (!pastCleared) {
+        html += `
+          <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <p class="text-xs font-bold text-amber-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Nepoloženo iz prethodnih godina</p>
+            ${Object.keys(pastUnpassedByYear).sort((a,b)=>a-b).map(y => `
+              <p class="text-[11px] font-bold text-amber-700 mt-1.5 mb-0.5">${y}. godina:</p>
+              <ul class="space-y-1">
+                ${pastUnpassedByYear[y].map(s => `<li class="text-[11px] text-amber-700">• ${s.name}</li>`).join('')}
+              </ul>`).join('')}
+          </div>`;
+      }
+
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
     function renderTasksWidget() {
       const container = document.getElementById('tasks-widget-list');
       if (!container) return;
@@ -2874,6 +2970,7 @@
       if (currentUser) markUnsaved();
       renderSemesters();
       renderTasksWidget();
+      renderStudyStatusWidget();
       updateChart();
       checkBadges();
     }
@@ -2910,11 +3007,13 @@
         const semESPB = passedSem.reduce((acc, curr) => acc + curr.espb, 0);
         const semGradeSum = numericPassedSem.reduce((acc, curr) => acc + curr.grade, 0);
         const semAvg = numericPassedSem.length > 0 ? (semGradeSum / numericPassedSem.length).toFixed(2) : "0.00";
+        const hasUrgent = semSubjects.some(sub => sub.color === 'red');
+        const urgentBadge = hasUrgent ? `<span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-600 border border-rose-200 flex-shrink-0" title="Ima hitno obeležen predmet"><i data-lucide="alert-triangle" class="w-3 h-3"></i></span>` : '';
         const semCard = document.createElement('div');
         semCard.className = "bg-white rounded-2xl shadow-md border border-slate-300/70 overflow-hidden";
         semCard.innerHTML = `
           <div class="bg-slate-100 px-6 py-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 cursor-pointer" onclick="toggleSemesterCollapse(${s})">
-            <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base"><i data-lucide="folder" class="w-5 h-5 text-slate-500"></i>${s}. Semestar <span class="text-xs text-slate-500 font-medium">(${yearOfSemester}. Godina)</span></h3>
+            <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base"><i data-lucide="folder" class="w-5 h-5 text-slate-500"></i>${s}. Semestar <span class="text-xs text-slate-500 font-medium">(${yearOfSemester}. Godina)</span>${urgentBadge}</h3>
             <div class="flex flex-wrap items-center gap-3 text-xs">
               <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full border border-emerald-200 flex items-center gap-1"><i data-lucide="calculator" class="w-3.5 h-3.5"></i> Prosek: ${semAvg}</span>
               <span class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full border border-blue-200 flex items-center gap-1"><i data-lucide="award" class="w-3.5 h-3.5"></i> ESPB: ${semESPB}</span>
@@ -3230,7 +3329,7 @@
           <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold text-xs uppercase">${u.displayName.charAt(0)}</div>
             <div>
-              <p class="text-xs font-bold text-slate-900">${u.displayName}</p>
+              <p class="text-xs font-bold text-slate-900 flex items-center gap-1.5">${u.displayName}${u.showStudyStatus ? '<span title="Vidi Uslove za nastavak studija" class="text-rose-500">⚖️</span>' : ''}</p>
               <p class="text-[10px] text-slate-500">Indeks: ${u.index} · Modul: ${moduleLabel}</p>
             </div>
           </div>
@@ -3261,7 +3360,8 @@
         currentYearOfStudy: parseInt(document.getElementById('admin-new-study-year').value),
         enrollmentSchoolYear: document.getElementById('admin-new-enrollment-year').value.trim(),
         firstEnrollmentYear: document.getElementById('admin-new-first-enrollment').value.trim(),
-        studyProgramDetailed: document.getElementById('admin-new-study-program').value.trim()
+        studyProgramDetailed: document.getElementById('admin-new-study-program').value.trim(),
+        showStudyStatus: document.getElementById('admin-new-show-study-status').checked
       };
       const ok = await cloudAddUser(normalizedKey, userData);
       if (!ok) { errDiv.textContent = 'Greška pri čuvanju u bazu.'; errDiv.classList.remove('hidden'); return; }
@@ -3269,6 +3369,7 @@
       // Reset form
       ['admin-new-name','admin-new-index','admin-new-parent-name','admin-new-birth-date','admin-new-birth-place','admin-new-enrollment-year','admin-new-first-enrollment','admin-new-study-program'].forEach(id => { document.getElementById(id).value = ''; });
       document.getElementById('admin-new-module').value = '';
+      document.getElementById('admin-new-show-study-status').checked = false;
       renderAdminUsersList();
       showToast(`Student ${nameInput} je registrovan!`);
     }
@@ -3289,6 +3390,7 @@
       populateModuleSelects();
       document.getElementById('edit-student-module').value = u.module || '';
       document.getElementById('edit-student-study-program').value = u.studyProgramDetailed || '';
+      document.getElementById('edit-student-show-study-status').checked = !!u.showStudyStatus;
       document.getElementById('edit-student-error').classList.add('hidden');
       document.getElementById('admin-edit-modal').classList.remove('hidden');
     }
@@ -3313,7 +3415,8 @@
         currentYearOfStudy: parseInt(document.getElementById('edit-student-study-year').value),
         enrollmentSchoolYear: document.getElementById('edit-student-enrollment-year').value.trim(),
         firstEnrollmentYear: document.getElementById('edit-student-first-enrollment').value.trim(),
-        studyProgramDetailed: document.getElementById('edit-student-study-program').value.trim()
+        studyProgramDetailed: document.getElementById('edit-student-study-program').value.trim(),
+        showStudyStatus: document.getElementById('edit-student-show-study-status').checked
       };
       const ok = await cloudUpdateUser(oldKey, newKey, userData);
       if (!ok) { errDiv.textContent = 'Greška pri ažuriranju u bazi.'; errDiv.classList.remove('hidden'); return; }
