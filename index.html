@@ -686,14 +686,20 @@
       return map;
     }
 
+    // Kolona student_subjects.grade je tipa integer u bazi, ali app interno koristi string
+    // 'polozen' za "položen bez brojčane ocene". 1 nikad nije validna ocena (skala je 6-10),
+    // pa ga koristimo kao rezervisanu vrednost — bez potrebe da se menja tip kolone u bazi.
+    function gradeToDb(g) { return g === 'polozen' ? 1 : g; }
+    function gradeFromDb(g) { return g === 1 ? 'polozen' : g; }
+
     async function cloudLoadSubjects(userKey) {
       const { data, error } = await sb.from('student_subjects').select('*').eq('user_key', userKey).order('semester', { ascending: true });
       if (error) { console.error(error); return []; }
-      return data.map(r => ({ id: r.subject_id, name: r.name, grade: r.grade, espb: r.espb, semester: r.semester, color: r.color || '', note: r.note || '', todos: r.todos || [] }));
+      return data.map(r => ({ id: r.subject_id, name: r.name, grade: gradeFromDb(r.grade), espb: r.espb, semester: r.semester, color: r.color || '', note: r.note || '', todos: r.todos || [] }));
     }
 
     async function cloudSaveSubjects(userKey, subjectsList) {
-      const rows = subjectsList.map(s => ({ user_key: userKey, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
+      const rows = subjectsList.map(s => ({ user_key: userKey, subject_id: s.id, name: s.name, grade: gradeToDb(s.grade), espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
       if (rows.length === 0) return true;
       const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
       if (error) { console.error(error); return false; }
@@ -2853,7 +2859,7 @@
     async function saveUserData() {
       if (!currentUser) return false;
       try {
-        const rows = subjects.map(s => ({ user_key: currentUser.key, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
+        const rows = subjects.map(s => ({ user_key: currentUser.key, subject_id: s.id, name: s.name, grade: gradeToDb(s.grade), espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
         if (rows.length === 0) return true;
         const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
         if (error) { console.error('Upsert error:', error); lastSaveError = error.message || String(error); return false; }
@@ -2930,6 +2936,19 @@
 
     let eakSyncMatches = []; // { incoming, bestSubjectId, confidence }
 
+    // Trajno pamćenje veze "ime predmeta na portalu" -> "id lokalnog predmeta".
+    // Jednom kad se ručno potvrdi poklapanje (npr. za predmet koji se drugačije zove),
+    // sledeći put se prepoznaje odmah — bez ponovnog nagađanja preko sličnosti imena.
+    function getEakAliasMap() {
+      if (!currentUser) return {};
+      try { return JSON.parse(localStorage.getItem(`eakNameMap_${currentUser.key}`) || '{}'); }
+      catch (e) { return {}; }
+    }
+    function saveEakAliasMap(map) {
+      if (!currentUser) return;
+      localStorage.setItem(`eakNameMap_${currentUser.key}`, JSON.stringify(map));
+    }
+
     function requestEakSync() {
       if (window.parent === window) {
         showToast('Ova funkcija radi samo kada je aplikacija otvorena preko dugmeta na eAkademiji.', 'error');
@@ -2948,23 +2967,48 @@
       }
     });
 
+    function gradesEqual(a, b) {
+      // Normalizuje null/undefined i tip (broj vs string) pre poređenja, da ne bi lažno
+      // ispadalo da se ocene razlikuju kad su u stvari iste (npr. "8" vs 8, ili undefined vs null).
+      const na = (a === undefined || a === '') ? null : a;
+      const nb = (b === undefined || b === '') ? null : b;
+      if (na === null || nb === null) return na === nb;
+      if (na === 'polozen' || nb === 'polozen') return na === nb;
+      return Number(na) === Number(nb);
+    }
+
     function buildEakSyncReview(incomingGrades) {
       if (!currentUser) { showToast('Nisi ulogovan/a.', 'error'); return; }
-      eakSyncMatches = incomingGrades.map(inc => {
-        const norm = normalizeName(inc.name);
-        let best = null, bestScore = 0;
-        subjects.forEach(sub => {
-          if (normalizeName(sub.name) === norm) { best = sub; bestScore = 1; return; }
-          const score = tokenOverlap(inc.name, sub.name);
-          if (score > bestScore) { bestScore = score; best = sub; }
-        });
-        let confidence = 'none';
-        if (bestScore >= 0.99) confidence = 'high';
-        else if (bestScore >= 0.6) confidence = 'medium';
-        // Don't suggest a match if the grade would not actually change anything
-        const noChange = best && best.grade === inc.grade;
-        return { incoming: inc, bestSubjectId: (confidence !== 'none' && best) ? best.id : '', confidence, noChange };
-      }).filter(m => !(m.confidence === 'high' && m.noChange)); // hide rows that are already in sync
+      const aliasMap = getEakAliasMap();
+      eakSyncMatches = incomingGrades
+        .filter(inc => inc.grade !== null && inc.grade !== undefined) // portal još nema ocenu — nema šta da se sinhronizuje
+        .map(inc => {
+          const norm = normalizeName(inc.name);
+          let best = null, bestScore = 0, aliasUsed = false;
+
+          // Prvo proveri da li je ovo ime već ranije ručno povezano sa nekim predmetom
+          const aliasedId = aliasMap[norm];
+          if (aliasedId) {
+            const aliasedSub = subjects.find(s => s.id === aliasedId);
+            if (aliasedSub) { best = aliasedSub; bestScore = 1; aliasUsed = true; }
+          }
+
+          if (!best) {
+            subjects.forEach(sub => {
+              if (normalizeName(sub.name) === norm) { best = sub; bestScore = 1; return; }
+              const score = tokenOverlap(inc.name, sub.name);
+              if (score > bestScore) { bestScore = score; best = sub; }
+            });
+          }
+
+          let confidence = 'none';
+          if (bestScore >= 0.99) confidence = 'high';
+          else if (bestScore >= 0.6) confidence = 'medium';
+          // Ne predlažemo poklapanje ako se ocena ionako ne bi promenila
+          const noChange = best && gradesEqual(best.grade, inc.grade);
+          return { incoming: inc, bestSubjectId: (confidence !== 'none' && best) ? best.id : '', confidence, noChange, aliasUsed };
+        })
+        .filter(m => !m.noChange); // prikaži SAMO predmete koji nisu uneti ili im se ocena razlikuje — ne sve
 
       renderEakSyncReview();
       document.getElementById('eak-sync-modal').classList.remove('hidden');
@@ -2994,7 +3038,8 @@
         </thead>
         <tbody class="divide-y divide-slate-100" id="eak-sync-tbody">
           ${eakSyncMatches.map((m, i) => {
-            const badge = m.confidence === 'high' ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">auto</span>'
+            const badge = m.aliasUsed ? '<span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-[10px] font-bold">🔗 zapamćeno</span>'
+              : m.confidence === 'high' ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">auto</span>'
               : m.confidence === 'medium' ? '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">proveri</span>'
               : '<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold">nema predloga — izaberi ručno</span>';
             const gradeDisplay = gradeLabel(m.incoming.grade);
@@ -3041,7 +3086,7 @@
       const cmpEl = document.getElementById(`eak-compare-${i}`);
       const subjectId = sel ? sel.value : '';
       const sub = subjectId ? subjects.find(s => s.id === subjectId) : null;
-      const differs = !!sub && sub.grade !== m.incoming.grade;
+      const differs = !!sub && !gradesEqual(sub.grade, m.incoming.grade);
       if (row) row.className = differs ? 'bg-rose-50' : '';
       if (cmpEl) {
         cmpEl.innerHTML = sub
@@ -3052,17 +3097,23 @@
 
     async function applyEakSync() {
       let applied = 0;
+      const aliasMap = getEakAliasMap();
+      let aliasChanged = false;
       eakSyncMatches.forEach((m, i) => {
         const checked = document.getElementById(`eak-check-${i}`).checked;
         const subjectId = document.getElementById(`eak-select-${i}`).value;
         if (!checked || !subjectId) return;
         const sub = subjects.find(s => s.id === subjectId);
         if (!sub) return;
-        if (sub.grade !== m.incoming.grade) {
+        // Zapamti vezu "ime na portalu" -> "lokalni predmet" da se sledeći put odmah prepozna
+        const norm = normalizeName(m.incoming.name);
+        if (aliasMap[norm] !== subjectId) { aliasMap[norm] = subjectId; aliasChanged = true; }
+        if (!gradesEqual(sub.grade, m.incoming.grade)) {
           sub.grade = m.incoming.grade;
           applied++;
         }
       });
+      if (aliasChanged) saveEakAliasMap(aliasMap);
       closeEakSyncModal();
       if (applied === 0) { showToast('Nijedna ocena nije promenjena.', 'info'); return; }
       calculateStatistics();
@@ -3111,23 +3162,44 @@
       const stipendijaOk = budzetOk && pastCleared && avg >= 9.00;
       const kreditOk = avg >= 8.50;
 
-      const row = (label, ok, detail) => `
+      // Okvirna procena broja ispita koji fale (ispit ~3 ESPB, ređe 2, još ređe 4+)
+      const ESPB_PO_ISPITU = 3;
+      const espbToExams = espb => Math.max(1, Math.ceil(espb / ESPB_PO_ISPITU));
+
+      const budzetExams = budzetOk ? 0 : espbToExams(48 - espbCurrentYear);
+      const samofinExams = samofinOk ? 0 : espbToExams(37 - espbCurrentYear);
+      const pastUnpassedCount = pastUnpassed.length;
+      const stipendijaExams = stipendijaOk ? 0 : pastUnpassedCount + (budzetOk ? 0 : espbToExams(48 - espbCurrentYear));
+      // Kredit zavisi od proseka, ne od ESPB — procena koliko ispita sa desetkom bi trebalo
+      // da se prosek podigne na 8.50 (grubo, pod pretpostavkom da su to sami sledeći ispiti)
+      let kreditExams = 0;
+      if (!kreditOk && numericPassed.length > 0) {
+        const needed = (8.5 * numericPassed.length - numericPassed.reduce((a, s) => a + s.grade, 0)) / 1.5;
+        kreditExams = Math.max(1, Math.ceil(needed));
+      }
+
+      const examBadge = n => n > 0 ? `<span class="text-[10px] font-bold text-slate-400 mt-1 block">≈ +${n} ${n === 1 ? 'ispit' : 'ispita'}</span>` : '';
+
+      const row = (label, ok, detail, exams) => `
         <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">
           <div>
             <p class="text-xs font-bold text-slate-800">${label}</p>
             <p class="text-[11px] text-slate-500">${detail}</p>
           </div>
-          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0 ${ok ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
-            <i data-lucide="${ok ? 'check' : 'x'}" class="w-3 h-3"></i>${ok ? 'Ispunjeno' : 'Nije ispunjeno'}
-          </span>
+          <div class="flex flex-col items-end flex-shrink-0">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${ok ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+              <i data-lucide="${ok ? 'check' : 'x'}" class="w-3 h-3"></i>${ok ? 'Ispunjeno' : 'Nije ispunjeno'}
+            </span>
+            ${!ok ? examBadge(exams) : ''}
+          </div>
         </div>`;
 
       let html = `
         <p class="text-[11px] text-slate-500 mb-3">Na osnovu unetih ocena: <b class="text-slate-700">${currentSemester}. semestar</b> (${currentYear}. godina). Izračunato iz ${espbCurrentYear} ESPB položenih u ovoj godini.</p>
-        ${row('Budžet', budzetOk, `${espbCurrentYear}/48 ESPB u tekućoj godini (i dovoljan rang na listi)`)}
-        ${row('Samofinansiranje', samofinOk, `${espbCurrentYear}/37 ESPB u tekućoj godini` + (!samofinOk ? ' — godina se obnavlja' : ''))}
-        ${row('Stipendija', stipendijaOk, `Budžet + sve prethodne godine položene + prosek ≥ 9.00 (trenutno ${avg.toFixed(2)})`)}
-        ${row('Studentski kredit', kreditOk, `Prosek ≥ 8.50 (trenutno ${avg.toFixed(2)})`)}
+        ${row('Budžet', budzetOk, `${espbCurrentYear}/48 ESPB u tekućoj godini (i dovoljan rang na listi)`, budzetExams)}
+        ${row('Samofinansiranje', samofinOk, `${espbCurrentYear}/37 ESPB u tekućoj godini` + (!samofinOk ? ' — godina se obnavlja' : ''), samofinExams)}
+        ${row('Stipendija', stipendijaOk, `Budžet + sve prethodne godine položene + prosek ≥ 9.00 (trenutno ${avg.toFixed(2)})`, stipendijaExams)}
+        ${row('Studentski kredit', kreditOk, `Prosek ≥ 8.50 (trenutno ${avg.toFixed(2)})`, kreditExams)}
       `;
 
       if (!pastCleared) {
