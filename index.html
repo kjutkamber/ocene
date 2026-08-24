@@ -651,7 +651,12 @@
     const SUPABASE_URL = 'https://nhffxmmmwoonnkhvrqev.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZmZ4bW1td29vbm5raHZycWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEzNDcsImV4cCI6MjA5NDk0NzM0N30.FG2gdhNRXJxRnPVKdQ8qLGlwcaJ4nSUpKJJrfq4YsDc';
     const { createClient } = supabase;
-    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // persistSession/autoRefreshToken isključeni jer se aplikacija ne loguje preko Supabase Auth,
+    // a ovi mehanizmi pokušavaju da koriste localStorage i Web Locks API — u third-party iframe-u
+    // (kad se app otvara kao overlay preko eAkademije) to ume da baci grešku i tiho sruši čuvanje.
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+    });
 
     // =============================================
     // CLOUD API
@@ -2847,29 +2852,36 @@
 
     async function saveUserData() {
       if (!currentUser) return false;
-      const rows = subjects.map(s => ({ user_key: currentUser.key, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
-      if (rows.length === 0) return true;
-      const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
-      if (error) { console.error('Upsert error:', error); return false; }
-      // Delete removed subjects safely
-      const currentIds = new Set(subjects.map(s => s.id));
-      const { data: existing } = await sb.from('student_subjects').select('subject_id').eq('user_key', currentUser.key);
-      if (existing) {
-        for (const row of existing) {
-          if (!currentIds.has(row.subject_id)) {
-            await sb.from('student_subjects').delete().eq('user_key', currentUser.key).eq('subject_id', row.subject_id);
+      try {
+        const rows = subjects.map(s => ({ user_key: currentUser.key, subject_id: s.id, name: s.name, grade: s.grade, espb: s.espb, semester: s.semester, color: s.color || null, note: s.note || null, todos: s.todos && s.todos.length ? s.todos : null, updated_at: new Date().toISOString() }));
+        if (rows.length === 0) return true;
+        const { error } = await sb.from('student_subjects').upsert(rows, { onConflict: 'user_key,subject_id' });
+        if (error) { console.error('Upsert error:', error); lastSaveError = error.message || String(error); return false; }
+        // Delete removed subjects safely
+        const currentIds = new Set(subjects.map(s => s.id));
+        const { data: existing } = await sb.from('student_subjects').select('subject_id').eq('user_key', currentUser.key);
+        if (existing) {
+          for (const row of existing) {
+            if (!currentIds.has(row.subject_id)) {
+              await sb.from('student_subjects').delete().eq('user_key', currentUser.key).eq('subject_id', row.subject_id);
+            }
           }
         }
+        unsavedChanges = false;
+        return true;
+      } catch (e) {
+        console.error('saveUserData exception:', e);
+        lastSaveError = e && e.message ? e.message : String(e);
+        return false;
       }
-      unsavedChanges = false;
-      return true;
     }
+    let lastSaveError = '';
     async function manualSave() {
       if (!currentUser) { showToast('Nisi ulogovan/a.', 'error'); return; }
       showToast('Čuvanje u bazu...', 'info');
       const ok = await saveUserData();
       if (ok) showToast('Sve izmene su sačuvane! ✓', 'success');
-      else showToast('Greška pri čuvanju! Pokušaj ponovo.', 'error');
+      else showToast('Greška pri čuvanju' + (lastSaveError ? ': ' + lastSaveError : '') + '! Pokušaj ponovo.', 'error');
     }
 
     function showToast(text, type = "success") {
@@ -2959,6 +2971,12 @@
       lucide.createIcons();
     }
 
+    function gradeLabel(g) {
+      if (g === 'polozen') return 'Položen';
+      if (g === null || g === undefined || g === '') return '—';
+      return g;
+    }
+
     function renderEakSyncReview() {
       const body = document.getElementById('eak-sync-body');
       if (eakSyncMatches.length === 0) {
@@ -2972,35 +2990,64 @@
 
       body.innerHTML = `<table class="min-w-full text-xs">
         <thead class="text-slate-500 uppercase font-bold border-b border-slate-200">
-          <tr><th class="text-left py-2 pr-2">Primeni</th><th class="text-left py-2 pr-2">Sa eAkademije</th><th class="text-center py-2 pr-2">Ocena</th><th class="text-left py-2">Poklapa se sa</th></tr>
+          <tr><th class="text-left py-2 pr-2">Primeni</th><th class="text-left py-2 pr-2">Sa eAkademije</th><th class="text-center py-2 pr-2">Ocena</th><th class="text-left py-2 pr-2">Poklapa se sa</th><th class="text-left py-2">Poređenje</th></tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody class="divide-y divide-slate-100" id="eak-sync-tbody">
           ${eakSyncMatches.map((m, i) => {
             const badge = m.confidence === 'high' ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">auto</span>'
               : m.confidence === 'medium' ? '<span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">proveri</span>'
-              : '<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold">nema predloga</span>';
-            const gradeDisplay = m.incoming.grade === 'polozen' ? 'Položen' : (m.incoming.grade ?? '—');
-            return `<tr>
-              <td class="py-2 pr-2 align-top"><input type="checkbox" ${m.confidence !== 'none' ? 'checked' : ''} id="eak-check-${i}" class="w-4 h-4 accent-emerald-600"></td>
+              : '<span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-bold">nema predloga — izaberi ručno</span>';
+            const gradeDisplay = gradeLabel(m.incoming.grade);
+            return `<tr id="eak-row-${i}">
+              <td class="py-2 pr-2 align-top"><input type="checkbox" ${m.confidence !== 'none' ? 'checked' : ''} id="eak-check-${i}" onchange="updateEakRowComparison(${i})" class="w-4 h-4 accent-emerald-600"></td>
               <td class="py-2 pr-2 align-top font-semibold text-slate-800">${m.incoming.name}${badge ? '<br>' + badge : ''}</td>
               <td class="py-2 pr-2 align-top text-center font-black">${gradeDisplay}</td>
-              <td class="py-2 align-top">
-                <select id="eak-select-${i}" class="border border-slate-300 rounded px-2 py-1 text-xs w-full max-w-[280px]">
+              <td class="py-2 pr-2 align-top">
+                <select id="eak-select-${i}" onchange="onEakSelectChange(${i})" class="border border-slate-300 rounded px-2 py-1 text-xs w-full max-w-[280px]">
                   <option value="">— preskoči —</option>
                   ${subjectOptions}
                 </select>
               </td>
+              <td class="py-2 align-top" id="eak-compare-${i}"></td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>`;
-      // Pre-select best guesses after render
+      // Pre-select best guesses after render, i inicijalno poređenje
       eakSyncMatches.forEach((m, i) => {
         if (m.bestSubjectId) {
           const sel = document.getElementById(`eak-select-${i}`);
           if (sel) sel.value = m.bestSubjectId;
         }
+        updateEakRowComparison(i);
       });
+    }
+
+    // Kad korisnik ručno izabere predmet iz padajućeg menija — automatski čekiraj "Primeni",
+    // jer je ranije taj checkbox ostajao nečekiran za predmete bez automatskog predloga
+    // (razlika u imenu), zbog čega je klik na "Sačuvaj" javljao "Nijedna ocena nije promenjena".
+    function onEakSelectChange(i) {
+      const sel = document.getElementById(`eak-select-${i}`);
+      const chk = document.getElementById(`eak-check-${i}`);
+      if (chk) chk.checked = !!sel.value;
+      updateEakRowComparison(i);
+    }
+
+    function updateEakRowComparison(i) {
+      const m = eakSyncMatches[i];
+      if (!m) return;
+      const sel = document.getElementById(`eak-select-${i}`);
+      const row = document.getElementById(`eak-row-${i}`);
+      const cmpEl = document.getElementById(`eak-compare-${i}`);
+      const subjectId = sel ? sel.value : '';
+      const sub = subjectId ? subjects.find(s => s.id === subjectId) : null;
+      const differs = !!sub && sub.grade !== m.incoming.grade;
+      if (row) row.className = differs ? 'bg-rose-50' : '';
+      if (cmpEl) {
+        cmpEl.innerHTML = sub
+          ? `<span class="${differs ? 'text-rose-600 font-bold' : 'text-slate-400'}">Portal: ${gradeLabel(m.incoming.grade)} · Sajt: ${gradeLabel(sub.grade)}</span>`
+          : '<span class="text-slate-400">Predmet nije izabran</span>';
+      }
     }
 
     async function applyEakSync() {
@@ -3021,7 +3068,7 @@
       calculateStatistics();
       showToast(`Ažurirano ${applied} ocena. Čuvanje...`, 'info');
       const ok = await saveUserData();
-      showToast(ok ? `Sačuvano — ${applied} ocena ažurirano! ✓` : 'Greška pri čuvanju, probaj "Sačuvaj izmene" ručno.', ok ? 'success' : 'error');
+      showToast(ok ? `Sačuvano — ${applied} ocena ažurirano! ✓` : 'Greška pri čuvanju' + (lastSaveError ? ': ' + lastSaveError : '') + ', probaj "Sačuvaj izmene" ručno.', ok ? 'success' : 'error');
     }
 
     function closeEakSyncModal() {
