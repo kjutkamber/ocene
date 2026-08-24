@@ -185,7 +185,7 @@
           <!-- USLOVI ZA NASTAVAK STUDIJA - zaseban red, stoji sam, prikazuje se samo ako admin dozvoli -->
           <div id="study-status-wrapper" class="hidden">
             <div class="bg-white p-5 rounded-2xl shadow-md border border-slate-300/60">
-              <h3 class="text-md font-bold text-slate-900 mb-2 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="scale" class="text-rose-500"></i> Uslovi</h3>
+              <h3 class="text-md font-bold text-slate-900 mb-2 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="scale" class="text-rose-500"></i> Uslovi za nastavak studija</h3>
               <div id="study-status-content"></div>
             </div>
           </div>
@@ -298,6 +298,269 @@
       <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2 flex-shrink-0 bg-slate-50">
         <button onclick="closeEakSyncModal()" class="px-4 py-2 text-xs font-bold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Otkaži</button>
         <button onclick="applyEakSync()" id="eak-sync-apply-btn" class="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 text-white hover:bg-emerald-500">Primeni izabrane ocene</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: UPUTSTVO ZA INSTALACIJU TAMPERMONKEY SKRIPTE -->
+  <div id="eak-install-modal" class="hidden fixed inset-0 z-[350] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden border border-slate-200">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white flex-shrink-0">
+        <h3 class="font-bold text-lg flex items-center gap-2"><i data-lucide="puzzle" class="w-5 h-5 text-amber-400"></i> Sync zahteva Tampermonkey skriptu</h3>
+        <button onclick="closeEakInstallModal()" class="text-slate-400 hover:text-white transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+      </div>
+      <div class="overflow-y-auto flex-1 px-6 py-5 space-y-4">
+        <p id="eak-install-reason" class="text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"></p>
+        <div class="space-y-3">
+          <div class="flex gap-3">
+            <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">1</div>
+            <p class="text-sm text-slate-700">Instaliraj <b>Tampermonkey</b> ekstenziju za svoj browser (Chrome, Edge, Firefox...) ako je već nemaš.</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</div>
+            <p class="text-sm text-slate-700">Klikni na Tampermonkey ikonicu → <b>Create a new script</b> (Napravi novu skriptu).</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</div>
+            <p class="text-sm text-slate-700">Obriši sav postojeći tekst u editoru i nalepi kod koji dobiješ klikom na dugme ispod, pa sačuvaj (<b>Ctrl+S</b>).</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</div>
+            <p class="text-sm text-slate-700">Otvori <b>eAkademiju</b> (eportal.akademija.uns.ac.rs) i uđi bar jednom na stranicu sa ocenama — to je potrebno da skripta uhvati tvoj pristupni token.</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</div>
+            <p class="text-sm text-slate-700">Klikni na plutajuće dugme <b>"📊 Moja aplikacija"</b> dole desno na eAkademiji — aplikacija se otvara kao overlay, i tu "Sync" dugme radi.</p>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kod za Tampermonkey</label>
+            <button onclick="copyEakScript()" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition shadow-sm">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i> Kopiraj kod
+            </button>
+          </div>
+          <textarea id="eak-script-code" readonly rows="6" class="w-full text-[10px] font-mono bg-slate-900 text-emerald-300 rounded-lg p-3 border border-slate-700 resize-none">// ==UserScript==
+// @name         eAkademija — Moja aplikacija (overlay + sync)
+// @namespace    eakademija-custom
+// @version      4.0
+// @description  Otvara tvoju hostovanu Kalkulator Ocena aplikaciju kao overlay preko eAkademije, i omogućava sync ocena.
+// @match        https://eportal.akademija.uns.ac.rs/*
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
+
+(function () {
+  'use strict';
+
+  // &lt;&lt;&lt; TVOJ HOSTOVANI LINK &gt;&gt;&gt;
+  const APP_URL = 'https://kjutkamber.github.io/ocene';
+  const APP_ORIGIN = 'https://kjutkamber.github.io';
+  const API_ENDPOINT = 'https://eportal.akademija.uns.ac.rs/eAUWebServisi/ispiti/getIspitiTekuciPlan';
+
+  // ---------------------------------------------------------
+  // 1. Presretanje authtoken / username (isto kao pre)
+  // ---------------------------------------------------------
+  let captured = { authtoken: null, username: null };
+
+  const origFetch = window.fetch;
+  window.fetch = function (input, init) {
+    try {
+      const headers = (init &amp;&amp; init.headers) || (input &amp;&amp; input.headers);
+      captureFromHeaders(headers);
+    } catch (e) {}
+    return origFetch.apply(this, arguments);
+  };
+
+  const origSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+  XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+    if (name &amp;&amp; value) {
+      const lname = name.toLowerCase();
+      if (lname === 'authtoken') captured.authtoken = value;
+      if (lname === 'username') captured.username = value;
+    }
+    return origSetHeader.apply(this, arguments);
+  };
+
+  function captureFromHeaders(headers) {
+    if (!headers) return;
+    if (headers instanceof Headers) {
+      const at = headers.get('authtoken');
+      const un = headers.get('username');
+      if (at) captured.authtoken = at;
+      if (un) captured.username = un;
+    } else if (typeof headers === 'object') {
+      for (const k of Object.keys(headers)) {
+        const lk = k.toLowerCase();
+        if (lk === 'authtoken') captured.authtoken = headers[k];
+        if (lk === 'username') captured.username = headers[k];
+      }
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 2. Fetch ocena sa eAkademije, na zahtev iz iframe-a
+  // ---------------------------------------------------------
+  async function fetchGradesFromEakademija() {
+    if (!captured.authtoken || !captured.username) {
+      throw new Error('Nema uhvaćenog authtoken/username — otvori stranicu sa ocenama na eAkademiji bar jednom.');
+    }
+    const resp = await origFetch.call(window, API_ENDPOINT, {
+      method: 'GET',
+      headers: {
+        authtoken: captured.authtoken,
+        username: captured.username,
+      },
+    });
+    if (!resp.ok) throw new Error('eAkademija API greška: ' + resp.status);
+    const data = await resp.json();
+
+    // Transformacija u prost format koji app razume
+    return data.map((row) =&gt; {
+      let grade = null;
+      const rawGrade = (row.ocena || '').toString().trim();
+      if (rawGrade === '1') {
+        grade = 'polozen'; // položen bez brojčane ocene
+      } else if (rawGrade &amp;&amp; !isNaN(parseInt(rawGrade))) {
+        grade = parseInt(rawGrade);
+      }
+      return {
+        name: row.naziv || '',
+        grade: grade,
+        espb: row.espb != null ? parseInt(row.espb) : null,
+        ispitniRok: row.ispitniRok || null,
+        status: row.status || null,
+      };
+    }).filter((r) =&gt; r.name);
+  }
+
+  // ---------------------------------------------------------
+  // 3. Slušaj poruke iz iframe-a (zahtev za sync)
+  // ---------------------------------------------------------
+  window.addEventListener('message', async (event) =&gt; {
+    if (event.origin !== APP_ORIGIN) return;
+    if (!event.data || event.data.type !== 'EAK_REQUEST_SYNC') return;
+    if (!overlayEl) return;
+    const iframe = overlayEl.querySelector('iframe');
+    if (!iframe || event.source !== iframe.contentWindow) return;
+
+    try {
+      const grades = await fetchGradesFromEakademija();
+      iframe.contentWindow.postMessage({ type: 'EAK_SYNC_DATA', grades }, APP_ORIGIN);
+    } catch (err) {
+      iframe.contentWindow.postMessage({ type: 'EAK_SYNC_ERROR', message: err.message }, APP_ORIGIN);
+    }
+  });
+
+  // ---------------------------------------------------------
+  // 4. Floating dugme + overlay (isto kao pre)
+  // ---------------------------------------------------------
+  function addFloatingButton() {
+    const btn = document.createElement('button');
+    btn.textContent = '📊 Moja aplikacija';
+    Object.assign(btn.style, {
+      position: 'fixed',
+      bottom: '24px',
+      right: '24px',
+      zIndex: 999999,
+      padding: '12px 20px',
+      background: '#1e293b',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '999px',
+      fontSize: '14px',
+      fontFamily: 'system-ui, sans-serif',
+      boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+      cursor: 'pointer',
+    });
+    btn.onmouseenter = () =&gt; (btn.style.background = '#334155');
+    btn.onmouseleave = () =&gt; (btn.style.background = '#1e293b');
+    btn.onclick = openAppOverlay;
+    document.body.appendChild(btn);
+  }
+
+  let overlayEl = null;
+  function openAppOverlay() {
+    closeOverlay();
+    overlayEl = document.createElement('div');
+    Object.assign(overlayEl.style, {
+      position: 'fixed',
+      inset: '0',
+      background: 'rgba(15,23,42,0.75)',
+      zIndex: 1000000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+    });
+
+    const frameWrap = document.createElement('div');
+    Object.assign(frameWrap.style, {
+      width: '100%',
+      height: '100%',
+      maxWidth: '1200px',
+      background: '#fff',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+      position: 'relative',
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    Object.assign(closeBtn.style, {
+      position: 'absolute',
+      top: '10px',
+      right: '10px',
+      zIndex: 10,
+      width: '32px',
+      height: '32px',
+      border: 'none',
+      borderRadius: '50%',
+      background: '#1e293b',
+      color: '#fff',
+      cursor: 'pointer',
+      fontSize: '14px',
+    });
+    closeBtn.onclick = closeOverlay;
+
+    const iframe = document.createElement('iframe');
+    Object.assign(iframe.style, {
+      width: '100%',
+      height: '100%',
+      border: 'none',
+    });
+    iframe.src = APP_URL;
+
+    frameWrap.appendChild(closeBtn);
+    frameWrap.appendChild(iframe);
+    overlayEl.appendChild(frameWrap);
+
+    overlayEl.addEventListener('click', (e) =&gt; {
+      if (e.target === overlayEl) closeOverlay();
+    });
+
+    document.body.appendChild(overlayEl);
+  }
+
+  function closeOverlay() {
+    if (overlayEl) {
+      overlayEl.remove();
+      overlayEl = null;
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addFloatingButton);
+  } else {
+    addFloatingButton();
+  }
+})();
+</textarea>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2 flex-shrink-0 bg-slate-50">
+        <button onclick="closeEakInstallModal()" class="px-4 py-2 text-xs font-bold rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-100">Zatvori</button>
       </div>
     </div>
   </div>
@@ -2760,6 +3023,15 @@
         loadCurriculumFromJSON(),
         cloudLoadUsers().then(u => { customUsers = u; })
       ]);
+      // Automatska prijava iz sačuvane sesije — ne treba svaki put ručno da se ulogujes.
+      // Za odjavu ili promenu profila koristi dugme "Odjavi se".
+      try {
+        const saved = JSON.parse(localStorage.getItem('savedSession') || 'null');
+        if (saved && saved.key && customUsers[saved.key] && customUsers[saved.key].index === saved.index) {
+          await loginUser(customUsers[saved.key].displayName, saved.index, saved.key);
+          showToast(`Dobrodošli nazad, ${customUsers[saved.key].displayName}!`);
+        }
+      } catch (e) { console.warn('Auto-login greška:', e); }
     };
 
     window.addEventListener('beforeunload', function(e) {
@@ -2790,6 +3062,7 @@
         errorDiv.classList.add('hidden');
         const displayName = customUsers[normalizedKey].displayName;
         await loginUser(displayName, indexInput, normalizedKey);
+        localStorage.setItem('savedSession', JSON.stringify({ name: displayName, index: indexInput, key: normalizedKey }));
         showToast(`Dobrodošli, ${displayName}!`);
       } else {
         errorText.textContent = 'Nevažeća kombinacija imena i broja indeksa.';
@@ -2846,6 +3119,7 @@
     function handleLogout() {
       if (unsavedChanges && !confirm('Imate nesačuvane izmene. Da li ste sigurni da želite da se odjavite?')) return;
       unsavedChanges = false; currentUser = null; subjects = [];
+      localStorage.removeItem('savedSession');
       if (gpaChart) { gpaChart.destroy(); gpaChart = null; }
       document.getElementById('login-name').value = "";
       document.getElementById('login-index').value = "";
@@ -2949,23 +3223,286 @@
       localStorage.setItem(`eakNameMap_${currentUser.key}`, JSON.stringify(map));
     }
 
+    const EAK_USERSCRIPT_CODE = `// ==UserScript==
+// @name         eAkademija — Moja aplikacija (overlay + sync)
+// @namespace    eakademija-custom
+// @version      4.0
+// @description  Otvara tvoju hostovanu Kalkulator Ocena aplikaciju kao overlay preko eAkademije, i omogućava sync ocena.
+// @match        https://eportal.akademija.uns.ac.rs/*
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
+
+(function () {
+  'use strict';
+
+  // <<< TVOJ HOSTOVANI LINK >>>
+  const APP_URL = 'https://kjutkamber.github.io/ocene';
+  const APP_ORIGIN = 'https://kjutkamber.github.io';
+  const API_ENDPOINT = 'https://eportal.akademija.uns.ac.rs/eAUWebServisi/ispiti/getIspitiTekuciPlan';
+
+  // ---------------------------------------------------------
+  // 1. Presretanje authtoken / username (isto kao pre)
+  // ---------------------------------------------------------
+  let captured = { authtoken: null, username: null };
+
+  const origFetch = window.fetch;
+  window.fetch = function (input, init) {
+    try {
+      const headers = (init && init.headers) || (input && input.headers);
+      captureFromHeaders(headers);
+    } catch (e) {}
+    return origFetch.apply(this, arguments);
+  };
+
+  const origSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+  XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+    if (name && value) {
+      const lname = name.toLowerCase();
+      if (lname === 'authtoken') captured.authtoken = value;
+      if (lname === 'username') captured.username = value;
+    }
+    return origSetHeader.apply(this, arguments);
+  };
+
+  function captureFromHeaders(headers) {
+    if (!headers) return;
+    if (headers instanceof Headers) {
+      const at = headers.get('authtoken');
+      const un = headers.get('username');
+      if (at) captured.authtoken = at;
+      if (un) captured.username = un;
+    } else if (typeof headers === 'object') {
+      for (const k of Object.keys(headers)) {
+        const lk = k.toLowerCase();
+        if (lk === 'authtoken') captured.authtoken = headers[k];
+        if (lk === 'username') captured.username = headers[k];
+      }
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 2. Fetch ocena sa eAkademije, na zahtev iz iframe-a
+  // ---------------------------------------------------------
+  async function fetchGradesFromEakademija() {
+    if (!captured.authtoken || !captured.username) {
+      throw new Error('Nema uhvaćenog authtoken/username — otvori stranicu sa ocenama na eAkademiji bar jednom.');
+    }
+    const resp = await origFetch.call(window, API_ENDPOINT, {
+      method: 'GET',
+      headers: {
+        authtoken: captured.authtoken,
+        username: captured.username,
+      },
+    });
+    if (!resp.ok) throw new Error('eAkademija API greška: ' + resp.status);
+    const data = await resp.json();
+
+    // Transformacija u prost format koji app razume
+    return data.map((row) => {
+      let grade = null;
+      const rawGrade = (row.ocena || '').toString().trim();
+      if (rawGrade === '1') {
+        grade = 'polozen'; // položen bez brojčane ocene
+      } else if (rawGrade && !isNaN(parseInt(rawGrade))) {
+        grade = parseInt(rawGrade);
+      }
+      return {
+        name: row.naziv || '',
+        grade: grade,
+        espb: row.espb != null ? parseInt(row.espb) : null,
+        ispitniRok: row.ispitniRok || null,
+        status: row.status || null,
+      };
+    }).filter((r) => r.name);
+  }
+
+  // ---------------------------------------------------------
+  // 3. Slušaj poruke iz iframe-a (zahtev za sync)
+  // ---------------------------------------------------------
+  window.addEventListener('message', async (event) => {
+    if (event.origin !== APP_ORIGIN) return;
+    if (!event.data || event.data.type !== 'EAK_REQUEST_SYNC') return;
+    if (!overlayEl) return;
+    const iframe = overlayEl.querySelector('iframe');
+    if (!iframe || event.source !== iframe.contentWindow) return;
+
+    try {
+      const grades = await fetchGradesFromEakademija();
+      iframe.contentWindow.postMessage({ type: 'EAK_SYNC_DATA', grades }, APP_ORIGIN);
+    } catch (err) {
+      iframe.contentWindow.postMessage({ type: 'EAK_SYNC_ERROR', message: err.message }, APP_ORIGIN);
+    }
+  });
+
+  // ---------------------------------------------------------
+  // 4. Floating dugme + overlay (isto kao pre)
+  // ---------------------------------------------------------
+  function addFloatingButton() {
+    const btn = document.createElement('button');
+    btn.textContent = '📊 Moja aplikacija';
+    Object.assign(btn.style, {
+      position: 'fixed',
+      bottom: '24px',
+      right: '24px',
+      zIndex: 999999,
+      padding: '12px 20px',
+      background: '#1e293b',
+      color: '#fff',
+      border: 'none',
+      borderRadius: '999px',
+      fontSize: '14px',
+      fontFamily: 'system-ui, sans-serif',
+      boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+      cursor: 'pointer',
+    });
+    btn.onmouseenter = () => (btn.style.background = '#334155');
+    btn.onmouseleave = () => (btn.style.background = '#1e293b');
+    btn.onclick = openAppOverlay;
+    document.body.appendChild(btn);
+  }
+
+  let overlayEl = null;
+  function openAppOverlay() {
+    closeOverlay();
+    overlayEl = document.createElement('div');
+    Object.assign(overlayEl.style, {
+      position: 'fixed',
+      inset: '0',
+      background: 'rgba(15,23,42,0.75)',
+      zIndex: 1000000,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+    });
+
+    const frameWrap = document.createElement('div');
+    Object.assign(frameWrap.style, {
+      width: '100%',
+      height: '100%',
+      maxWidth: '1200px',
+      background: '#fff',
+      borderRadius: '16px',
+      overflow: 'hidden',
+      boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+      position: 'relative',
+    });
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '✕';
+    Object.assign(closeBtn.style, {
+      position: 'absolute',
+      top: '10px',
+      right: '10px',
+      zIndex: 10,
+      width: '32px',
+      height: '32px',
+      border: 'none',
+      borderRadius: '50%',
+      background: '#1e293b',
+      color: '#fff',
+      cursor: 'pointer',
+      fontSize: '14px',
+    });
+    closeBtn.onclick = closeOverlay;
+
+    const iframe = document.createElement('iframe');
+    Object.assign(iframe.style, {
+      width: '100%',
+      height: '100%',
+      border: 'none',
+    });
+    iframe.src = APP_URL;
+
+    frameWrap.appendChild(closeBtn);
+    frameWrap.appendChild(iframe);
+    overlayEl.appendChild(frameWrap);
+
+    overlayEl.addEventListener('click', (e) => {
+      if (e.target === overlayEl) closeOverlay();
+    });
+
+    document.body.appendChild(overlayEl);
+  }
+
+  function closeOverlay() {
+    if (overlayEl) {
+      overlayEl.remove();
+      overlayEl = null;
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addFloatingButton);
+  } else {
+    addFloatingButton();
+  }
+})();
+`;
+
+    let eakSyncTimeoutId = null;
+    let eakSyncWaitingForResponse = false;
+
     function requestEakSync() {
       if (window.parent === window) {
-        showToast('Ova funkcija radi samo kada je aplikacija otvorena preko dugmeta na eAkademiji.', 'error');
+        // Aplikacija nije otvorena kao overlay preko eAkademije (Tampermonkey skripta) —
+        // prikaži uputstvo za instalaciju umesto generičke greške.
+        openEakInstallModal();
         return;
       }
       showToast('Povlačim ocene sa eAkademije...', 'info');
       window.parent.postMessage({ type: 'EAK_REQUEST_SYNC' }, '*');
+      clearTimeout(eakSyncTimeoutId);
+      eakSyncWaitingForResponse = true;
+      // Ako Tampermonkey skripta ne odgovori na vreme (nije aktivirana / nije ažurirana / nije
+      // uhvatila authtoken jer stranica sa ocenama nije još otvorena), prikaži uputstvo.
+      eakSyncTimeoutId = setTimeout(() => {
+        if (eakSyncWaitingForResponse) {
+          eakSyncWaitingForResponse = false;
+          openEakInstallModal('Nema odgovora od Tampermonkey skripte na vreme. Proveri da li je aktivirana, ažurirana na najnoviju verziju, i da si bar jednom otvorio/la stranicu sa ocenama na eAkademiji.');
+        }
+      }, 6000);
     }
 
     window.addEventListener('message', function (event) {
       if (!event.data || !event.data.type) return;
       if (event.data.type === 'EAK_SYNC_DATA') {
+        eakSyncWaitingForResponse = false;
+        clearTimeout(eakSyncTimeoutId);
         buildEakSyncReview(event.data.grades || []);
       } else if (event.data.type === 'EAK_SYNC_ERROR') {
+        eakSyncWaitingForResponse = false;
+        clearTimeout(eakSyncTimeoutId);
         showToast('Greška: ' + event.data.message, 'error');
       }
     });
+
+    function openEakInstallModal(reason) {
+      const reasonEl = document.getElementById('eak-install-reason');
+      if (reasonEl) {
+        reasonEl.textContent = reason || 'Da bi sinhronizacija radila, aplikacija mora biti otvorena kao overlay preko eAkademije, preko Tampermonkey skripte.';
+      }
+      document.getElementById('eak-install-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeEakInstallModal() {
+      document.getElementById('eak-install-modal').classList.add('hidden');
+    }
+    function copyEakScript() {
+      const done = () => showToast('Kod je kopiran! Nalepi ga u Tampermonkey (Ctrl+V) i sačuvaj (Ctrl+S).', 'success');
+      const fail = () => showToast('Kopiranje nije uspelo — selektuj kod ručno i kopiraj (Ctrl+C).', 'error');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(EAK_USERSCRIPT_CODE).then(done).catch(fail);
+      } else {
+        try {
+          const ta = document.getElementById('eak-script-code');
+          ta.select();
+          document.execCommand('copy');
+          done();
+        } catch (e) { fail(); }
+      }
+    }
 
     function gradesEqual(a, b) {
       // Normalizuje null/undefined i tip (broj vs string) pre poređenja, da ne bi lažno
@@ -3178,20 +3715,17 @@
         kreditExams = Math.max(1, Math.ceil(needed));
       }
 
-      const examBadge = n => n > 0 ? `<span class="text-[10px] font-bold text-slate-400 mt-1 block">≈ +${n} ${n === 1 ? 'ispit' : 'ispita'}</span>` : '';
+      const examBadge = n => n > 0 ? `<span class="text-[10px] font-bold text-rose-500 bg-rose-50 border border-rose-100 rounded-full px-1.5 py-0.5">≈ +${n} ${n === 1 ? 'ispit' : 'ispita'}</span>` : '';
 
       const row = (label, ok, detail, exams) => `
         <div class="flex items-center justify-between gap-3 py-2 border-b border-slate-100 last:border-0">
           <div>
-            <p class="text-xs font-bold text-slate-800">${label}</p>
+            <p class="text-xs font-bold text-slate-800 flex items-center gap-1.5">${label}${!ok ? examBadge(exams) : ''}</p>
             <p class="text-[11px] text-slate-500">${detail}</p>
           </div>
-          <div class="flex flex-col items-end flex-shrink-0">
-            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold ${ok ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
-              <i data-lucide="${ok ? 'check' : 'x'}" class="w-3 h-3"></i>${ok ? 'Ispunjeno' : 'Nije ispunjeno'}
-            </span>
-            ${!ok ? examBadge(exams) : ''}
-          </div>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold flex-shrink-0 ${ok ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-rose-100 text-rose-700 border border-rose-200'}">
+            <i data-lucide="${ok ? 'check' : 'x'}" class="w-3 h-3"></i>${ok ? 'Ispunjeno' : 'Nije ispunjeno'}
+          </span>
         </div>`;
 
       let html = `
