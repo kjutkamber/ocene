@@ -318,19 +318,23 @@
           </div>
           <div class="flex gap-3">
             <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">2</div>
-            <p class="text-sm text-slate-700">Klikni na Tampermonkey ikonicu → <b>Create a new script</b> (Napravi novu skriptu).</p>
+            <p class="text-sm text-slate-700"><b>Samo za Chrome:</b> klikni na ikonicu ekstenzija (kockica) u traci, pa na <b>tri tačkice</b> pored Tampermonkey-a → <b>Manage extension</b> → uključi <b>Allow User Scripts</b> (bez ovoga Chrome blokira Tampermonkey skripte).</p>
           </div>
           <div class="flex gap-3">
             <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">3</div>
-            <p class="text-sm text-slate-700">Obriši sav postojeći tekst u editoru i nalepi kod koji dobiješ klikom na dugme ispod, pa sačuvaj (<b>Ctrl+S</b>).</p>
+            <p class="text-sm text-slate-700">Klikni na Tampermonkey ikonicu → <b>Create a new script</b> (Napravi novu skriptu).</p>
           </div>
           <div class="flex gap-3">
             <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">4</div>
-            <p class="text-sm text-slate-700">Otvori <b>eAkademiju</b> (eportal.akademija.uns.ac.rs) i uđi bar jednom na stranicu sa ocenama — to je potrebno da skripta uhvati tvoj pristupni token.</p>
+            <p class="text-sm text-slate-700">Obriši sav postojeći tekst u editoru i nalepi kod koji dobiješ klikom na dugme ispod, pa sačuvaj (<b>Ctrl+S</b>).</p>
           </div>
           <div class="flex gap-3">
             <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">5</div>
-            <p class="text-sm text-slate-700">Klikni na plutajuće dugme <b>"📊 Moja aplikacija"</b> dole desno na eAkademiji — aplikacija se otvara kao overlay, i tu "Sync" dugme radi.</p>
+            <p class="text-sm text-slate-700">Otvori <b>eAkademiju</b> (eportal.akademija.uns.ac.rs) i uđi bar jednom na stranicu sa ocenama — to je potrebno da skripta uhvati tvoj pristupni token.</p>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-black flex items-center justify-center flex-shrink-0">6</div>
+            <p class="text-sm text-slate-700">Klikni na plutajuće dugme <b>"📊 eAkademija+"</b> dole desno na eAkademiji — aplikacija se otvara kao overlay, i tu "Sync" dugme radi.</p>
           </div>
         </div>
         <div>
@@ -341,7 +345,7 @@
             </button>
           </div>
           <textarea id="eak-script-code" readonly rows="6" class="w-full text-[10px] font-mono bg-slate-900 text-emerald-300 rounded-lg p-3 border border-slate-700 resize-none">// ==UserScript==
-// @name         eAkademija — Moja aplikacija (overlay + sync)
+// @name         eAkademija+ (overlay + sync)
 // @namespace    eakademija-custom
 // @version      4.0
 // @description  Otvara tvoju hostovanu Kalkulator Ocena aplikaciju kao overlay preko eAkademije, i omogućava sync ocena.
@@ -457,7 +461,7 @@
   // ---------------------------------------------------------
   function addFloatingButton() {
     const btn = document.createElement('button');
-    btn.textContent = '📊 Moja aplikacija';
+    btn.textContent = '📊 eAkademija+';
     Object.assign(btn.style, {
       position: 'fixed',
       bottom: '24px',
@@ -3224,7 +3228,7 @@
     }
 
     const EAK_USERSCRIPT_CODE = `// ==UserScript==
-// @name         eAkademija — Moja aplikacija (overlay + sync)
+// @name         eAkademija+ (overlay + sync)
 // @namespace    eakademija-custom
 // @version      4.0
 // @description  Otvara tvoju hostovanu Kalkulator Ocena aplikaciju kao overlay preko eAkademije, i omogućava sync ocena.
@@ -3340,7 +3344,7 @@
   // ---------------------------------------------------------
   function addFloatingButton() {
     const btn = document.createElement('button');
-    btn.textContent = '📊 Moja aplikacija';
+    btn.textContent = '📊 eAkademija+';
     Object.assign(btn.style, {
       position: 'fixed',
       bottom: '24px',
@@ -3677,11 +3681,8 @@
       const currentYearSubjects = subjects.filter(s => s.semester === yearStartSem || s.semester === yearEndSem);
       const espbCurrentYear = currentYearSubjects.filter(s => isPassedGrade(s.grade)).reduce((a, s) => a + s.espb, 0);
 
-      // Proverava SVE prethodne godine (od početka studiranja), ne samo prethodnu godinu
-      let pastUnpassed = [];
-      if (currentYear > 1) {
-        pastUnpassed = subjects.filter(s => s.semester < yearStartSem && !isPassedGrade(s.grade));
-      }
+      // Proverava SVE ispite do i uključujući tekuću godinu (ne samo prethodne godine)
+      const pastUnpassed = subjects.filter(s => s.semester <= yearEndSem && !isPassedGrade(s.grade));
       const pastCleared = pastUnpassed.length === 0;
       // Grupisano po godini, za prikaz
       const pastUnpassedByYear = {};
@@ -3706,7 +3707,7 @@
       const budzetExams = budzetOk ? 0 : espbToExams(48 - espbCurrentYear);
       const samofinExams = samofinOk ? 0 : espbToExams(37 - espbCurrentYear);
       const pastUnpassedCount = pastUnpassed.length;
-      const stipendijaExams = stipendijaOk ? 0 : pastUnpassedCount + (budzetOk ? 0 : espbToExams(48 - espbCurrentYear));
+      const stipendijaExams = stipendijaOk ? 0 : pastUnpassedCount;
       // Kredit zavisi od proseka, ne od ESPB — procena koliko ispita sa desetkom bi trebalo
       // da se prosek podigne na 8.50 (grubo, pod pretpostavkom da su to sami sledeći ispiti)
       let kreditExams = 0;
@@ -3732,14 +3733,14 @@
         <p class="text-[11px] text-slate-500 mb-3">Na osnovu unetih ocena: <b class="text-slate-700">${currentSemester}. semestar</b> (${currentYear}. godina). Izračunato iz ${espbCurrentYear} ESPB položenih u ovoj godini.</p>
         ${row('Budžet', budzetOk, `${espbCurrentYear}/48 ESPB u tekućoj godini (i dovoljan rang na listi)`, budzetExams)}
         ${row('Samofinansiranje', samofinOk, `${espbCurrentYear}/37 ESPB u tekućoj godini` + (!samofinOk ? ' — godina se obnavlja' : ''), samofinExams)}
-        ${row('Stipendija', stipendijaOk, `Budžet + sve prethodne godine položene + prosek ≥ 9.00 (trenutno ${avg.toFixed(2)})`, stipendijaExams)}
+        ${row('Stipendija', stipendijaOk, `Budžet + svi ispiti do sada (uključujući ovu godinu) položeni + prosek ≥ 9.00 (trenutno ${avg.toFixed(2)})`, stipendijaExams)}
         ${row('Studentski kredit', kreditOk, `Prosek ≥ 8.50 (trenutno ${avg.toFixed(2)})`, kreditExams)}
       `;
 
       if (!pastCleared) {
         html += `
           <div class="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <p class="text-xs font-bold text-amber-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Nepoloženo iz prethodnih godina</p>
+            <p class="text-xs font-bold text-amber-800 flex items-center gap-1.5 mb-1.5"><i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i> Nepoloženo do sada (uključujući ovu godinu)</p>
             ${Object.keys(pastUnpassedByYear).sort((a,b)=>a-b).map(y => `
               <p class="text-[11px] font-bold text-amber-700 mt-1.5 mb-0.5">${y}. godina:</p>
               <ul class="space-y-1">
