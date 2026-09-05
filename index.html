@@ -2852,6 +2852,22 @@
       const req = requests.find(r => r.key === key);
       if (!req) return;
       if (!confirm(`Odbiti zahtev za registraciju od "${req.displayName}"?`)) return;
+      // Ako je student tražio notifikaciju, javljamo mu da je zahtev odbijen —
+      // MORA da se pošalje PRE brisanja push_subscriptions reda ispod, jer posle brisanja
+      // više nema kome da se pošalje.
+      if (req.wantsNotification) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/rapid-handler`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+            body: JSON.stringify({
+              target_key: key,
+              title: '❌ Zahtev odbijen',
+              body: `Zdravo ${req.displayName}, tvoj zahtev za registraciju nažalost nije prihvaćen. Za detalje se obrati administraciji.`
+            })
+          });
+        } catch (e) { console.warn('Greška pri slanju notifikacije o odbijanju:', e); }
+      }
       const ok = await cloudDeleteRegistrationRequest(key);
       if (!ok) { showToast('Greška pri brisanju zahteva.', 'error'); return; }
       await sb.from('push_subscriptions').delete().eq('user_key', key);
