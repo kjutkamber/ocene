@@ -2587,10 +2587,21 @@
       if (!nameInput || !indexInput) { errDiv.textContent = 'Molimo popunite ime i broj indeksa.'; errDiv.classList.remove('hidden'); return; }
       const normalizedKey = nameInput.toLowerCase();
       if (customUsers[normalizedKey]) { errDiv.textContent = 'Nalog sa ovim imenom već postoji. Prijavite se direktno.'; errDiv.classList.remove('hidden'); return; }
+      const wantsNotification = document.getElementById('reg-want-notification').checked;
+      // VAŽNO: dozvola za notifikacije se traži ODMAH, pre bilo kakvog await-a mreže —
+      // dok je klik na dugme još "svež" gest korisnika. Ako se ovo uradi posle mrežnih
+      // poziva (kao pre), neki browseri (posebno mobilni Safari/iOS) tiho odbiju ili
+      // ignorišu zahtev za dozvolu, pa se pretplata nikad ne napravi.
+      let notifPermission = null;
+      if (wantsNotification && 'Notification' in window) {
+        try {
+          notifPermission = Notification.permission;
+          if (notifPermission === 'default') notifPermission = await Notification.requestPermission();
+        } catch (e) { console.warn('Greška pri traženju dozvole za notifikacije:', e); }
+      }
       const existingRequests = await cloudLoadRegistrationRequests();
       if (existingRequests.some(r => r.key === normalizedKey)) { errDiv.textContent = 'Već postoji zahtev za registraciju sa ovim imenom.'; errDiv.classList.remove('hidden'); return; }
       errDiv.classList.add('hidden');
-      const wantsNotification = document.getElementById('reg-want-notification').checked;
       const regData = {
         displayName: nameInput, index: indexInput, module: document.getElementById('reg-module').value,
         parentName: document.getElementById('reg-parent-name').value.trim(),
@@ -2609,16 +2620,11 @@
       const ok = await cloudSubmitRegistration(normalizedKey, regData);
       btn.disabled = false; btn.textContent = '✓ Pošalji zahtev';
       if (!ok) { errDiv.textContent = 'Greška pri slanju zahteva. Pokušajte ponovo.'; errDiv.classList.remove('hidden'); return; }
-      // Ako je student tražio notifikaciju, odmah tražimo dozvolu i pretplaćujemo ga
-      // (mora se uraditi dok je klik na dugme još "svež" gest korisnika, browser to zahteva).
-      if (wantsNotification && 'Notification' in window) {
+      // Dozvola je već (eventualno) dobijena gore — sad samo registrujemo service worker i pretplatu.
+      if (notifPermission === 'granted') {
         try {
-          let perm = Notification.permission;
-          if (perm === 'default') perm = await Notification.requestPermission();
-          if (perm === 'granted') {
-            await registerServiceWorker();
-            await subscribeToVapidForKey(normalizedKey);
-          }
+          await registerServiceWorker();
+          await subscribeToVapidForKey(normalizedKey);
         } catch (e) { console.warn('Greška pretplate na notifikacije pri registraciji:', e); }
       }
       closeRegistrationModal();
