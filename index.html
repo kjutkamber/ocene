@@ -68,9 +68,41 @@
         </button>
       </div>
       <div class="mt-6 border-t border-slate-100 pt-4 flex flex-col items-center gap-3">
+        <button onclick="openTermsModal('registration')" class="flex items-center gap-2 text-xs font-bold text-white hover:bg-emerald-500 transition bg-emerald-600 px-4 py-2 rounded-xl w-full justify-center shadow-md shadow-emerald-600/20">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Registruj se
+        </button>
         <button onclick="openAdminPasswordModal()" class="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-indigo-600 transition bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-xl border border-slate-200 w-full justify-center">
           <i data-lucide="shield-alert" class="w-4 h-4"></i> Administracija korisnika
         </button>
+        <p class="text-[10px] text-slate-400 text-center leading-relaxed mt-1">
+          Ovo je nezvanična, samostalno napravljena aplikacija i nema nikakve veze sa
+          Akademijom umetnosti u Novom Sadu ni Univerzitetom u Novom Sadu.
+          Korišćenjem aplikacije svako je sam odgovoran za unete podatke i njihovu upotrebu.
+          <button onclick="openTermsModal()" class="text-indigo-500 hover:text-indigo-700 font-bold underline">Uslovi korišćenja</button>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: USLOVI KORIŠĆENJA -->
+  <div id="terms-modal" class="hidden fixed inset-0 z-[700] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col max-h-[85vh]">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0 rounded-t-2xl">
+        <div class="flex items-center gap-2"><i data-lucide="info" class="text-amber-400 w-5 h-5"></i><h3 class="font-black text-base">Uslovi korišćenja</h3></div>
+        <button onclick="closeTermsModal()" class="text-slate-400 hover:text-white transition text-xl font-bold">✕</button>
+      </div>
+      <div class="p-6 space-y-3 overflow-y-auto flex-grow text-xs text-slate-600 leading-relaxed">
+        <div id="terms-modal-gate-notice" class="hidden bg-amber-50 border border-amber-200 text-amber-800 font-bold rounded-lg p-3 mb-1">
+          Da bi nastavio/la, moraš pročitati i prihvatiti uslove korišćenja ispod.
+        </div>
+        <p><strong class="text-slate-900">Nezvanična aplikacija.</strong> Ova aplikacija je samostalan, privatan projekat i nije proizvod, servis niti zvanična evidencija Akademije umetnosti u Novom Sadu, Univerziteta u Novom Sadu, niti bilo koje njihove organizacione jedinice. Aplikacija nije od njih odobrena, sponzorisana ni na bilo koji način povezana s njima.</p>
+        <p><strong class="text-slate-900">Neformalna evidencija.</strong> Podaci prikazani u aplikaciji (ocene, ESPB, prosek, statusi) služe isključivo za ličnu, neformalnu orijentaciju i samostalno praćenje napretka. Jedini zvanično validni podaci o položenim ispitima, ESPB bodovima i statusu studenta su oni koji se vode u zvaničnoj evidenciji fakulteta/univerziteta (npr. studentska služba, eIndeks/eAkademija i sl.).</p>
+        <p><strong class="text-slate-900">Odgovornost korisnika.</strong> Svako ko unosi podatke ili koristi aplikaciju to čini na sopstvenu odgovornost. Autor aplikacije ne garantuje tačnost, potpunost niti ažurnost prikazanih podataka i ne snosi odgovornost za eventualnu štetu, gubitak podataka ili posledice nastale korišćenjem aplikacije.</p>
+        <p><strong class="text-slate-900">Dokumenti za štampu.</strong> "Listing ocena" i "Zvanično uverenje" generisani kroz aplikaciju nisu zvanični dokumenti fakulteta/univerziteta i nemaju pravnu snagu — reč je o neformalnim pregledima namenjenim ličnoj upotrebi.</p>
+        <p><strong class="text-slate-900">Lični podaci.</strong> Podatke koje uneseš (ime, broj indeksa i sl.) čuvaš i uneseš dobrovoljno, isključivo radi funkcionisanja aplikacije. Vodi računa šta i sa kim deliš.</p>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 shrink-0 rounded-b-2xl" id="terms-modal-footer">
+        <button onclick="closeTermsModal()" class="w-full px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition">Razumem</button>
       </div>
     </div>
   </div>
@@ -93,10 +125,10 @@
               <i data-lucide="printer" class="w-4 h-4"></i> Štampaj
             </button>
             <div id="print-dropdown" class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 min-w-[200px]">
-              <button onclick="printGradeStatement(); togglePrintDropdown();" class="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-t-xl">
+              <button onclick="requestPrintAuth('listing'); togglePrintDropdown();" class="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-t-xl">
                 <i data-lucide="list" class="w-4 h-4 text-indigo-500"></i> Listing ocena
               </button>
-              <button onclick="printOfficialUverenje(); togglePrintDropdown();" class="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-b-xl border-t border-slate-100">
+              <button onclick="requestPrintAuth('uverenje'); togglePrintDropdown();" class="w-full text-left px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 flex items-center gap-2 rounded-b-xl border-t border-slate-100">
                 <i data-lucide="file-text" class="w-4 h-4 text-emerald-500"></i> Zvanično Uverenje
               </button>
             </div>
@@ -671,6 +703,7 @@
       </div>
       <div class="flex border-b border-slate-200 shrink-0 bg-white px-2 pt-2 gap-1">
         <button onclick="switchAdminTab('studenti')" id="tab-studenti" class="px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-emerald-500 text-emerald-600 bg-white">👥 Studenti</button>
+        <button onclick="switchAdminTab('prijave')" id="tab-prijave" class="relative px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700">📝 Prijave <span id="prijave-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full items-center justify-center">0</span></button>
         <button onclick="switchAdminTab('rokovi')" id="tab-rokovi" class="px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700">📅 Ispitni rokovi</button>
       </div>
       <div id="admin-tab-studenti" class="p-6 space-y-6 overflow-y-auto flex-grow">
@@ -740,6 +773,12 @@
           <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest mb-3">👥 Registrovani studenti</h4>
           <div id="admin-users-list" class="space-y-2"></div>
         </div>
+      </div>
+      <!-- TAB: PRIJAVE ZA REGISTRACIJU -->
+      <div id="admin-tab-prijave" class="hidden p-6 space-y-4 overflow-y-auto flex-grow">
+        <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest">📝 Zahtevi za registraciju</h4>
+        <p class="text-[11px] text-slate-500 -mt-2">Studenti koji su se sami prijavili preko dugmeta "Registruj se". Prihvatanjem se automatski kreira nalog; odbijanjem se zahtev briše.</p>
+        <div id="admin-requests-list" class="space-y-2"></div>
       </div>
       <!-- TAB: ISPITNI ROKOVI -->
       <div id="admin-tab-rokovi" class="hidden p-6 space-y-5 overflow-y-auto flex-grow">
@@ -866,6 +905,99 @@
     </div>
   </div>
 
+  <!-- MODAL: REGISTRACIJA NOVOG STUDENTA (samoprijava) -->
+  <div id="registration-modal" class="hidden fixed inset-0 z-[300] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl border border-slate-200 flex flex-col max-h-[90vh]">
+      <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white shrink-0 rounded-t-3xl">
+        <div class="flex items-center gap-2"><i data-lucide="user-plus" class="text-emerald-400 w-5 h-5"></i><h3 class="font-black text-lg">Registracija</h3></div>
+        <button onclick="closeRegistrationModal()" class="text-slate-400 hover:text-white transition text-xl font-bold">✕</button>
+      </div>
+      <div class="p-6 space-y-4 overflow-y-auto flex-grow">
+        <p class="text-xs text-slate-500">Popuni podatke ispod. Tvoj zahtev će se pojaviti kod administratora, koji ga može prihvatiti ili odbiti.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime i Prezime *</label>
+            <input type="text" id="reg-name" placeholder="npr. Katarina Gajinov" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Broj Indeksa *</label>
+            <input type="text" id="reg-index" placeholder="npr. 209/21" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Ime roditelja</label>
+            <input type="text" id="reg-parent-name" placeholder="npr. Zoran" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Datum rođenja</label>
+            <input type="date" id="reg-birth-date" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mesto rođenja</label>
+            <input type="text" id="reg-birth-place" placeholder="npr. Novi Sad" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status finansiranja</label>
+            <select id="reg-funding" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              <option value="budzet">Budžet</option>
+              <option value="samofinansiranje">Samofinansiranje</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Trenutna god. studija</label>
+            <select id="reg-study-year" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              <option value="1">1. godina</option><option value="2">2. godina</option><option value="3">3. godina</option><option value="4">4. godina</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Tekuća škol. godina (npr. 2025/2026)</label>
+            <input type="text" id="reg-enrollment-year" placeholder="2025/2026" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Godina prvog upisa (npr. 2021/2022)</label>
+            <input type="text" id="reg-first-enrollment" placeholder="2021/2022" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Modul (Smer)</label>
+            <select id="reg-module" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+              <option value="">— Izaberi modul —</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Puni naziv studijskog programa (za uverenje)</label>
+            <input type="text" id="reg-study-program" placeholder="npr. Аудиовизуелни медији - Продукција за аудиовизуелне медије" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+          </div>
+          <div class="sm:col-span-2 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5">
+            <input type="checkbox" id="reg-want-notification" class="w-4 h-4 rounded accent-emerald-600">
+            <label for="reg-want-notification" class="text-xs font-bold text-slate-700 cursor-pointer">🔔 Želim da dobijem notifikaciju kada moj zahtev bude prihvaćen</label>
+          </div>
+        </div>
+        <div id="reg-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg"></div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex gap-2 shrink-0 rounded-b-3xl">
+        <button onclick="closeRegistrationModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaži</button>
+        <button id="reg-submit-btn" onclick="submitRegistration()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition shadow-md">✓ Pošalji zahtev</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LOZINKA ZA ŠTAMPU -->
+  <div id="print-password-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-slate-200">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="bg-indigo-50 p-2 rounded-xl text-indigo-600"><i data-lucide="lock" class="w-5 h-5"></i></div>
+        <h3 class="font-bold text-slate-900 text-base">Lozinka za štampu</h3>
+      </div>
+      <div class="space-y-4">
+        <input type="password" id="print-password-input" placeholder="Unesite lozinku" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900">
+        <div id="print-password-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg">Pogrešna lozinka.</div>
+        <div class="flex gap-2">
+          <button onclick="closePrintPasswordModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
+          <button onclick="checkPrintPassword()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Potvrdi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PRILAGOĐENA NOTIFIKACIJA -->
   <div id="custom-notif-modal" class="hidden fixed inset-0 z-[600] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 p-6">
@@ -917,6 +1049,9 @@
     // =============================================
     const SUPABASE_URL = 'https://nhffxmmmwoonnkhvrqev.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZmZ4bW1td29vbm5raHZycWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEzNDcsImV4cCI6MjA5NDk0NzM0N30.FG2gdhNRXJxRnPVKdQ8qLGlwcaJ4nSUpKJJrfq4YsDc';
+    // Lozinka koja se traži pre štampanja bilo kog dokumenta (Listing ocena / Zvanično uverenje).
+    // Promeni ovu vrednost po želji.
+    const PRINT_PASSWORD = 'stampaj2026';
     const { createClient } = supabase;
     // persistSession/autoRefreshToken isključeni jer se aplikacija ne loguje preko Supabase Auth,
     // a ovi mehanizmi pokušavaju da koriste localStorage i Web Locks API — u third-party iframe-u
@@ -947,7 +1082,8 @@
           enrollmentSchoolYear: u.enrollment_school_year || '',
           firstEnrollmentYear: u.first_enrollment_year || '',
           studyProgramDetailed: u.study_program_detailed || '',
-          showStudyStatus: !!u.show_study_status
+          showStudyStatus: !!u.show_study_status,
+          acceptedTerms: !!u.accepted_terms
         };
       });
       return map;
@@ -991,8 +1127,14 @@
         enrollment_school_year: data.enrollmentSchoolYear,
         first_enrollment_year: data.firstEnrollmentYear,
         study_program_detailed: data.studyProgramDetailed,
-        show_study_status: !!data.showStudyStatus
+        show_study_status: !!data.showStudyStatus,
+        accepted_terms: !!data.acceptedTerms
       });
+      return !error;
+    }
+
+    async function cloudSetAcceptedTerms(key) {
+      const { error } = await sb.from('users').update({ accepted_terms: true }).eq('key', key);
       return !error;
     }
 
@@ -1025,6 +1167,55 @@
     }
 
     // =============================================
+    // PRIJAVE ZA REGISTRACIJU (samoprijava studenata)
+    // =============================================
+    async function cloudLoadRegistrationRequests() {
+      const { data, error } = await sb.from('registration_requests').select('*').order('created_at', { ascending: true });
+      if (error) { console.error('Greška pri učitavanju prijava:', error); return []; }
+      return data.map(r => ({
+        key: r.key,
+        displayName: r.display_name,
+        index: r.index_number,
+        module: r.module,
+        parentName: r.parent_name || '',
+        birthDate: r.birth_date || '',
+        birthPlace: r.birth_place || '',
+        fundingStatus: r.funding_status || 'budzet',
+        currentYearOfStudy: r.current_year_of_study || 1,
+        enrollmentSchoolYear: r.enrollment_school_year || '',
+        firstEnrollmentYear: r.first_enrollment_year || '',
+        studyProgramDetailed: r.study_program_detailed || '',
+        wantsNotification: !!r.wants_notification,
+        acceptedTerms: !!r.accepted_terms
+      }));
+    }
+
+    async function cloudSubmitRegistration(key, data) {
+      const { error } = await sb.from('registration_requests').insert({
+        key,
+        display_name: data.displayName,
+        index_number: data.index,
+        module: data.module,
+        parent_name: data.parentName,
+        birth_date: data.birthDate || null,
+        birth_place: data.birthPlace,
+        funding_status: data.fundingStatus,
+        current_year_of_study: data.currentYearOfStudy,
+        enrollment_school_year: data.enrollmentSchoolYear,
+        first_enrollment_year: data.firstEnrollmentYear,
+        study_program_detailed: data.studyProgramDetailed,
+        wants_notification: !!data.wantsNotification,
+        accepted_terms: !!data.acceptedTerms
+      });
+      return !error;
+    }
+
+    async function cloudDeleteRegistrationRequest(key) {
+      const { error } = await sb.from('registration_requests').delete().eq('key', key);
+      return !error;
+    }
+
+    // =============================================
     // GLOBAL STATE
     // =============================================
     let customUsers = {};
@@ -1044,1921 +1235,10 @@
     let CURRICULUM = {};
     let MODULE_LABELS = {};
 
-    // Embedded curriculum — uvek radi, čak i bez interneta
-    const EMBEDDED_CURRICULUM_DATA = {
-  "departments": [
-    {
-      "key": "avm",
-      "label": "Audiovizuelni mediji",
-      "modules": [
-        {
-          "key": "kamera",
-          "label": "Kamera",
-          "department": "Audiovizuelni mediji",
-          "mandatory": [
-            { "name": "Osnovi snimanja slike", "espb": 3, "semester": 1 },
-            { "name": "Osnovi snimanja slike - praktikum", "espb": 3, "semester": 1 },
-            { "name": "Osnovi montaze", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za scenu", "espb": 3, "semester": 1 },
-            { "name": "Uvod u snimanje zvuka", "espb": 3, "semester": 1 },
-            { "name": "Filmska i televizijska produkcija 1", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike animacije", "espb": 3, "semester": 1 },
-            { "name": "Osnovi scenske rezije", "espb": 3, "semester": 1 },
-            { "name": "Istorija filma 1", "espb": 3, "semester": 1 },
-            { "name": "Tehnologija audio-vizuelnih medija 1", "espb": 3, "semester": 1 },
-            { "name": "Snimanje kamerom", "espb": 3, "semester": 2 },
-            { "name": "Snimanje kamerom - praktikum", "espb": 3, "semester": 2 },
-            { "name": "Montaza u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Osnovi dizajna svetla za film i televiziju", "espb": 3, "semester": 2 },
-            { "name": "Snimanje zvuka", "espb": 3, "semester": 2 },
-            { "name": "Pozorisnа produkcija 1", "espb": 3, "semester": 2 },
-            { "name": "Razvoj i tehnike vizuelnih efekata", "espb": 3, "semester": 2 },
-            { "name": "Rezija u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Istorija filma 2", "espb": 3, "semester": 2 },
-            { "name": "Tehnologija audio-vizuelnih medija 2", "espb": 3, "semester": 2 },
-            { "name": "Filmska kamera", "espb": 3, "semester": 3 },
-            { "name": "Filmska kamera - praktikum", "espb": 2, "semester": 3 },
-            { "name": "Osnovi vizuelne kulture", "espb": 2, "semester": 3 },
-            { "name": "Osnovi dramaturgije", "espb": 2, "semester": 3 },
-            { "name": "Filmska i televizijska rezija 1", "espb": 3, "semester": 3 },
-            { "name": "Istorija filma 3", "espb": 3, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Fotografska istrazivacka praksa 1", "espb": 3, "semester": 3 },
-            { "name": "Optika 1", "espb": 2, "semester": 3 },
-            { "name": "Elektronska kamera", "espb": 3, "semester": 4 },
-            { "name": "Elektronska kamera - praktikum", "espb": 2, "semester": 4 },
-            { "name": "Vizuelne komunikacije", "espb": 2, "semester": 4 },
-            { "name": "Osnovi scenarija", "espb": 2, "semester": 4 },
-            { "name": "Fotografska istrazivacka praksa 2", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Filmska i televizijska rezija 2", "espb": 3, "semester": 4 },
-            { "name": "Optika 2", "espb": 2, "semester": 4 },
-            { "name": "Istorija filma 4", "espb": 3, "semester": 4 },
-            { "name": "Umetnost snimanja kamerom 1", "espb": 3, "semester": 5 },
-            { "name": "Umetnost snimanja kamerom 1 - praktikum", "espb": 2, "semester": 5 },
-            { "name": "Dizajn produkcije", "espb": 2, "semester": 5 },
-            { "name": "Fotografska istrazivacka praksa 3", "espb": 3, "semester": 5 },
-            { "name": "Mediji masovne komunikacije", "espb": 2, "semester": 5 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 5 },
-            { "name": "Pokretna grafika", "espb": 3, "semester": 5 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Umetnost snimanja kamerom 2", "espb": 3, "semester": 6 },
-            { "name": "Umetnost snimanja kamerom 2 - praktikum", "espb": 2, "semester": 6 },
-            { "name": "Dizajn produkcije", "espb": 2, "semester": 6 },
-            { "name": "Interaktivna animacija", "espb": 3, "semester": 6 },
-            { "name": "Mediji masovne komunikacije", "espb": 2, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Fotografska istrazivacka praksa 4", "espb": 3, "semester": 6 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 6 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 6 },
-            { "name": "Kamera - analiza i sinteza 1", "espb": 3, "semester": 7 },
-            { "name": "Kamera - analiza i sinteza 1 - praktikum", "espb": 3, "semester": 7 },
-            { "name": "Teorija filma", "espb": 3, "semester": 7 },
-            { "name": "Teorija medija", "espb": 3, "semester": 7 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 7 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 7 },
-            { "name": "Dokumentarni film 1", "espb": 3, "semester": 7 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 7 },
-            { "name": "Kamera - analiza i sinteza 2", "espb": 3, "semester": 8 },
-            { "name": "Kamera - analiza i sinteza 2 - praktikum", "espb": 3, "semester": 8 },
-            { "name": "Teorija filma", "espb": 3, "semester": 8 },
-            { "name": "Teorija medija", "espb": 3, "semester": 8 },
-            { "name": "Dokumentarni film 2", "espb": 3, "semester": 8 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 8 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 8 },
-            { "name": "Zavrsni projekat 2", "espb": 2, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Maska i sminka", "espb": 2 },
-              { "name": "Filmska montaza", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 1", "espb": 3 },
-              { "name": "Osnovi obrade zvuka", "espb": 3 },
-              { "name": "Produkcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 1", "espb": 3 },
-              { "name": "Animacija 1", "espb": 3 },
-              { "name": "Engleski jezik 1", "espb": 2 }
-            ],
-            "4": [
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Dizajn scenskog zvuka", "espb": 3 },
-              { "name": "Montaza dijaloga u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Kostimografija", "espb": 2 },
-              { "name": "Montaza zvuka za film i televiziju", "espb": 3 },
-              { "name": "Pozorisnа produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 2", "espb": 3 },
-              { "name": "Vizuelni efekti 1", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 2", "espb": 3 },
-              { "name": "Engleski jezik 2", "espb": 2 }
-            ],
-            "5": [
-              { "name": "Montaza audiovizuelnih formi 1", "espb": 3 },
-              { "name": "Likovni elementi 2", "espb": 2 },
-              { "name": "Scenografija 1", "espb": 2 },
-              { "name": "Dizajn svetla za scenu 1", "espb": 3 },
-              { "name": "Uvod u snimanje muzike", "espb": 3 },
-              { "name": "Dizajn i montaza zvucnih efekata i muzike", "espb": 3 },
-              { "name": "Pozorisnа produkcija 3", "espb": 2 },
-              { "name": "Multimedijalna produkcija 3", "espb": 3 },
-              { "name": "Vizuelni efekti 2", "espb": 3 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Scenografija 2", "espb": 2 },
-              { "name": "Muzicka pismenost 1", "espb": 2 },
-              { "name": "Montaza audiovizuelnih formi 2", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 2", "espb": 3 },
-              { "name": "Snimanje muzike", "espb": 3 },
-              { "name": "Postprodukcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 3", "espb": 3 },
-              { "name": "Multimedijalna produkcija 4", "espb": 2 },
-              { "name": "Animacija 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 2", "espb": 3 },
-              { "name": "Engleski jezik 4", "espb": 2 }
-            ],
-            "7": [
-              { "name": "Muzicka pismenost 1", "espb": 2 },
-              { "name": "Montazne artikulacije 1", "espb": 3 },
-              { "name": "Primenjena elektrotehnika", "espb": 2 },
-              { "name": "Opsta psihologija", "espb": 2 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Kreativni svetlopis 1", "espb": 3 },
-              { "name": "Pozorisnа produkcija 4", "espb": 3 },
-              { "name": "Vizuelni efekti 3", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 1", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Istorija nacionalne muzike", "espb": 3 },
-              { "name": "Muzicka produkcija", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Psihologija licnosti", "espb": 2 },
-              { "name": "Muzicka pismenost 2", "espb": 2 },
-              { "name": "Montazne artikulacije 2", "espb": 3 },
-              { "name": "Kreativni svetlopis 2", "espb": 3 },
-              { "name": "Muzicki instrumenti", "espb": 2 },
-              { "name": "Osnovi dikcije", "espb": 2 },
-              { "name": "Analiza i sinteza zvucne slike", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 4", "espb": 3 },
-              { "name": "Animacija 3", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Likovni elementi 1", "espb": 2 },
-              { "name": "Istorija umetnosti novog veka 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Istorija muzike 20. veka 1", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "montaza",
-          "label": "Montaza u audiovizuelnim medijima",
-          "department": "Audiovizuelni mediji",
-          "mandatory": [
-            { "name": "Osnovi montaze", "espb": 3, "semester": 1 },
-            { "name": "Istorija filma 1", "espb": 3, "semester": 1 },
-            { "name": "Osnovi montaze - praktikum", "espb": 2, "semester": 1 },
-            { "name": "Osnovi snimanja slike", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za scenu", "espb": 3, "semester": 1 },
-            { "name": "Uvod u snimanje zvuka", "espb": 3, "semester": 1 },
-            { "name": "Filmska i televizijska produkcija 1", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike animacije", "espb": 3, "semester": 1 },
-            { "name": "Tehnologija audio-vizuelnih medija 1", "espb": 3, "semester": 1 },
-            { "name": "Osnovi scenske rezije", "espb": 3, "semester": 1 },
-            { "name": "Projekat 1", "espb": 1, "semester": 1 },
-            { "name": "Montaza u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Rezija u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Montaza u audio-vizuelnim medijima - praktikum", "espb": 2, "semester": 2 },
-            { "name": "Snimanje kamerom", "espb": 3, "semester": 2 },
-            { "name": "Osnovi dizajna svetla za film i televiziju", "espb": 3, "semester": 2 },
-            { "name": "Snimanje zvuka", "espb": 3, "semester": 2 },
-            { "name": "Pozorisnа produkcija 1", "espb": 3, "semester": 2 },
-            { "name": "Razvoj i tehnike vizuelnih efekata", "espb": 3, "semester": 2 },
-            { "name": "Projekat 2", "espb": 1, "semester": 2 },
-            { "name": "Istorija filma 2", "espb": 3, "semester": 2 },
-            { "name": "Tehnologija audio-vizuelnih medija 2", "espb": 3, "semester": 2 },
-            { "name": "Filmska montaza", "espb": 3, "semester": 3 },
-            { "name": "Elektronska montaza", "espb": 3, "semester": 3 },
-            { "name": "Filmska montaza - praktikum", "espb": 2, "semester": 3 },
-            { "name": "Osnovi vizuelne kulture", "espb": 2, "semester": 3 },
-            { "name": "Osnovi dramaturgije", "espb": 2, "semester": 3 },
-            { "name": "Istorija filma 3", "espb": 3, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Projekat 3", "espb": 2, "semester": 3 },
-            { "name": "Filmska i televizijska rezija 1", "espb": 3, "semester": 3 },
-            { "name": "Montaza zvuka za film i televiziju", "espb": 3, "semester": 4 },
-            { "name": "Digitalna montaza", "espb": 3, "semester": 4 },
-            { "name": "Montaza zvuka za film i televiziju - praktikum", "espb": 2, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Osnovi scenarija", "espb": 2, "semester": 4 },
-            { "name": "Filmska i televizijska rezija 2", "espb": 3, "semester": 4 },
-            { "name": "Istorija filma 4", "espb": 3, "semester": 4 },
-            { "name": "Vizuelne komunikacije", "espb": 2, "semester": 4 },
-            { "name": "Projekat 4", "espb": 2, "semester": 4 },
-            { "name": "Montaza audiovizuelnih formi 1", "espb": 3, "semester": 5 },
-            { "name": "Montaza audiovizuelnih formi 1 - praktikum", "espb": 4, "semester": 5 },
-            { "name": "Pokretna grafika", "espb": 3, "semester": 5 },
-            { "name": "Primenjena muzika 1", "espb": 2, "semester": 5 },
-            { "name": "Opsta psihologija", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Projekat 5", "espb": 2, "semester": 5 },
-            { "name": "Mediji masovne komunikacije", "espb": 2, "semester": 5 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 5 },
-            { "name": "Montaza audiovizuelnih formi 2", "espb": 3, "semester": 6 },
-            { "name": "Montaza audiovizuelnih formi 2 - praktikum", "espb": 4, "semester": 6 },
-            { "name": "Interaktivna animacija", "espb": 3, "semester": 6 },
-            { "name": "Primenjena muzika 2", "espb": 2, "semester": 6 },
-            { "name": "Psihologija licnosti", "espb": 2, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Projekat 6", "espb": 2, "semester": 6 },
-            { "name": "Mediji masovne komunikacije", "espb": 2, "semester": 6 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 6 },
-            { "name": "Montazne artikulacije 1", "espb": 3, "semester": 7 },
-            { "name": "Montazne artikulacije 1 - praktikum", "espb": 3, "semester": 7 },
-            { "name": "Teorija filma", "espb": 3, "semester": 7 },
-            { "name": "Teorija medija", "espb": 3, "semester": 7 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 7 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 7 },
-            { "name": "Dokumentarni film 1", "espb": 3, "semester": 7 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 7 },
-            { "name": "Montazne artikulacije 2", "espb": 3, "semester": 8 },
-            { "name": "Montazne artikulacije 2 - praktikum", "espb": 3, "semester": 8 },
-            { "name": "Teorija filma", "espb": 3, "semester": 8 },
-            { "name": "Teorija medija", "espb": 3, "semester": 8 },
-            { "name": "Dokumentarni film 2", "espb": 3, "semester": 8 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 8 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 8 },
-            { "name": "Zavrsni projekat 2", "espb": 2, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Filmska kamera", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 1", "espb": 3 },
-              { "name": "Osnovi obrade zvuka", "espb": 3 },
-              { "name": "Produkcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 1", "espb": 3 },
-              { "name": "Animacija 1", "espb": 3 },
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Osnovi programa o liniji 1", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 1", "espb": 3 },
-              { "name": "Engleski jezik 1", "espb": 2 },
-              { "name": "Maska i sminka", "espb": 2 }
-            ],
-            "4": [
-              { "name": "Elektronska kamera", "espb": 3 },
-              { "name": "Dizajn scenskog zvuka", "espb": 3 },
-              { "name": "Montaza dijaloga u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 2", "espb": 3 },
-              { "name": "Pozorisnа produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 2", "espb": 3 },
-              { "name": "Vizuelni efekti 1", "espb": 3 },
-              { "name": "Engleski jezik 2", "espb": 2 },
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Kostimografija", "espb": 2 },
-              { "name": "Osnovi programa o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 2", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Umetnost snimanja kamerom 1", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 1", "espb": 3 },
-              { "name": "Uvod u snimanje muzike", "espb": 3 },
-              { "name": "Dizajn i montaza zvucnih efekata i muzike", "espb": 3 },
-              { "name": "Pozorisnа produkcija 3", "espb": 2 },
-              { "name": "Multimedijalna produkcija 3", "espb": 3 },
-              { "name": "Vizuelni efekti 2", "espb": 3 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3 },
-              { "name": "Scenografija 1", "espb": 2 }
-            ],
-            "6": [
-              { "name": "Umetnost snimanja kamerom 2", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 2", "espb": 3 },
-              { "name": "Snimanje muzike", "espb": 3 },
-              { "name": "Postprodukcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 3", "espb": 3 },
-              { "name": "Multimedijalna produkcija 4", "espb": 2 },
-              { "name": "Animacija 2", "espb": 3 },
-              { "name": "Akustika", "espb": 2 },
-              { "name": "Muzicki instrumenti", "espb": 2 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Scenografija 2", "espb": 2 }
-            ],
-            "7": [
-              { "name": "Audio uredjaji i sistemi 1", "espb": 2 },
-              { "name": "Muzicka pismenost 1", "espb": 2 },
-              { "name": "Kamera - analiza i sinteza 1", "espb": 3 },
-              { "name": "Primenjena elektrotehnika", "espb": 2 },
-              { "name": "Kreativni svetlopis 1", "espb": 3 },
-              { "name": "Muzicka produkcija", "espb": 3 },
-              { "name": "Pozorisnа produkcija 4", "espb": 3 },
-              { "name": "Vizuelni efekti 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Optika 1", "espb": 2 },
-              { "name": "Istorija umetnosti novog veka 1", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Istorija nacionalne muzike", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Optika 2", "espb": 2 },
-              { "name": "Muzicka pismenost 2", "espb": 2 },
-              { "name": "Kamera - analiza i sinteza 2", "espb": 3 },
-              { "name": "Kreativni svetlopis 2", "espb": 3 },
-              { "name": "Audio uredjaji i sistemi 2", "espb": 2 },
-              { "name": "Osnovi dikcije", "espb": 2 },
-              { "name": "Analiza i sinteza zvucne slike", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 4", "espb": 3 },
-              { "name": "Animacija 3", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Istorija muzike 20. veka 1", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "dizajn_zvuka",
-          "label": "Dizajn zvuka",
-          "department": "Audiovizuelni mediji",
-          "mandatory": [
-            { "name": "Uvod u snimanje zvuka", "espb": 3, "semester": 1 },
-            { "name": "Uvod u snimanje zvuka - praktikum", "espb": 2, "semester": 1 },
-            { "name": "Osnovi montaze", "espb": 3, "semester": 1 },
-            { "name": "Osnovi snimanja slike", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za scenu", "espb": 3, "semester": 1 },
-            { "name": "Filmska i televizijska produkcija 1", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike animacije", "espb": 3, "semester": 1 },
-            { "name": "Osnovi scenske rezije", "espb": 3, "semester": 1 },
-            { "name": "Istorija filma 1", "espb": 3, "semester": 1 },
-            { "name": "Primenjena elektrotehnika", "espb": 2, "semester": 1 },
-            { "name": "Tehnologija audio-vizuelnih medija 1", "espb": 3, "semester": 1 },
-            { "name": "Snimanje zvuka", "espb": 3, "semester": 2 },
-            { "name": "Snimanje zvuka - praktikum", "espb": 2, "semester": 2 },
-            { "name": "Montaza u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Snimanje kamerom", "espb": 3, "semester": 2 },
-            { "name": "Osnovi dizajna svetla za film i televiziju", "espb": 3, "semester": 2 },
-            { "name": "Pozorisnа produkcija 1", "espb": 3, "semester": 2 },
-            { "name": "Razvoj i tehnike vizuelnih efekata", "espb": 3, "semester": 2 },
-            { "name": "Rezija u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Istorija filma 2", "espb": 3, "semester": 2 },
-            { "name": "Tehnologija audio-vizuelnih medija 2", "espb": 3, "semester": 2 },
-            { "name": "Osnovi obrade zvuka", "espb": 3, "semester": 3 },
-            { "name": "Osnovi obrade zvuka - praktikum", "espb": 3, "semester": 3 },
-            { "name": "Produkcija zvuka u audio-vizuelnim medijima", "espb": 3, "semester": 3 },
-            { "name": "Produkcija zvuka u audio-vizuelnim medijima - praktikum", "espb": 2, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Audio uredjaji i sistemi 1", "espb": 2, "semester": 3 },
-            { "name": "Muzika kao kultura", "espb": 2, "semester": 3 },
-            { "name": "Istorija filma 3", "espb": 3, "semester": 3 },
-            { "name": "Muzicka pismenost 1", "espb": 2, "semester": 3 },
-            { "name": "Dizajn scenskog zvuka", "espb": 3, "semester": 4 },
-            { "name": "Dizajn scenskog zvuka - praktikum", "espb": 2, "semester": 4 },
-            { "name": "Montaza dijaloga u audio-vizuelnim medijima", "espb": 3, "semester": 4 },
-            { "name": "Montaza dijaloga u audio-vizuelnim medijima - praktikum", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Audio uredjaji i sistemi 2", "espb": 2, "semester": 4 },
-            { "name": "Muzika kao kultura", "espb": 2, "semester": 4 },
-            { "name": "Istorija filma 4", "espb": 3, "semester": 4 },
-            { "name": "Akustika", "espb": 2, "semester": 4 },
-            { "name": "Uvod u snimanje muzike", "espb": 3, "semester": 5 },
-            { "name": "Uvod u snimanje muzike - praktikum", "espb": 3, "semester": 5 },
-            { "name": "Dizajn i montaza zvucnih efekata i muzike", "espb": 3, "semester": 5 },
-            { "name": "Dizajn i montaza zvucnih efekata i muzike - praktikum", "espb": 3, "semester": 5 },
-            { "name": "Opsta psihologija", "espb": 2, "semester": 5 },
-            { "name": "Mediji masovne komunikacije", "espb": 2, "semester": 5 },
-            { "name": "Primenjena muzika 1", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 5 },
-            { "name": "Snimanje muzike", "espb": 3, "semester": 6 },
-            { "name": "Snimanje muzike - praktikum", "espb": 2, "semester": 6 },
-            { "name": "Postprodukcija zvuka u audiovizuelnim medijima", "espb": 3, "semester": 6 },
-            { "name": "Postprodukcija zvuka u audiovizuelnim medijima - praktikum", "espb": 2, "semester": 6 },
-            { "name": "Muzicki instrumenti", "espb": 2, "semester": 6 },
-            { "name": "Psihologija licnosti", "espb": 2, "semester": 6 },
-            { "name": "Mediji masovne komunikacije", "espb": 2, "semester": 6 },
-            { "name": "Primenjena muzika 2", "espb": 2, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 6 },
-            { "name": "Muzicka produkcija", "espb": 3, "semester": 7 },
-            { "name": "Muzicka produkcija - praktikum", "espb": 3, "semester": 7 },
-            { "name": "Primena savremenih tehnologija u audiovizuelnim medijima", "espb": 2, "semester": 7 },
-            { "name": "Teorija medija", "espb": 3, "semester": 7 },
-            { "name": "Dokumentarni film 1", "espb": 3, "semester": 7 },
-            { "name": "Teorija filma", "espb": 3, "semester": 7 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 7 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 7 },
-            { "name": "Analiza i sinteza zvucne slike", "espb": 3, "semester": 8 },
-            { "name": "Analiza i sinteza zvucne slike - praktikum", "espb": 3, "semester": 8 },
-            { "name": "Primena savremenih tehnologija u audiovizuelnim medijima", "espb": 2, "semester": 8 },
-            { "name": "Dokumentarni film 2", "espb": 3, "semester": 8 },
-            { "name": "Teorija medija", "espb": 3, "semester": 8 },
-            { "name": "Teorija filma", "espb": 3, "semester": 8 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 8 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Maska i sminka", "espb": 2 },
-              { "name": "Filmska montaza", "espb": 3 },
-              { "name": "Filmska kamera", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 1", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 1", "espb": 3 },
-              { "name": "Animacija 1", "espb": 3 },
-              { "name": "Osnovi vizuelne kulture", "espb": 2 },
-              { "name": "Osnovi dramaturgije", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 1", "espb": 3 },
-              { "name": "Engleski jezik 1", "espb": 2 },
-              { "name": "Filmska i televizijska rezija 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Kostimografija", "espb": 2 },
-              { "name": "Muzicka pismenost 2", "espb": 2 },
-              { "name": "Montaza zvuka za film i televiziju", "espb": 3 },
-              { "name": "Elektronska kamera", "espb": 3 },
-              { "name": "Pozorisnа produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 2", "espb": 3 },
-              { "name": "Vizuelni efekti 1", "espb": 3 },
-              { "name": "Vizuelne komunikacije", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 2", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 2", "espb": 3 },
-              { "name": "Engleski jezik 2", "espb": 2 },
-              { "name": "Filmska i televizijska rezija 2", "espb": 3 },
-              { "name": "Osnovi scenarija", "espb": 2 }
-            ],
-            "5": [
-              { "name": "Montaza audiovizuelnih formi 1", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 1", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 1", "espb": 3 },
-              { "name": "Pozorisnа produkcija 3", "espb": 2 },
-              { "name": "Multimedijalna produkcija 3", "espb": 3 },
-              { "name": "Vizuelni efekti 2", "espb": 3 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3 },
-              { "name": "Scenografija 1", "espb": 2 },
-              { "name": "Harmonija u audiovizuelnim medijima 1", "espb": 2 }
-            ],
-            "6": [
-              { "name": "Scenografija 2", "espb": 2 },
-              { "name": "Montaza audiovizuelnih formi 2", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 2", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 2", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 3", "espb": 3 },
-              { "name": "Multimedijalna produkcija 4", "espb": 2 },
-              { "name": "Animacija 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Harmonija u audiovizuelnim medijima 2", "espb": 2 }
-            ],
-            "7": [
-              { "name": "Montazne artikulacije 1", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 1", "espb": 3 },
-              { "name": "Kreativni svetlopis 1", "espb": 3 },
-              { "name": "Pozorisnа produkcija 4", "espb": 3 },
-              { "name": "Vizuelni efekti 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Optika 1", "espb": 2 },
-              { "name": "Istorija umetnosti novog veka 1", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Dizajn produkcije", "espb": 2 },
-              { "name": "Istorija nacionalne muzike", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Optika 2", "espb": 2 },
-              { "name": "Montazne artikulacije 2", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 2", "espb": 3 },
-              { "name": "Kreativni svetlopis 2", "espb": 3 },
-              { "name": "Osnovi dikcije", "espb": 2 },
-              { "name": "Filmska i televizijska produkcija 4", "espb": 3 },
-              { "name": "Animacija 3", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Dizajn produkcije", "espb": 2 },
-              { "name": "Istorija muzike 20. veka 1", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "dizajn_svetla",
-          "label": "Dizajn svetla",
-          "department": "Audiovizuelni mediji",
-          "mandatory": [
-            { "name": "Osnovi dizajna svetla za scenu", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za scenu - praktikum", "espb": 2, "semester": 1 },
-            { "name": "Osnovi montaze", "espb": 3, "semester": 1 },
-            { "name": "Osnovi snimanja slike", "espb": 3, "semester": 1 },
-            { "name": "Uvod u snimanje zvuka", "espb": 3, "semester": 1 },
-            { "name": "Filmska i televizijska produkcija 1", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike animacije", "espb": 3, "semester": 1 },
-            { "name": "Osnovi scenske rezije", "espb": 3, "semester": 1 },
-            { "name": "Primenjena elektrotehnika", "espb": 2, "semester": 1 },
-            { "name": "Tehnologija audio-vizuelnih medija 1", "espb": 3, "semester": 1 },
-            { "name": "Istorija filma 1", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za film i televiziju", "espb": 3, "semester": 2 },
-            { "name": "Osnovi dizajna svetla za film i televiziju - praktikum", "espb": 2, "semester": 2 },
-            { "name": "Montaza u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Snimanje kamerom", "espb": 3, "semester": 2 },
-            { "name": "Snimanje zvuka", "espb": 3, "semester": 2 },
-            { "name": "Pozorisnа produkcija 1", "espb": 3, "semester": 2 },
-            { "name": "Razvoj i tehnike vizuelnih efekata", "espb": 3, "semester": 2 },
-            { "name": "Rezija u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Tehnologija audio-vizuelnih medija 2", "espb": 3, "semester": 2 },
-            { "name": "Istorija filma 2", "espb": 3, "semester": 2 },
-            { "name": "Dizajn svetla za film i televiziju 1", "espb": 3, "semester": 3 },
-            { "name": "Dizajn svetla za film i televiziju 1 - praktikum", "espb": 2, "semester": 3 },
-            { "name": "Osnovi vizuelne kulture", "espb": 2, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnovi dramaturgije", "espb": 2, "semester": 3 },
-            { "name": "Fotografska istrazivacka praksa 1", "espb": 3, "semester": 3 },
-            { "name": "Optika 1", "espb": 2, "semester": 3 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 3 },
-            { "name": "Istorija filma 3", "espb": 3, "semester": 3 },
-            { "name": "Dizajn svetla za film i televiziju 2", "espb": 3, "semester": 4 },
-            { "name": "Dizajn svetla za film i televiziju 2 - praktikum", "espb": 2, "semester": 4 },
-            { "name": "Vizuelne komunikacije", "espb": 2, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Osnovi scenarija", "espb": 2, "semester": 4 },
-            { "name": "Fotografska istrazivacka praksa 2", "espb": 3, "semester": 4 },
-            { "name": "Optika 2", "espb": 2, "semester": 4 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 4 },
-            { "name": "Istorija filma 4", "espb": 3, "semester": 4 },
-            { "name": "Dizajn svetla za scenu 1", "espb": 3, "semester": 5 },
-            { "name": "Dizajn svetla za scenu 1 - praktikum", "espb": 4, "semester": 5 },
-            { "name": "Opsta psihologija", "espb": 2, "semester": 5 },
-            { "name": "Dizajn produkcije", "espb": 2, "semester": 5 },
-            { "name": "Primenjena muzika 1", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Fotografska istrazivacka praksa 3", "espb": 3, "semester": 5 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 5 },
-            { "name": "Pokretna grafika", "espb": 3, "semester": 5 },
-            { "name": "Dizajn svetla za scenu 2", "espb": 3, "semester": 6 },
-            { "name": "Dizajn svetla za scenu 2 - praktikum", "espb": 2, "semester": 6 },
-            { "name": "Psihologija licnosti", "espb": 2, "semester": 6 },
-            { "name": "Dizajn produkcije", "espb": 2, "semester": 6 },
-            { "name": "Primenjena muzika 2", "espb": 2, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Fotografska istrazivacka praksa 4", "espb": 3, "semester": 6 },
-            { "name": "Interaktivna animacija", "espb": 3, "semester": 6 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 6 },
-            { "name": "Kreativni svetlopis 1", "espb": 3, "semester": 7 },
-            { "name": "Kreativni svetlopis 1 - praktikum", "espb": 3, "semester": 7 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 7 },
-            { "name": "Teorija filma", "espb": 3, "semester": 7 },
-            { "name": "Teorija medija", "espb": 3, "semester": 7 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 7 },
-            { "name": "Dokumentarni film 1", "espb": 3, "semester": 7 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 7 },
-            { "name": "Kreativni svetlopis 2", "espb": 3, "semester": 8 },
-            { "name": "Kreativni svetlopis 2 - praktikum", "espb": 3, "semester": 8 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 8 },
-            { "name": "Dokumentarni film 2", "espb": 3, "semester": 8 },
-            { "name": "Teorija filma", "espb": 3, "semester": 8 },
-            { "name": "Teorija medija", "espb": 3, "semester": 8 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 8 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Maska i sminka", "espb": 2 },
-              { "name": "Filmska montaza", "espb": 3 },
-              { "name": "Filmska kamera", "espb": 3 },
-              { "name": "Osnovi obrade zvuka", "espb": 3 },
-              { "name": "Produkcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 1", "espb": 3 },
-              { "name": "Animacija 1", "espb": 3 },
-              { "name": "Filmska i televizijska rezija 1", "espb": 3 },
-              { "name": "Osnovi programa o liniji 1", "espb": 3 },
-              { "name": "Engleski jezik 1", "espb": 2 }
-            ],
-            "4": [
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Dizajn scenskog zvuka", "espb": 3 },
-              { "name": "Montaza dijaloga u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Kostimografija", "espb": 2 },
-              { "name": "Montaza zvuka za film i televiziju", "espb": 3 },
-              { "name": "Elektronska kamera", "espb": 3 },
-              { "name": "Pozorisnа produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 2", "espb": 3 },
-              { "name": "Vizuelni efekti 1", "espb": 3 },
-              { "name": "Filmska i televizijska rezija 2", "espb": 3 },
-              { "name": "Osnovi programa o liniji 2", "espb": 3 },
-              { "name": "Engleski jezik 2", "espb": 2 }
-            ],
-            "5": [
-              { "name": "Montaza audiovizuelnih formi 1", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 1", "espb": 3 },
-              { "name": "Uvod u snimanje muzike", "espb": 3 },
-              { "name": "Dizajn i montaza zvucnih efekata i muzike", "espb": 3 },
-              { "name": "Pozorisnа produkcija 3", "espb": 2 },
-              { "name": "Multimedijalna produkcija 3", "espb": 3 },
-              { "name": "Vizuelni efekti 2", "espb": 3 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 1", "espb": 3 },
-              { "name": "Scenografija 1", "espb": 2 },
-              { "name": "Mediji masovne komunikacije", "espb": 2 }
-            ],
-            "6": [
-              { "name": "Scenografija 2", "espb": 2 },
-              { "name": "Montaza audiovizuelnih formi 2", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 2", "espb": 3 },
-              { "name": "Snimanje muzike", "espb": 3 },
-              { "name": "Postprodukcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Muzicki instrumenti", "espb": 2 },
-              { "name": "Filmska i televizijska produkcija 3", "espb": 3 },
-              { "name": "Multimedijalna produkcija 4", "espb": 2 },
-              { "name": "Animacija 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 2", "espb": 3 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Mediji masovne komunikacije", "espb": 2 }
-            ],
-            "7": [
-              { "name": "Audio uredjaji i sistemi 1", "espb": 2 },
-              { "name": "Muzicka pismenost 1", "espb": 2 },
-              { "name": "Montazne artikulacije 1", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 1", "espb": 3 },
-              { "name": "Muzicka produkcija", "espb": 3 },
-              { "name": "Pozorisnа produkcija 4", "espb": 3 },
-              { "name": "Vizuelni efekti 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 1", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Istorija nacionalne muzike", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Muzicka pismenost 2", "espb": 2 },
-              { "name": "Montazne artikulacije 2", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 2", "espb": 3 },
-              { "name": "Audio uredjaji i sistemi 2", "espb": 2 },
-              { "name": "Muzicki instrumenti", "espb": 2 },
-              { "name": "Osnovi dikcije", "espb": 2 },
-              { "name": "Analiza i sinteza zvucne slike", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 4", "espb": 3 },
-              { "name": "Animacija 3", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Istorija muzike 20. veka 1", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "produkcija",
-          "label": "Produkcija za audiovizuelne medije",
-          "department": "Audiovizuelni mediji",
-          "mandatory": [
-            { "name": "Filmska i televizijska produkcija 1", "espb": 3, "semester": 1 },
-            { "name": "Filmska i televizijska produkcija 1 - praktikum", "espb": 3, "semester": 1 },
-            { "name": "Osnovi montaze", "espb": 3, "semester": 1 },
-            { "name": "Osnovi snimanja slike", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za scenu", "espb": 3, "semester": 1 },
-            { "name": "Uvod u snimanje zvuka", "espb": 3, "semester": 1 },
-            { "name": "Osnovi scenske rezije", "espb": 3, "semester": 1 },
-            { "name": "Istorija filma 1", "espb": 3, "semester": 1 },
-            { "name": "Tehnologija audio-vizuelnih medija 1", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike animacije", "espb": 3, "semester": 1 },
-            { "name": "Pozorisnа produkcija 1", "espb": 3, "semester": 2 },
-            { "name": "Pozorisnа produkcija 1 - praktikum", "espb": 3, "semester": 2 },
-            { "name": "Montaza u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Snimanje kamerom", "espb": 3, "semester": 2 },
-            { "name": "Osnovi dizajna svetla za film i televiziju", "espb": 3, "semester": 2 },
-            { "name": "Snimanje zvuka", "espb": 3, "semester": 2 },
-            { "name": "Rezija u audio-vizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Istorija filma 2", "espb": 3, "semester": 2 },
-            { "name": "Tehnologija audio-vizuelnih medija 2", "espb": 3, "semester": 2 },
-            { "name": "Razvoj i tehnike vizuelnih efekata", "espb": 3, "semester": 2 },
-            { "name": "Filmska i televizijska produkcija 2", "espb": 3, "semester": 3 },
-            { "name": "Filmska i televizijska produkcija 2 - praktikum", "espb": 3, "semester": 3 },
-            { "name": "Multimedijalna produkcija 1", "espb": 3, "semester": 3 },
-            { "name": "Multimedijalna produkcija 1 - praktikum", "espb": 3, "semester": 3 },
-            { "name": "Istorija filma 3", "espb": 3, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnovi dramaturgije", "espb": 2, "semester": 3 },
-            { "name": "Istorija svetske drame i pozorista 1", "espb": 3, "semester": 3 },
-            { "name": "Pozorisnа produkcija 2", "espb": 3, "semester": 4 },
-            { "name": "Pozorisnа produkcija 2 - praktikum", "espb": 3, "semester": 4 },
-            { "name": "Multimedijalna produkcija 2", "espb": 3, "semester": 4 },
-            { "name": "Multimedijalna produkcija 2 - praktikum", "espb": 3, "semester": 4 },
-            { "name": "Istorija filma 4", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Osnovi scenarija", "espb": 2, "semester": 4 },
-            { "name": "Istorija svetske drame i pozorista 2", "espb": 2, "semester": 4 },
-            { "name": "Pozorisnа produkcija 3", "espb": 2, "semester": 5 },
-            { "name": "Pozorisnа produkcija 3 - praktikum", "espb": 3, "semester": 5 },
-            { "name": "Multimedijalna produkcija 3", "espb": 3, "semester": 5 },
-            { "name": "Multimedijalna produkcija 3 - praktikum", "espb": 3, "semester": 5 },
-            { "name": "Opsta psihologija", "espb": 2, "semester": 5 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 5 },
-            { "name": "Primenjena muzika 1", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Istorija svetske drame i pozorista 3", "espb": 3, "semester": 5 },
-            { "name": "Filmska i televizijska produkcija 3", "espb": 3, "semester": 6 },
-            { "name": "Filmska i televizijska produkcija 3 - praktikum", "espb": 3, "semester": 6 },
-            { "name": "Multimedijalna produkcija 4", "espb": 2, "semester": 6 },
-            { "name": "Multimedijalna produkcija 4 - praktikum", "espb": 3, "semester": 6 },
-            { "name": "Psihologija licnosti", "espb": 2, "semester": 6 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 6 },
-            { "name": "Primenjena muzika 2", "espb": 2, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Istorija svetske drame i pozorista 4", "espb": 3, "semester": 6 },
-            { "name": "Pozorisnа produkcija 4", "espb": 3, "semester": 7 },
-            { "name": "Pozorisnа produkcija 4 - praktikum", "espb": 3, "semester": 7 },
-            { "name": "Dokumentarni film 1", "espb": 3, "semester": 7 },
-            { "name": "Teorija filma", "espb": 3, "semester": 7 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 7 },
-            { "name": "Istorija juzno-slovenske drame i pozorista 1", "espb": 3, "semester": 7 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 7 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 7 },
-            { "name": "Filmska i televizijska produkcija 4", "espb": 3, "semester": 8 },
-            { "name": "Filmska i televizijska produkcija 4 - praktikum", "espb": 4, "semester": 8 },
-            { "name": "Dokumentarni film 2", "espb": 3, "semester": 8 },
-            { "name": "Teorija filma", "espb": 3, "semester": 8 },
-            { "name": "Istorija juzno-slovenske drame i pozorista 2", "espb": 3, "semester": 8 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 8 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 8 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Maska i sminka", "espb": 2 },
-              { "name": "Filmska montaza", "espb": 3 },
-              { "name": "Filmska kamera", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 1", "espb": 3 },
-              { "name": "Osnovi obrade zvuka", "espb": 3 },
-              { "name": "Produkcija zvuka u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Animacija 1", "espb": 3 },
-              { "name": "Engleski jezik 1", "espb": 2 },
-              { "name": "Istorija umetnosti starog veka 1", "espb": 3 },
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Filmska i televizijska rezija 1", "espb": 3 },
-              { "name": "Osnovi vizuelne kulture", "espb": 2 }
-            ],
-            "4": [
-              { "name": "Kostimografija", "espb": 2 },
-              { "name": "Montaza zvuka za film i televiziju", "espb": 3 },
-              { "name": "Elektronska kamera", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 2", "espb": 3 },
-              { "name": "Dizajn scenskog zvuka", "espb": 3 },
-              { "name": "Montaza dijaloga u audio-vizuelnim medijima", "espb": 3 },
-              { "name": "Vizuelni efekti 1", "espb": 3 },
-              { "name": "Vizuelne komunikacije", "espb": 2 },
-              { "name": "Engleski jezik 2", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Filmska i televizijska rezija 2", "espb": 3 },
-              { "name": "Istorija umetnosti starog veka 2", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Montaza audiovizuelnih formi 1", "espb": 3 },
-              { "name": "Scenografija 1", "espb": 2 },
-              { "name": "Umetnost snimanja kamerom 1", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 1", "espb": 3 },
-              { "name": "Uvod u snimanje muzike", "espb": 3 },
-              { "name": "Dizajn i montaza zvucnih efekata i muzike", "espb": 3 },
-              { "name": "Vizuelni efekti 2", "espb": 3 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3 },
-              { "name": "Mediji masovne komunikacije", "espb": 2 }
-            ],
-            "6": [
-              { "name": "Scenografija 2", "espb": 2 },
-              { "name": "Montaza audiovizuelnih formi 2", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 2", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 2", "espb": 3 },
-              { "name": "Snimanje muzike", "espb": 3 },
-              { "name": "Postprodukcija zvuka u audiovizuelnim medijima", "espb": 3 },
-              { "name": "Animacija 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Mediji masovne komunikacije", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Muzicka pismenost 1", "espb": 2 },
-              { "name": "Montazne artikulacije 1", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 1", "espb": 3 },
-              { "name": "Primenjena elektrotehnika", "espb": 2 },
-              { "name": "Kreativni svetlopis 1", "espb": 3 },
-              { "name": "Muzicka produkcija", "espb": 3 },
-              { "name": "Vizuelni efekti 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 1", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Dizajn produkcije", "espb": 2 },
-              { "name": "Istorija nacionalne muzike", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Muzicka pismenost 2", "espb": 2 },
-              { "name": "Montazne artikulacije 2", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 2", "espb": 3 },
-              { "name": "Kreativni svetlopis 2", "espb": 3 },
-              { "name": "Akustika", "espb": 2 },
-              { "name": "Muzicki instrumenti", "espb": 2 },
-              { "name": "Osnovi dikcije", "espb": 2 },
-              { "name": "Analiza i sinteza zvucne slike", "espb": 3 },
-              { "name": "Animacija 3", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Dizajn produkcije", "espb": 2 },
-              { "name": "Istorija muzike 20. veka 1", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "animacija_vfx",
-          "label": "Animacija i vizuelni efekti",
-          "department": "Audiovizuelni mediji",
-          "mandatory": [
-            { "name": "Razvoj i tehnike animacije", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike animacije - praktikum", "espb": 3, "semester": 1 },
-            { "name": "Osnovi montaze", "espb": 3, "semester": 1 },
-            { "name": "Osnovi snimanja slike", "espb": 3, "semester": 1 },
-            { "name": "Osnovi dizajna svetla za scenu", "espb": 3, "semester": 1 },
-            { "name": "Uvod u snimanje zvuka", "espb": 3, "semester": 1 },
-            { "name": "Filmska i televizijska produkcija 1", "espb": 3, "semester": 1 },
-            { "name": "Osnovi scenske rezije", "espb": 3, "semester": 1 },
-            { "name": "Istorija filma 1", "espb": 3, "semester": 1 },
-            { "name": "Tehnologija audiovizuelnih medija 1", "espb": 3, "semester": 1 },
-            { "name": "Razvoj i tehnike vizuelnih efekata", "espb": 3, "semester": 2 },
-            { "name": "Razvoj i tehnike vizuelnih efekata - praktikum", "espb": 3, "semester": 2 },
-            { "name": "Rezija u audiovizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Montaza u audiovizuelnim medijima", "espb": 3, "semester": 2 },
-            { "name": "Snimanje kamerom", "espb": 3, "semester": 2 },
-            { "name": "Osnovi dizajna svetla za film i televiziju", "espb": 3, "semester": 2 },
-            { "name": "Snimanje zvuka", "espb": 3, "semester": 2 },
-            { "name": "Pozorisnа produkcija 1", "espb": 3, "semester": 2 },
-            { "name": "Istorija filma 2", "espb": 3, "semester": 2 },
-            { "name": "Tehnologija audiovizuelnih medija 2", "espb": 3, "semester": 2 },
-            { "name": "Animacija 1", "espb": 3, "semester": 3 },
-            { "name": "Animacija 1 - praktikum", "espb": 3, "semester": 3 },
-            { "name": "Osnovi programa o liniji 1", "espb": 3, "semester": 3 },
-            { "name": "Filmska i televizijska rezija 1", "espb": 3, "semester": 3 },
-            { "name": "Istorija filma 3", "espb": 3, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnovi dramaturgije", "espb": 2, "semester": 3 },
-            { "name": "Istorija moderne umetnosti 1", "espb": 3, "semester": 3 },
-            { "name": "Vizuelni efekti 1", "espb": 3, "semester": 4 },
-            { "name": "Vizuelni efekti 1 - praktikum", "espb": 3, "semester": 4 },
-            { "name": "Osnovi programa o liniji 2", "espb": 3, "semester": 4 },
-            { "name": "Filmska i televizijska rezija 2", "espb": 3, "semester": 4 },
-            { "name": "Istorija filma 4", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Osnovi scenarija", "espb": 2, "semester": 4 },
-            { "name": "Istorija moderne umetnosti 2", "espb": 3, "semester": 4 },
-            { "name": "Vizuelni efekti 2", "espb": 3, "semester": 5 },
-            { "name": "Vizuelni efekti 2 - praktikum", "espb": 4, "semester": 5 },
-            { "name": "Pokretna grafika", "espb": 3, "semester": 5 },
-            { "name": "Opsta psihologija", "espb": 2, "semester": 5 },
-            { "name": "Dizajn produkcije", "espb": 2, "semester": 5 },
-            { "name": "Primenjena muzika 1", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Strip 1", "espb": 3, "semester": 5 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 5 },
-            { "name": "Animacija 2", "espb": 3, "semester": 6 },
-            { "name": "Animacija 2 - praktikum", "espb": 2, "semester": 6 },
-            { "name": "Interaktivna animacija", "espb": 3, "semester": 6 },
-            { "name": "Psihologija licnosti", "espb": 2, "semester": 6 },
-            { "name": "Dizajn produkcije", "espb": 2, "semester": 6 },
-            { "name": "Primenjena muzika 2", "espb": 2, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Strip 2", "espb": 3, "semester": 6 },
-            { "name": "Profesionalna praksa", "espb": 2, "semester": 6 },
-            { "name": "Vizuelni efekti 3", "espb": 3, "semester": 7 },
-            { "name": "Vizuelni efekti 3 - praktikum", "espb": 3, "semester": 7 },
-            { "name": "Teorija medija", "espb": 3, "semester": 7 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 7 },
-            { "name": "Teorija filma", "espb": 3, "semester": 7 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 7 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 7 },
-            { "name": "Dokumentarni film 1", "espb": 3, "semester": 7 },
-            { "name": "Animacija 3", "espb": 3, "semester": 8 },
-            { "name": "Animacija 3 - praktikum", "espb": 3, "semester": 8 },
-            { "name": "Teorija medija", "espb": 3, "semester": 8 },
-            { "name": "Dokumentarni film 2", "espb": 3, "semester": 8 },
-            { "name": "Primena savremenih tehnologija u audio-vizuelnim medijima", "espb": 2, "semester": 8 },
-            { "name": "Teorija filma", "espb": 3, "semester": 8 },
-            { "name": "Profesionalna praksa", "espb": 3, "semester": 8 },
-            { "name": "Zavrsni projekat", "espb": 2, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Filmska montaza", "espb": 3 },
-              { "name": "Filmska kamera", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 1", "espb": 3 },
-              { "name": "Osnovi obrade zvuka", "espb": 3 },
-              { "name": "Produkcija zvuka u audiovizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 1", "espb": 3 },
-              { "name": "Osnovi vizuelne kulture", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Engleski jezik 1", "espb": 2 },
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Maska i sminka", "espb": 2 },
-              { "name": "Uvod u vajanje sa tehnologijom 1", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Kostimografija", "espb": 2 },
-              { "name": "Elektronska montaza", "espb": 3 },
-              { "name": "Montaza dijaloga u audiovizuelnim medijima", "espb": 3 },
-              { "name": "Elektronska kamera", "espb": 3 },
-              { "name": "Dizajn svetla za film i televiziju 2", "espb": 3 },
-              { "name": "Pozorisnа produkcija 2", "espb": 3 },
-              { "name": "Multimedijalna produkcija 2", "espb": 3 },
-              { "name": "Engleski jezik 2", "espb": 2 },
-              { "name": "Muzika kao kultura", "espb": 2 },
-              { "name": "Vizuelne komunikacije", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Dizajn scenskog zvuka", "espb": 3 },
-              { "name": "Uvod u vajanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Montaza audiovizuelnih formi 1", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 1", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 1", "espb": 3 },
-              { "name": "Uvod u snimanje muzike", "espb": 3 },
-              { "name": "Dizajn i montaza zvucnih efekata i muzike", "espb": 3 },
-              { "name": "Pozorisnа produkcija 3", "espb": 2 },
-              { "name": "Multimedijalna produkcija 3", "espb": 3 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3 },
-              { "name": "Scenografija 1", "espb": 2 },
-              { "name": "Mediji masovne komunikacije", "espb": 2 },
-              { "name": "Graficke tehnike 1", "espb": 3 },
-              { "name": "Uvod u arhitekturu 1", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Scenografija 2", "espb": 2 },
-              { "name": "Montaza audiovizuelnih formi 2", "espb": 3 },
-              { "name": "Umetnost snimanja kamerom 2", "espb": 3 },
-              { "name": "Dizajn svetla za scenu 2", "espb": 3 },
-              { "name": "Snimanje muzike", "espb": 3 },
-              { "name": "Postprodukcija zvuka u audiovizuelnim medijima", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 3", "espb": 3 },
-              { "name": "Multimedijalna produkcija 4", "espb": 2 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Mediji masovne komunikacije", "espb": 2 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Graficke tehnike 2", "espb": 3 },
-              { "name": "Uvod u arhitekturu 2", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Muzicka pismenost 1", "espb": 2 },
-              { "name": "Montazne artikulacije 1", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 1", "espb": 3 },
-              { "name": "Primenjena elektrotehnika", "espb": 2 },
-              { "name": "Kreativni svetlopis 1", "espb": 3 },
-              { "name": "Muzicka produkcija", "espb": 3 },
-              { "name": "Pozorisnа produkcija 4", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Optika 1", "espb": 2 },
-              { "name": "Istorija umetnosti novog veka 1", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Istorija nacionalne muzike", "espb": 3 },
-              { "name": "Graficke tehnike 3", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Optika 2", "espb": 2 },
-              { "name": "Muzicka pismenost 2", "espb": 2 },
-              { "name": "Montazne artikulacije 2", "espb": 3 },
-              { "name": "Kamera - analiza i sinteza 2", "espb": 3 },
-              { "name": "Kreativni svetlopis 2", "espb": 3 },
-              { "name": "Akustika", "espb": 2 },
-              { "name": "Osnovi dikcije", "espb": 2 },
-              { "name": "Analiza i sinteza zvucne slike", "espb": 3 },
-              { "name": "Filmska i televizijska produkcija 4", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Istorija umetnosti novog veka 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Graficke tehnike 4", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 }
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "key": "likovne",
-      "label": "Likovne umetnosti",
-      "modules": [
-        {
-          "key": "slikarstvo",
-          "label": "Slikarstvo",
-          "department": "Likovne umetnosti",
-          "mandatory": [
-            { "name": "Slikanje 1", "espb": 4, "semester": 1 },
-            { "name": "Tehnologija slikarskih tehnika 1", "espb": 3, "semester": 1 },
-            { "name": "Crtanje 1", "espb": 6, "semester": 1 },
-            { "name": "Anatomsko crtanje 1", "espb": 3, "semester": 1 },
-            { "name": "Psihologija stvaralastva 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u grafiku i stamparstvo 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u vajanje sa tehnologijom 1", "espb": 3, "semester": 1 },
-            { "name": "Likovni elementi 1", "espb": 2, "semester": 1 },
-            { "name": "Istorija umetnosti starog veka 1", "espb": 3, "semester": 1 },
-            { "name": "Slikanje 2", "espb": 4, "semester": 2 },
-            { "name": "Crtanje 2", "espb": 6, "semester": 2 },
-            { "name": "Tehnologija slikarskih tehnika 2", "espb": 3, "semester": 2 },
-            { "name": "Uvod u grafiku i stamparstvo 2", "espb": 3, "semester": 2 },
-            { "name": "Uvod u vajanje sa tehnologijom 2", "espb": 3, "semester": 2 },
-            { "name": "Anatomsko crtanje 2", "espb": 3, "semester": 2 },
-            { "name": "Istorija umetnosti starog veka 2", "espb": 3, "semester": 2 },
-            { "name": "Psihologija stvaralastva 2", "espb": 3, "semester": 2 },
-            { "name": "Likovni elementi 2", "espb": 2, "semester": 2 },
-            { "name": "Slikanje 3", "espb": 9, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnovi digitalne slike 1", "espb": 4, "semester": 3 },
-            { "name": "Crtanje 3", "espb": 6, "semester": 3 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 3 },
-            { "name": "Slikanje 4", "espb": 9, "semester": 4 },
-            { "name": "Crtanje 4", "espb": 6, "semester": 4 },
-            { "name": "Osnovi digitalne slike 2", "espb": 4, "semester": 4 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Slikanje 5", "espb": 8, "semester": 5 },
-            { "name": "Istorija umetnosti novog veka 1", "espb": 3, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Mural 1", "espb": 3, "semester": 5 },
-            { "name": "Slikanje 6", "espb": 8, "semester": 6 },
-            { "name": "Mural 2", "espb": 3, "semester": 6 },
-            { "name": "Istorija umetnosti novog veka 2", "espb": 3, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Slikanje 7", "espb": 13, "semester": 7 },
-            { "name": "Istorija moderne umetnosti 1", "espb": 3, "semester": 7 },
-            { "name": "Slikanje 8", "espb": 13, "semester": 8 },
-            { "name": "Istorija moderne umetnosti 2", "espb": 3, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Uvod u arhitekturu 1", "espb": 3 },
-              { "name": "Uvod u fotografiju 1", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 1", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Uvod u arhitekturu 2", "espb": 3 },
-              { "name": "Uvod u fotografiju 2", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 2", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 2", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 1", "espb": 5 },
-              { "name": "Pedagogija", "espb": 3 },
-              { "name": "Savremene slikarske prakse i produkcija 1", "espb": 4 },
-              { "name": "Crtanje 5", "espb": 4 },
-              { "name": "Engleski jezik 1", "espb": 2 },
-              { "name": "Crtanje po modelu 1", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Graficke tehnike 1", "espb": 3 },
-              { "name": "Ikona i Freska 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 1", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 2", "espb": 5 },
-              { "name": "Skolska pedagogija", "espb": 3 },
-              { "name": "Savremene slikarske prakse i produkcija 2", "espb": 4 },
-              { "name": "Crtanje 6", "espb": 4 },
-              { "name": "Engleski jezik 2", "espb": 2 },
-              { "name": "Crtanje po modelu 2", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Graficke tehnike 2", "espb": 3 },
-              { "name": "Ikona i Freska 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove pisma sa kaligrafijom i tipografijom 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 3", "espb": 5 },
-              { "name": "Metodicka praksa 1", "espb": 3 },
-              { "name": "Savremene slikarske prakse i produkcija 3", "espb": 4 },
-              { "name": "Crtanje 7", "espb": 4 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Crtanje po modelu 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Graficke tehnike 3", "espb": 3 },
-              { "name": "Ikona i Freska 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 3", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 3", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 4", "espb": 5 },
-              { "name": "Metodicka praksa 2", "espb": 3 },
-              { "name": "Savremene slikarske prakse i produkcija 4", "espb": 4 },
-              { "name": "Crtanje 8", "espb": 4 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Crtanje po modelu 4", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Graficke tehnike 4", "espb": 3 },
-              { "name": "Ikona i Freska 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove pisma sa kaligrafijom i tipografijom 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 4", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 4", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "grafika",
-          "label": "Grafika",
-          "department": "Likovne umetnosti",
-          "mandatory": [
-            { "name": "Grafika 1", "espb": 10, "semester": 1 },
-            { "name": "Crtanje 1", "espb": 6, "semester": 1 },
-            { "name": "Anatomsko crtanje 1", "espb": 3, "semester": 1 },
-            { "name": "Psihologija stvaralastva 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u vajanje sa tehnologijom 1", "espb": 3, "semester": 1 },
-            { "name": "Likovni elementi 1", "espb": 2, "semester": 1 },
-            { "name": "Istorija umetnosti starog veka 1", "espb": 3, "semester": 1 },
-            { "name": "Grafika 2", "espb": 10, "semester": 2 },
-            { "name": "Crtanje 2", "espb": 6, "semester": 2 },
-            { "name": "Uvod u vajanje sa tehnologijom 2", "espb": 3, "semester": 2 },
-            { "name": "Anatomsko crtanje 2", "espb": 3, "semester": 2 },
-            { "name": "Istorija umetnosti starog veka 2", "espb": 3, "semester": 2 },
-            { "name": "Psihologija stvaralastva 2", "espb": 3, "semester": 2 },
-            { "name": "Likovni elementi 2", "espb": 2, "semester": 2 },
-            { "name": "Grafika 3", "espb": 10, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnove slikanja sa tehnologijom 1", "espb": 3, "semester": 3 },
-            { "name": "Crtanje 3", "espb": 6, "semester": 3 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 3 },
-            { "name": "Grafika 4", "espb": 10, "semester": 4 },
-            { "name": "Crtanje 4", "espb": 6, "semester": 4 },
-            { "name": "Osnove slikanja sa tehnologijom 1", "espb": 3, "semester": 4 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Grafika 5", "espb": 11, "semester": 5 },
-            { "name": "Istorija umetnosti novog veka 1", "espb": 3, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Grafika 6", "espb": 11, "semester": 6 },
-            { "name": "Istorija umetnosti novog veka 2", "espb": 3, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Grafika 7", "espb": 13, "semester": 7 },
-            { "name": "Istorija moderne umetnosti 1", "espb": 3, "semester": 7 },
-            { "name": "Grafika 8", "espb": 13, "semester": 8 },
-            { "name": "Istorija moderne umetnosti 2", "espb": 3, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Uvod u arhitekturu 1", "espb": 3 },
-              { "name": "Uvod u fotografiju 1", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 1", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Uvod u arhitekturu 2", "espb": 3 },
-              { "name": "Uvod u fotografiju 2", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 2", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 2", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 1", "espb": 5 },
-              { "name": "Pedagogija", "espb": 3 },
-              { "name": "Savremene graficke prakse i produkcija 1", "espb": 4 },
-              { "name": "Crtanje 5", "espb": 4 },
-              { "name": "Crtanje po modelu 1", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Ikona i Freska 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 1", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 1", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 2", "espb": 5 },
-              { "name": "Skolska pedagogija", "espb": 3 },
-              { "name": "Savremene graficke prakse i produkcija 2", "espb": 4 },
-              { "name": "Crtanje 6", "espb": 4 },
-              { "name": "Crtanje po modelu 2", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Ikona i Freska 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove pisma sa kaligrafijom i tipografijom 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 3", "espb": 5 },
-              { "name": "Metodicka praksa 1", "espb": 3 },
-              { "name": "Savremene graficke prakse i produkcija 3", "espb": 4 },
-              { "name": "Crtanje 7", "espb": 4 },
-              { "name": "Crtanje po modelu 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Ikona i Freska 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 3", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 3", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 3", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 4", "espb": 5 },
-              { "name": "Metodicka praksa 2", "espb": 3 },
-              { "name": "Savremene graficke prakse i produkcija 4", "espb": 4 },
-              { "name": "Crtanje 8", "espb": 4 },
-              { "name": "Crtanje po modelu 4", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Ikona i Freska 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove pisma sa kaligrafijom i tipografijom 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 4", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 4", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 4", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "vajarstvo",
-          "label": "Vajarstvo",
-          "department": "Likovne umetnosti",
-          "mandatory": [
-            { "name": "Vajanje 1", "espb": 10, "semester": 1 },
-            { "name": "Crtanje 1", "espb": 6, "semester": 1 },
-            { "name": "Anatomsko crtanje 1", "espb": 3, "semester": 1 },
-            { "name": "Psihologija stvaralastva 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u grafiku i stamparstvo 1", "espb": 3, "semester": 1 },
-            { "name": "Likovni elementi 1", "espb": 2, "semester": 1 },
-            { "name": "Istorija umetnosti starog veka 1", "espb": 3, "semester": 1 },
-            { "name": "Vajanje 2", "espb": 10, "semester": 2 },
-            { "name": "Crtanje 2", "espb": 6, "semester": 2 },
-            { "name": "Uvod u grafiku i stamparstvo 2", "espb": 3, "semester": 2 },
-            { "name": "Anatomsko crtanje 2", "espb": 3, "semester": 2 },
-            { "name": "Istorija umetnosti starog veka 2", "espb": 3, "semester": 2 },
-            { "name": "Psihologija stvaralastva 2", "espb": 3, "semester": 2 },
-            { "name": "Likovni elementi 2", "espb": 2, "semester": 2 },
-            { "name": "Vajanje 3", "espb": 7, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnove slikanja sa tehnologijom 1", "espb": 3, "semester": 3 },
-            { "name": "Vajarske tehnike, materijali i alati 1", "espb": 3, "semester": 3 },
-            { "name": "Crtanje 3", "espb": 6, "semester": 3 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 3 },
-            { "name": "Vajanje 4", "espb": 7, "semester": 4 },
-            { "name": "Crtanje 4", "espb": 6, "semester": 4 },
-            { "name": "Osnove slikanja sa tehnologijom 1", "espb": 3, "semester": 4 },
-            { "name": "Vajarske tehnike, materijali i alati 2", "espb": 3, "semester": 4 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Vajanje 5", "espb": 8, "semester": 5 },
-            { "name": "Vajarske tehnike, materijali i alati 3", "espb": 3, "semester": 5 },
-            { "name": "Istorija umetnosti novog veka 1", "espb": 3, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Vajanje 6", "espb": 8, "semester": 6 },
-            { "name": "Vajarske tehnike, materijali i alati 4", "espb": 3, "semester": 6 },
-            { "name": "Istorija umetnosti novog veka 2", "espb": 3, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Vajanje 7", "espb": 13, "semester": 7 },
-            { "name": "Istorija moderne umetnosti 1", "espb": 3, "semester": 7 },
-            { "name": "Vajanje 8", "espb": 13, "semester": 8 },
-            { "name": "Istorija moderne umetnosti 2", "espb": 3, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Uvod u arhitekturu 1", "espb": 3 },
-              { "name": "Uvod u fotografiju 1", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 1", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Uvod u arhitekturu 2", "espb": 3 },
-              { "name": "Uvod u fotografiju 2", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 2", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 2", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 1", "espb": 5 },
-              { "name": "Pedagogija", "espb": 3 },
-              { "name": "Savremene vajarske prakse i produkcija 1", "espb": 4 },
-              { "name": "Crtanje 5", "espb": 4 },
-              { "name": "Crtanje po modelu 1", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Graficke tehnike 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Savremena figurativna skulptura 1", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 1", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 1", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 2", "espb": 5 },
-              { "name": "Skolska pedagogija", "espb": 3 },
-              { "name": "Savremene vajarske prakse i produkcija 2", "espb": 4 },
-              { "name": "Crtanje 6", "espb": 4 },
-              { "name": "Crtanje po modelu 2", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Graficke tehnike 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove pisma sa kaligrafijom i tipografijom 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Savremena figurativna skulptura 2", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 3", "espb": 5 },
-              { "name": "Metodicka praksa 1", "espb": 3 },
-              { "name": "Savremene vajarske prakse i produkcija 3", "espb": 4 },
-              { "name": "Crtanje 7", "espb": 4 },
-              { "name": "Crtanje po modelu 3", "espb": 3 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Graficke tehnike 3", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 3", "espb": 3 },
-              { "name": "Savremena figurativna skulptura 1", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 3", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 3", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 4", "espb": 5 },
-              { "name": "Metodicka praksa 2", "espb": 3 },
-              { "name": "Savremene vajarske prakse i produkcija 4", "espb": 4 },
-              { "name": "Crtanje 8", "espb": 4 },
-              { "name": "Crtanje po modelu 4", "espb": 3 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Graficke tehnike 4", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove pisma sa kaligrafijom i tipografijom 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 4", "espb": 3 },
-              { "name": "Savremena figurativna skulptura 2", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 4", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 4", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "novi_likovni_mediji",
-          "label": "Novi likovni mediji",
-          "department": "Likovne umetnosti",
-          "mandatory": [
-            { "name": "Intermedijalna istrazivanja 1", "espb": 4, "semester": 1 },
-            { "name": "Digitalna umetnost 1", "espb": 3, "semester": 1 },
-            { "name": "Video 1", "espb": 3, "semester": 1 },
-            { "name": "Crtanje 1", "espb": 6, "semester": 1 },
-            { "name": "Psihologija stvaralastva 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u grafiku i stamparstvo 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u vajanje sa tehnologijom 1", "espb": 3, "semester": 1 },
-            { "name": "Likovni elementi 1", "espb": 2, "semester": 1 },
-            { "name": "Istorija umetnosti starog veka 1", "espb": 3, "semester": 1 },
-            { "name": "Intermedijalna istrazivanja 2", "espb": 4, "semester": 2 },
-            { "name": "Digitalna umetnost 2", "espb": 3, "semester": 2 },
-            { "name": "Video 2", "espb": 3, "semester": 2 },
-            { "name": "Crtanje 2", "espb": 6, "semester": 2 },
-            { "name": "Uvod u grafiku i stamparstvo 2", "espb": 3, "semester": 2 },
-            { "name": "Uvod u vajanje sa tehnologijom 2", "espb": 3, "semester": 2 },
-            { "name": "Istorija umetnosti starog veka 2", "espb": 3, "semester": 2 },
-            { "name": "Psihologija stvaralastva 2", "espb": 3, "semester": 2 },
-            { "name": "Likovni elementi 2", "espb": 2, "semester": 2 },
-            { "name": "Intermedijalna istrazivanja 3", "espb": 4, "semester": 3 },
-            { "name": "Digitalna umetnost 3", "espb": 3, "semester": 3 },
-            { "name": "Video 3", "espb": 3, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnove slikanja sa tehnologijom 1", "espb": 3, "semester": 3 },
-            { "name": "Crtanje 3", "espb": 6, "semester": 3 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 3 },
-            { "name": "Intermedijalna istrazivanja 4", "espb": 4, "semester": 4 },
-            { "name": "Digitalna umetnost 4", "espb": 3, "semester": 4 },
-            { "name": "Video 4", "espb": 3, "semester": 4 },
-            { "name": "Crtanje 4", "espb": 6, "semester": 4 },
-            { "name": "Osnove slikanja sa tehnologijom 2", "espb": 4, "semester": 4 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Intermedijalna istrazivanja 5", "espb": 3, "semester": 5 },
-            { "name": "Internet, priroda i drustvo 1", "espb": 3, "semester": 5 },
-            { "name": "Video 5", "espb": 3, "semester": 5 },
-            { "name": "Umetnost i programiranje 1", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Istorija umetnosti novog veka 1", "espb": 3, "semester": 5 },
-            { "name": "Intermedijalna istrazivanja 6", "espb": 3, "semester": 6 },
-            { "name": "Internet, priroda i drustvo 2", "espb": 3, "semester": 6 },
-            { "name": "Video 6", "espb": 3, "semester": 6 },
-            { "name": "Umetnost i programiranje 2", "espb": 2, "semester": 6 },
-            { "name": "Istorija umetnosti novog veka 2", "espb": 3, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Intermedijalna istrazivanja 7", "espb": 4, "semester": 7 },
-            { "name": "Internet, priroda i drustvo 3", "espb": 3, "semester": 7 },
-            { "name": "Video 7", "espb": 4, "semester": 7 },
-            { "name": "Teorija medijske umetnosti 1", "espb": 2, "semester": 7 },
-            { "name": "Istorija moderne umetnosti 1", "espb": 3, "semester": 7 },
-            { "name": "Intermedijalna istrazivanja 8", "espb": 4, "semester": 8 },
-            { "name": "Internet, priroda i drustvo 4", "espb": 3, "semester": 8 },
-            { "name": "Video 8", "espb": 4, "semester": 8 },
-            { "name": "Teorija medijske umetnosti 2", "espb": 2, "semester": 8 },
-            { "name": "Istorija moderne umetnosti 2", "espb": 3, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Uvod u arhitekturu 1", "espb": 3 },
-              { "name": "Uvod u fotografiju 1", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 1", "espb": 3 },
-              { "name": "Uvod u anatomsko crtanje 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Uvod u arhitekturu 2", "espb": 3 },
-              { "name": "Uvod u fotografiju 2", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 2", "espb": 3 },
-              { "name": "Uvod u anatomsko crtanje 1", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 1", "espb": 5 },
-              { "name": "Pedagogija", "espb": 3 },
-              { "name": "Participativna umetnost 1", "espb": 4 },
-              { "name": "Teme i ideje u savremenom crtezu 1", "espb": 4 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 1", "espb": 3 },
-              { "name": "Graficke tehnike 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Istorija muzike 2", "espb": 2 },
-              { "name": "Knjiga umetnika 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 1", "espb": 3 },
-              { "name": "Osnovi scenske rezije", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 1", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Uvod u montazu", "espb": 3 },
-              { "name": "Uvod u snimanje slike", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 2", "espb": 5 },
-              { "name": "Skolska pedagogija", "espb": 3 },
-              { "name": "Participativna umetnost 2", "espb": 4 },
-              { "name": "Teme i ideje u savremenom crtezu 2", "espb": 4 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 2", "espb": 3 },
-              { "name": "Graficke tehnike 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Istorija muzike 2", "espb": 2 },
-              { "name": "Knjiga umetnika 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Rezija u AV medijima", "espb": 2 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "Uvod u montazu u audiovizuelnim medijima", "espb": 3 },
-              { "name": "Uvod u snimanje kamerom", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 3", "espb": 5 },
-              { "name": "Metodicka praksa 1", "espb": 3 },
-              { "name": "Izlagacka praksa 1", "espb": 4 },
-              { "name": "Prosireno polje crteza 1", "espb": 4 },
-              { "name": "Digitalna slika 1", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 3", "espb": 3 },
-              { "name": "Graficke tehnike 3", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Istorija muzike 1", "espb": 2 },
-              { "name": "Knjiga umetnika 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi scenske rezije", "espb": 2 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 3", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Strip 1", "espb": 3 },
-              { "name": "Umetnicki projekat 3", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "Uvod u montazu", "espb": 3 },
-              { "name": "Uvod u snimanje kamеrom", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 4", "espb": 5 },
-              { "name": "Metodicka praksa 2", "espb": 3 },
-              { "name": "Izlagacka praksa 2", "espb": 4 },
-              { "name": "Prosireno polje crteza 2", "espb": 4 },
-              { "name": "Digitalna slika 2", "espb": 3 },
-              { "name": "Fotografska istrazivacka praksa 4", "espb": 3 },
-              { "name": "Graficke tehnike 4", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Istorija muzike 2", "espb": 2 },
-              { "name": "Knjiga umetnika 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 4", "espb": 3 },
-              { "name": "Rezija u AV medijima", "espb": 2 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Strip 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "Uvod u montazu u audiovizuelnim medijima", "espb": 3 },
-              { "name": "Uvod u snimanje kamеrom", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ]
-          }
-        },
-        {
-          "key": "fotografija",
-          "label": "Fotografija",
-          "department": "Likovne umetnosti",
-          "mandatory": [
-            { "name": "Uvod u crno belu fotografiju", "espb": 5, "semester": 1 },
-            { "name": "Vizuelni jezik fotografije 1", "espb": 2, "semester": 1 },
-            { "name": "Fotografske tehnologije 1", "espb": 3, "semester": 1 },
-            { "name": "Crtanje 1", "espb": 6, "semester": 1 },
-            { "name": "Psihologija stvaralastva 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u grafiku i stamparstvo 1", "espb": 3, "semester": 1 },
-            { "name": "Uvod u vajanje sa tehnologijom 1", "espb": 3, "semester": 1 },
-            { "name": "Likovni elementi 1", "espb": 2, "semester": 1 },
-            { "name": "Istorija umetnosti starog veka 1", "espb": 3, "semester": 1 },
-            { "name": "Dokumentarnost u fotografiji", "espb": 5, "semester": 2 },
-            { "name": "Vizuelni jezik fotografije 2", "espb": 2, "semester": 2 },
-            { "name": "Fotografske tehnologije 2", "espb": 3, "semester": 2 },
-            { "name": "Crtanje 2", "espb": 6, "semester": 2 },
-            { "name": "Uvod u grafiku i stamparstvo 2", "espb": 3, "semester": 2 },
-            { "name": "Uvod u vajanje sa tehnologijom 2", "espb": 3, "semester": 2 },
-            { "name": "Istorija umetnosti starog veka 2", "espb": 3, "semester": 2 },
-            { "name": "Psihologija stvaralastva 2", "espb": 3, "semester": 2 },
-            { "name": "Likovni elementi 2", "espb": 2, "semester": 2 },
-            { "name": "Mrtva priroda - fotografski studio", "espb": 6, "semester": 3 },
-            { "name": "Razvoj fotografskog medija 1", "espb": 2, "semester": 3 },
-            { "name": "Fotografske tehnologije 3", "espb": 2, "semester": 3 },
-            { "name": "Sociologija kulture 1", "espb": 2, "semester": 3 },
-            { "name": "Osnove slikanja sa tehnologijom 1", "espb": 3, "semester": 3 },
-            { "name": "Crtanje 3", "espb": 6, "semester": 3 },
-            { "name": "Istorija umetnosti srednjeg veka 1", "espb": 3, "semester": 3 },
-            { "name": "Studija mesta", "espb": 6, "semester": 4 },
-            { "name": "Razvoj fotografskog medija 2", "espb": 2, "semester": 4 },
-            { "name": "Fotografske tehnologije 4", "espb": 2, "semester": 4 },
-            { "name": "Crtanje 4", "espb": 6, "semester": 4 },
-            { "name": "Osnove slikanja sa tehnologijom 2", "espb": 3, "semester": 4 },
-            { "name": "Istorija umetnosti srednjeg veka 2", "espb": 3, "semester": 4 },
-            { "name": "Sociologija kulture 2", "espb": 2, "semester": 4 },
-            { "name": "Lice i telo - fotografski studio", "espb": 5, "semester": 5 },
-            { "name": "Kriticko promisljanje fotografije 1", "espb": 2, "semester": 5 },
-            { "name": "Razvoj fotografskog medija 3", "espb": 2, "semester": 5 },
-            { "name": "Optika 1", "espb": 2, "semester": 5 },
-            { "name": "Osnove estetike 1", "espb": 2, "semester": 5 },
-            { "name": "Istorija umetnosti novog veka 1", "espb": 3, "semester": 5 },
-            { "name": "Portret i akt - fotografski studio", "espb": 5, "semester": 6 },
-            { "name": "Kriticko promisljanje fotografije 2", "espb": 2, "semester": 6 },
-            { "name": "Razvoj fotografskog medija 4", "espb": 2, "semester": 6 },
-            { "name": "Optika 2", "espb": 2, "semester": 6 },
-            { "name": "Istorija umetnosti novog veka 2", "espb": 3, "semester": 6 },
-            { "name": "Osnove estetike 2", "espb": 2, "semester": 6 },
-            { "name": "Konstrukcija u fotografiji", "espb": 6, "semester": 7 },
-            { "name": "Aspekti savremene fotografije", "espb": 3, "semester": 7 },
-            { "name": "Uvod u snimanje slike", "espb": 4, "semester": 7 },
-            { "name": "Istorija moderne umetnosti 1", "espb": 3, "semester": 7 },
-            { "name": "Fotografska knjiga", "espb": 6, "semester": 8 },
-            { "name": "Istrazivacko umetnicki rad", "espb": 3, "semester": 8 },
-            { "name": "Uvod u snimanje kamerom", "espb": 4, "semester": 8 },
-            { "name": "Istorija moderne umetnosti 2", "espb": 3, "semester": 8 }
-          ],
-          "electives": {
-            "3": [
-              { "name": "Uvod u arhitekturu 1", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 1", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 1", "espb": 3 },
-              { "name": "Uvod u anatomsko crtanje 1", "espb": 3 }
-            ],
-            "4": [
-              { "name": "Uvod u arhitekturu 2", "espb": 3 },
-              { "name": "Uvod u nove likovne medije 2", "espb": 3 },
-              { "name": "Uvod u graficke komunikacije 2", "espb": 3 },
-              { "name": "Uvod u anatomsko crtanje 1", "espb": 3 }
-            ],
-            "5": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 1", "espb": 5 },
-              { "name": "Pedagogija", "espb": 3 },
-              { "name": "Prosireni prostor fotografije 1", "espb": 4 },
-              { "name": "Teme i ideje u savremenom crtezu 1", "espb": 4 },
-              { "name": "Engleski jezik 1", "espb": 2 },
-              { "name": "Graficke tehnike 1", "espb": 3 },
-              { "name": "Ikona i Freska 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Knjiga umetnika 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna enterijera 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 1", "espb": 3 },
-              { "name": "Osnovi dizajna svetla za scenu", "espb": 2 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 1", "espb": 3 },
-              { "name": "Umetnicki projekat 1", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "6": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 2", "espb": 5 },
-              { "name": "Skolska pedagogija", "espb": 3 },
-              { "name": "Prosireni prostor fotografije 2", "espb": 4 },
-              { "name": "Teme i ideje u savremenom crtezu 2", "espb": 4 },
-              { "name": "Engleski jezik 2", "espb": 3 },
-              { "name": "Graficke tehnike 2", "espb": 3 },
-              { "name": "Ikona i Freska 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Knjiga umetnika 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnodi dizajna enterijera 2", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 2", "espb": 3 },
-              { "name": "Osnovi dizajna svetla za filmsku i elektronsku kameru", "espb": 2 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ],
-            "7": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 3", "espb": 5 },
-              { "name": "Metodicka praksa 1", "espb": 3 },
-              { "name": "Prosireni prostor fotografije 3", "espb": 4 },
-              { "name": "Prosireno polje crteza 1", "espb": 4 },
-              { "name": "Engleski jezik 3", "espb": 2 },
-              { "name": "Graficke tehnike 3", "espb": 3 },
-              { "name": "Ikona i Freska 1", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 1", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 1", "espb": 3 },
-              { "name": "Knjiga umetnika 1", "espb": 3 },
-              { "name": "Mozaik 1", "espb": 3 },
-              { "name": "Novomedicjska umetnost 1", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 1", "espb": 3 },
-              { "name": "Osnove plakata 1", "espb": 3 },
-              { "name": "Osnovi dizajna svetla za scenu", "espb": 2 },
-              { "name": "Osnovi pisma sa kaligrafijom i tipografijom 1", "espb": 3 },
-              { "name": "Osnovi primenjene grafike 1", "espb": 3 },
-              { "name": "Program o liniji 3", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 1", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 3", "espb": 3 },
-              { "name": "Umetnicki projekat 3", "espb": 3 },
-              { "name": "Uvod u animaciju i vizuelne efekte", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 1", "espb": 3 },
-              { "name": "3D modelovanje 1", "espb": 3 }
-            ],
-            "8": [
-              { "name": "Metodika likovnog vaspitanja i obrazovanja 4", "espb": 5 },
-              { "name": "Metodicka praksa 2", "espb": 3 },
-              { "name": "Prosireni prostor fotografije 4", "espb": 4 },
-              { "name": "Prosireno polje crteza 2", "espb": 4 },
-              { "name": "Engleski jezik 4", "espb": 2 },
-              { "name": "Graficke tehnike 4", "espb": 3 },
-              { "name": "Ikona i Freska 2", "espb": 3 },
-              { "name": "Ilustracija - osnove i tehnike 2", "espb": 3 },
-              { "name": "Instalacije i intervencije u javnom prostoru 2", "espb": 3 },
-              { "name": "Knjiga umetnika 2", "espb": 3 },
-              { "name": "Mozaik 2", "espb": 3 },
-              { "name": "Novomedicjska umetnost 2", "espb": 3 },
-              { "name": "Ocuvanje umetnickih dela 2", "espb": 3 },
-              { "name": "Osnove plakata 2", "espb": 3 },
-              { "name": "Osnodi dizajna svetla za filmsku i elektronsku kameru", "espb": 2 },
-              { "name": "Osnovi primenjene grafike 2", "espb": 3 },
-              { "name": "Program o liniji 4", "espb": 3 },
-              { "name": "Savremene tehnologije u skulpturi 2", "espb": 3 },
-              { "name": "Slikanje sa tehnologijom 2", "espb": 3 },
-              { "name": "Umetnicki projekat 2", "espb": 3 },
-              { "name": "Uvod u dizajn video igara 2", "espb": 3 },
-              { "name": "Uvod u tehnike animacije i vizuelnih efekata", "espb": 3 },
-              { "name": "3D Modelovanje 2", "espb": 3 }
-            ]
-          }
-        }
-      ]
-    }
-  ]
-}
-;
-
     function processCurriculumData(data) {
       CURRICULUM = {};
       MODULE_LABELS = {};
-      // Compatibility: map old key 'animacija' -> 'animacija_vfx'
+      // Kompatibilnost: mapira stari ključ 'animacija' -> 'animacija_vfx'
       const KEY_COMPAT = { 'animacija': 'animacija_vfx' };
       (data.departments || []).forEach(dept => {
         (dept.modules || []).forEach(mod => {
@@ -2972,7 +1252,6 @@
           }
           const entry = { mandatory: mod.mandatory || [], electives };
           CURRICULUM[mod.key] = entry;
-          // Also register under compat keys
           Object.entries(KEY_COMPAT).forEach(([oldKey, newKey]) => {
             if (mod.key === newKey) CURRICULUM[oldKey] = entry;
           });
@@ -2983,25 +1262,27 @@
     }
 
     async function loadCurriculumFromJSON() {
-      // Always load embedded first (instant, reliable)
-      processCurriculumData(EMBEDDED_CURRICULUM_DATA);
-      // Then try to fetch latest version from server
+      // Kurikulum više nije ugrađen u HTML — učitava se isključivo sa GitHub-a,
+      // da bi index.html ostao manji i da bi se kurikulum mogao menjati bez re-deploya HTML-a.
       try {
         const resp = await fetch(CURRICULUM_JSON_URL);
         if (resp.ok) {
           const data = await resp.json();
           processCurriculumData(data);
-          console.log('✓ Kurikulum osvežen sa servera');
+        } else {
+          console.error('✗ curriculum.json nije dostupan, status:', resp.status);
+          showToast('Greška: kurikulum se nije učitao sa servera.', 'error');
         }
       } catch (err) {
-        console.log('ℹ Koristi se ugrađeni kurikulum (fetch nije uspeo):', err.message);
+        console.error('✗ Greška pri učitavanju kurikuluma:', err);
+        showToast('Greška: kurikulum se nije učitao sa servera.', 'error');
       }
     }
 
     function populateModuleSelects() {
       const opts = '<option value="">— Izaberi modul —</option>' +
         Object.entries(MODULE_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
-      ['admin-new-module', 'edit-student-module'].forEach(id => {
+      ['admin-new-module', 'edit-student-module', 'reg-module'].forEach(id => {
         const el = document.getElementById(id);
         if (el) { const cur = el.value; el.innerHTML = opts; el.value = cur; }
       });
@@ -3027,7 +1308,7 @@
         loadCurriculumFromJSON(),
         cloudLoadUsers().then(u => { customUsers = u; })
       ]);
-      // Automatska prijava iz sačuvane sesije — ne treba svaki put ručno da se ulogujes.
+      // Automatska prijava iz sačuvane sesije — ne treba svaki put ručno da se uloguješ.
       // Za odjavu ili promenu profila koristi dugme "Odjavi se".
       try {
         const saved = JSON.parse(localStorage.getItem('savedSession') || 'null');
@@ -3093,6 +1374,15 @@
     });
 
     async function loginUser(name, index, normalizedKey) {
+      const userMeta = customUsers[normalizedKey];
+      if (userMeta && !userMeta.acceptedTerms) {
+        openTermsModal('login', { name, index, normalizedKey });
+        return;
+      }
+      await continueLogin(name, index, normalizedKey);
+    }
+
+    async function continueLogin(name, index, normalizedKey) {
       currentUser = { name, index, key: normalizedKey };
       unsavedChanges = false;
       document.getElementById('login-screen').classList.add('hidden');
@@ -4224,6 +2514,117 @@
     // =============================================
     // ADMIN PANEL
     // =============================================
+    let termsModalMode = 'info';
+    let pendingLoginPayload = null;
+
+    function openTermsModal(mode, payload) {
+      termsModalMode = mode || 'info';
+      if (mode === 'login') pendingLoginPayload = payload;
+      const gateNotice = document.getElementById('terms-modal-gate-notice');
+      const footer = document.getElementById('terms-modal-footer');
+      if (termsModalMode === 'registration') {
+        gateNotice.classList.remove('hidden');
+        footer.innerHTML = `
+          <div class="flex gap-2">
+            <button onclick="closeTermsModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Odustani</button>
+            <button onclick="acceptTermsForRegistration()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition shadow-md">✓ Prihvatam</button>
+          </div>`;
+      } else if (termsModalMode === 'login') {
+        gateNotice.classList.remove('hidden');
+        footer.innerHTML = `
+          <div class="flex gap-2">
+            <button onclick="closeTermsModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Odustani</button>
+            <button onclick="acceptTermsForLogin()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition shadow-md">✓ Prihvatam</button>
+          </div>`;
+      } else {
+        gateNotice.classList.add('hidden');
+        footer.innerHTML = `<button onclick="closeTermsModal()" class="w-full px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg transition">Razumem</button>`;
+      }
+      document.getElementById('terms-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeTermsModal() {
+      document.getElementById('terms-modal').classList.add('hidden');
+      if (termsModalMode === 'login') pendingLoginPayload = null;
+      termsModalMode = 'info';
+    }
+    function acceptTermsForRegistration() {
+      closeTermsModal();
+      openRegistrationModal();
+    }
+    async function acceptTermsForLogin() {
+      const payload = pendingLoginPayload;
+      pendingLoginPayload = null;
+      closeTermsModal();
+      if (!payload) return;
+      const { name, index, normalizedKey } = payload;
+      const ok = await cloudSetAcceptedTerms(normalizedKey);
+      if (!ok) console.warn('Nije uspelo čuvanje prihvatanja uslova korišćenja za', normalizedKey);
+      if (customUsers[normalizedKey]) customUsers[normalizedKey].acceptedTerms = true;
+      await continueLogin(name, index, normalizedKey);
+    }
+
+    // =============================================
+    // REGISTRACIJA (samoprijava sa login ekrana)
+    // =============================================
+    function openRegistrationModal() {
+      ['reg-name','reg-index','reg-parent-name','reg-birth-date','reg-birth-place','reg-enrollment-year','reg-first-enrollment','reg-study-program'].forEach(id => { document.getElementById(id).value = ''; });
+      document.getElementById('reg-funding').value = 'budzet';
+      document.getElementById('reg-study-year').value = '1';
+      document.getElementById('reg-want-notification').checked = false;
+      document.getElementById('reg-error').classList.add('hidden');
+      populateModuleSelects();
+      document.getElementById('reg-module').value = '';
+      document.getElementById('registration-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeRegistrationModal() { document.getElementById('registration-modal').classList.add('hidden'); }
+
+    async function submitRegistration() {
+      const nameInput = document.getElementById('reg-name').value.trim();
+      const indexInput = document.getElementById('reg-index').value.trim();
+      const errDiv = document.getElementById('reg-error');
+      if (!nameInput || !indexInput) { errDiv.textContent = 'Molimo popunite ime i broj indeksa.'; errDiv.classList.remove('hidden'); return; }
+      const normalizedKey = nameInput.toLowerCase();
+      if (customUsers[normalizedKey]) { errDiv.textContent = 'Nalog sa ovim imenom već postoji. Prijavite se direktno.'; errDiv.classList.remove('hidden'); return; }
+      const existingRequests = await cloudLoadRegistrationRequests();
+      if (existingRequests.some(r => r.key === normalizedKey)) { errDiv.textContent = 'Već postoji zahtev za registraciju sa ovim imenom.'; errDiv.classList.remove('hidden'); return; }
+      errDiv.classList.add('hidden');
+      const wantsNotification = document.getElementById('reg-want-notification').checked;
+      const regData = {
+        displayName: nameInput, index: indexInput, module: document.getElementById('reg-module').value,
+        parentName: document.getElementById('reg-parent-name').value.trim(),
+        birthDate: document.getElementById('reg-birth-date').value,
+        birthPlace: document.getElementById('reg-birth-place').value.trim(),
+        fundingStatus: document.getElementById('reg-funding').value,
+        currentYearOfStudy: parseInt(document.getElementById('reg-study-year').value),
+        enrollmentSchoolYear: document.getElementById('reg-enrollment-year').value.trim(),
+        firstEnrollmentYear: document.getElementById('reg-first-enrollment').value.trim(),
+        studyProgramDetailed: document.getElementById('reg-study-program').value.trim(),
+        wantsNotification,
+        acceptedTerms: true
+      };
+      const btn = document.getElementById('reg-submit-btn');
+      btn.disabled = true; btn.textContent = 'Slanje...';
+      const ok = await cloudSubmitRegistration(normalizedKey, regData);
+      btn.disabled = false; btn.textContent = '✓ Pošalji zahtev';
+      if (!ok) { errDiv.textContent = 'Greška pri slanju zahteva. Pokušajte ponovo.'; errDiv.classList.remove('hidden'); return; }
+      // Ako je student tražio notifikaciju, odmah tražimo dozvolu i pretplaćujemo ga
+      // (mora se uraditi dok je klik na dugme još "svež" gest korisnika, browser to zahteva).
+      if (wantsNotification && 'Notification' in window) {
+        try {
+          let perm = Notification.permission;
+          if (perm === 'default') perm = await Notification.requestPermission();
+          if (perm === 'granted') {
+            await registerServiceWorker();
+            await subscribeToVapidForKey(normalizedKey);
+          }
+        } catch (e) { console.warn('Greška pretplate na notifikacije pri registraciji:', e); }
+      }
+      closeRegistrationModal();
+      showToast('Zahtev je poslat! Sačekaj da ga administrator prihvati.', 'success');
+    }
+
     function openAdminPasswordModal() {
       document.getElementById('admin-password-input').value = '';
       document.getElementById('admin-password-error').classList.add('hidden');
@@ -4239,6 +2640,7 @@
         document.getElementById('admin-step-password').classList.add('hidden');
         document.getElementById('admin-step-panel').classList.remove('hidden');
         renderAdminUsersList();
+        renderRegistrationRequests();
       } else {
         document.getElementById('admin-password-error').classList.remove('hidden');
       }
@@ -4371,6 +2773,122 @@
         showToast('Korisnik je obrisan.', 'info');
       }
     }
+
+    // =============================================
+    // ADMIN: PRIJAVE ZA REGISTRACIJU
+    // =============================================
+    async function renderRegistrationRequests() {
+      const container = document.getElementById('admin-requests-list');
+      const badge = document.getElementById('prijave-badge');
+      const requests = await cloudLoadRegistrationRequests();
+      if (badge) {
+        if (requests.length > 0) { badge.textContent = requests.length; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+        else { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+      }
+      if (!container) return;
+      if (requests.length === 0) { container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Nema novih zahteva za registraciju.</p>'; return; }
+      container.innerHTML = '';
+      requests.forEach(r => {
+        const moduleLabel = r.module ? (MODULE_LABELS[r.module] || r.module) : '—';
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between p-3 bg-white border border-slate-200 rounded-2xl shadow-sm";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-xs uppercase">${r.displayName.charAt(0)}</div>
+            <div>
+              <p class="text-xs font-bold text-slate-900 flex items-center gap-1.5">${r.displayName}${r.wantsNotification ? '<span title="Traži notifikaciju po prihvatanju" class="text-amber-500">🔔</span>' : ''}</p>
+              <p class="text-[10px] text-slate-500">Indeks: ${r.index} · Modul: ${moduleLabel}</p>
+            </div>
+          </div>
+          <div class="flex gap-1">
+            <button onclick="adminAcceptRegistration('${r.key}')" class="text-emerald-600 hover:text-emerald-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-emerald-100 hover:bg-emerald-50 transition">Prihvati</button>
+            <button onclick="adminRejectRegistration('${r.key}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-rose-100 hover:bg-rose-50 transition">Odbij</button>
+          </div>`;
+        container.appendChild(row);
+      });
+    }
+
+    async function adminAcceptRegistration(key) {
+      const requests = await cloudLoadRegistrationRequests();
+      const req = requests.find(r => r.key === key);
+      if (!req) return;
+      if (customUsers[key]) { showToast('Nalog sa ovim imenom već postoji.', 'error'); return; }
+      const userData = {
+        displayName: req.displayName, index: req.index, module: req.module,
+        parentName: req.parentName, birthDate: req.birthDate, birthPlace: req.birthPlace,
+        fundingStatus: req.fundingStatus, currentYearOfStudy: req.currentYearOfStudy,
+        enrollmentSchoolYear: req.enrollmentSchoolYear, firstEnrollmentYear: req.firstEnrollmentYear,
+        studyProgramDetailed: req.studyProgramDetailed, showStudyStatus: false,
+        acceptedTerms: req.acceptedTerms
+      };
+      const ok = await cloudAddUser(key, userData);
+      if (!ok) { showToast('Greška pri kreiranju naloga.', 'error'); return; }
+      customUsers[key] = { ...userData, isSystem: false };
+      await cloudDeleteRegistrationRequest(key);
+      renderAdminUsersList();
+      renderRegistrationRequests();
+      showToast(`Student ${req.displayName} je prihvaćen!`, 'success');
+      // Ako je student tražio notifikaciju, šaljemo mu push da je nalog odobren.
+      // NAPOMENA: edge funkcija "rapid-handler" trenutno šalje svima (broadcast).
+      // Da bi ovo bilo ciljano samo na ovog studenta, edge funkcija treba da prihvati
+      // parametar target_key i filtrira push_subscriptions po user_key pre slanja.
+      if (req.wantsNotification) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/rapid-handler`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+            body: JSON.stringify({
+              target_key: key,
+              title: '🎉 Nalog odobren!',
+              body: `Zdravo ${req.displayName}, tvoj zahtev za registraciju je prihvaćen. Prijavi se na portal!`
+            })
+          });
+        } catch (e) { console.warn('Greška pri slanju notifikacije o prihvatanju:', e); }
+      }
+    }
+
+    async function adminRejectRegistration(key) {
+      const requests = await cloudLoadRegistrationRequests();
+      const req = requests.find(r => r.key === key);
+      if (!req) return;
+      if (!confirm(`Odbiti zahtev za registraciju od "${req.displayName}"?`)) return;
+      const ok = await cloudDeleteRegistrationRequest(key);
+      if (!ok) { showToast('Greška pri brisanju zahteva.', 'error'); return; }
+      await sb.from('push_subscriptions').delete().eq('user_key', key);
+      renderRegistrationRequests();
+      showToast('Zahtev je odbijen.', 'info');
+    }
+
+    // =============================================
+    // LOZINKA ZA ŠTAMPU
+    // =============================================
+    let pendingPrintType = null;
+    function requestPrintAuth(type) {
+      pendingPrintType = type;
+      document.getElementById('print-password-input').value = '';
+      document.getElementById('print-password-error').classList.add('hidden');
+      document.getElementById('print-password-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closePrintPasswordModal() {
+      pendingPrintType = null;
+      document.getElementById('print-password-modal').classList.add('hidden');
+    }
+    function checkPrintPassword() {
+      const pwd = document.getElementById('print-password-input').value;
+      if (pwd === PRINT_PASSWORD) {
+        const type = pendingPrintType;
+        closePrintPasswordModal();
+        if (type === 'listing') printGradeStatement();
+        else if (type === 'uverenje') printOfficialUverenje();
+      } else {
+        document.getElementById('print-password-error').classList.remove('hidden');
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      const printPwdInput = document.getElementById('print-password-input');
+      if (printPwdInput) printPwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPrintPassword(); });
+    });
 
     // =============================================
     // ŠTAMPANJE 1: LISTING OCENA
@@ -4633,7 +3151,7 @@
     // ADMIN TABS
     // =============================================
     function switchAdminTab(tab) {
-      ['studenti','rokovi'].forEach(t => {
+      ['studenti','prijave','rokovi'].forEach(t => {
         const btn = document.getElementById('tab-' + t);
         const content = document.getElementById('admin-tab-' + t);
         if (t === tab) {
@@ -4647,6 +3165,7 @@
         }
       });
       if (tab === 'rokovi') loadAdminExamPeriods();
+      if (tab === 'prijave') renderRegistrationRequests();
     }
 
     // =============================================
@@ -5112,8 +3631,15 @@
     }
 
     async function subscribeToVapid() {
-      if (!('serviceWorker' in navigator) || !currentUser) {
-        console.warn('SW not supported or no user');
+      if (!currentUser) { console.warn('Nema ulogovanog korisnika'); return; }
+      await subscribeToVapidForKey(currentUser.key);
+    }
+
+    // Generalizovana verzija — koristi se i za ulogovanog korisnika i za nekoga
+    // ko se tek registruje (pre nego što uopšte postoji nalog u tabeli users).
+    async function subscribeToVapidForKey(userKey) {
+      if (!('serviceWorker' in navigator) || !userKey) {
+        console.warn('SW not supported or no key');
         return;
       }
       try {
@@ -5129,16 +3655,16 @@
         const subJson = sub.toJSON();
         console.log('New subscription:', subJson.endpoint);
         // Save to Supabase — delete old first then insert
-        await sb.from('push_subscriptions').delete().eq('user_key', currentUser.key);
+        await sb.from('push_subscriptions').delete().eq('user_key', userKey);
         const { error } = await sb.from('push_subscriptions').insert({
-          user_key: currentUser.key,
+          user_key: userKey,
           subscription: subJson
         });
         if (error) {
           console.error('Push sub save error:', error);
           showToast('Greška čuvanja pretplate: ' + error.message, 'error');
         } else {
-          console.log('✓ Push subscription saved for', currentUser.key);
+          console.log('✓ Push subscription saved for', userKey);
         }
       } catch(e) {
         console.error('VAPID subscribe error:', e);
