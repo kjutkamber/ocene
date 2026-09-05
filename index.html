@@ -1276,17 +1276,17 @@
       return !error;
     }
     async function cloudLoadFeedback() {
-      const { data, error } = await sb.from('feedback').select('*').order('created_at', { ascending: false });
-      if (error) { console.error('Greška pri učitavanju poruka:', error); return []; }
-      return data;
+      const res = await callAdminAction('loadFeedback', adminPassword, {});
+      if (!res.ok) { console.error('Greška pri učitavanju poruka:', res.error); return []; }
+      return res.data;
     }
     async function cloudResolveFeedback(id, resolved) {
-      const { error } = await sb.from('feedback').update({ resolved }).eq('id', id);
-      return !error;
+      const res = await callAdminAction('resolveFeedback', adminPassword, { id, resolved });
+      return res.ok;
     }
     async function cloudDeleteFeedback(id) {
-      const { error } = await sb.from('feedback').delete().eq('id', id);
-      return !error;
+      const res = await callAdminAction('deleteFeedback', adminPassword, { id });
+      return res.ok;
     }
 
     // =============================================
