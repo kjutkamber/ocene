@@ -1049,9 +1049,23 @@
     // =============================================
     const SUPABASE_URL = 'https://nhffxmmmwoonnkhvrqev.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5oZmZ4bW1td29vbm5raHZycWV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNzEzNDcsImV4cCI6MjA5NDk0NzM0N30.FG2gdhNRXJxRnPVKdQ8qLGlwcaJ4nSUpKJJrfq4YsDc';
-    // Lozinka koja se traži pre štampanja bilo kog dokumenta (Listing ocena / Zvanično uverenje).
-    // Promeni ovu vrednost po želji.
-    const PRINT_PASSWORD = 'stampaj2026';
+    // Admin i print lozinke se od sada NE čuvaju ovde — proveravaju se preko Edge Function-a
+    // (admin-action) na Supabase serveru, da ih niko ne može pročitati iz izvornog koda stranice.
+    const EDGE_FUNCTION_URL = SUPABASE_URL + '/functions/v1/admin-action';
+    async function callAdminAction(action, password, payload) {
+      const resp = await fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'apikey': SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ action, password, payload })
+      });
+      const json = await resp.json().catch(() => ({}));
+      if (!resp.ok || json.error) { console.error('admin-action greška:', json.error); return { ok: false, error: json.error }; }
+      return { ok: true, data: json.data };
+    }
     const { createClient } = supabase;
     // persistSession/autoRefreshToken isključeni jer se aplikacija ne loguje preko Supabase Auth,
     // a ovi mehanizmi pokušavaju da koriste localStorage i Web Locks API — u third-party iframe-u
@@ -1113,7 +1127,7 @@
     }
 
     async function cloudAddUser(key, data) {
-      const { error } = await sb.from('users').insert({
+      const row = {
         key,
         display_name: data.displayName,
         index_number: data.index,
@@ -1129,8 +1143,9 @@
         study_program_detailed: data.studyProgramDetailed,
         show_study_status: !!data.showStudyStatus,
         accepted_terms: !!data.acceptedTerms
-      });
-      return !error;
+      };
+      const res = await callAdminAction('addUser', adminPassword, { row });
+      return res.ok;
     }
 
     async function cloudSetAcceptedTerms(key) {
@@ -1139,11 +1154,7 @@
     }
 
     async function cloudUpdateUser(oldKey, newKey, data) {
-      if (oldKey !== newKey) {
-        const { error: e1 } = await sb.from('student_subjects').update({ user_key: newKey }).eq('user_key', oldKey);
-        if (e1) { console.error(e1); return false; }
-      }
-      const { error } = await sb.from('users').update({
+      const row = {
         key: newKey,
         display_name: data.displayName,
         index_number: data.index,
@@ -1157,21 +1168,23 @@
         first_enrollment_year: data.firstEnrollmentYear,
         study_program_detailed: data.studyProgramDetailed,
         show_study_status: !!data.showStudyStatus
-      }).eq('key', oldKey);
-      return !error;
+      };
+      const res = await callAdminAction('updateUser', adminPassword, { oldKey, newKey, row });
+      return res.ok;
     }
 
     async function cloudDeleteUser(key) {
-      const { error } = await sb.from('users').delete().eq('key', key);
-      return !error;
+      const res = await callAdminAction('deleteUser', adminPassword, { key });
+      return res.ok;
     }
 
     // =============================================
     // PRIJAVE ZA REGISTRACIJU (samoprijava studenata)
     // =============================================
     async function cloudLoadRegistrationRequests() {
-      const { data, error } = await sb.from('registration_requests').select('*').order('created_at', { ascending: true });
-      if (error) { console.error('Greška pri učitavanju prijava:', error); return []; }
+      const res = await callAdminAction('loadRegistrationRequests', adminPassword, {});
+      if (!res.ok) { console.error('Greška pri učitavanju prijava:', res.error); return []; }
+      const data = res.data;
       return data.map(r => ({
         key: r.key,
         displayName: r.display_name,
@@ -1211,8 +1224,8 @@
     }
 
     async function cloudDeleteRegistrationRequest(key) {
-      const { error } = await sb.from('registration_requests').delete().eq('key', key);
-      return !error;
+      const res = await callAdminAction('deleteRegistrationRequest', adminPassword, { key });
+      return res.ok;
     }
 
     // =============================================
@@ -1223,6 +1236,7 @@
     let subjects = [];
     let gpaChart = null;
     let unsavedChanges = false;
+    let adminPassword = null; // drži se samo u memoriji dok je admin panel otvoren, nikad u kodu
     function markUnsaved() { unsavedChanges = true; }
 
     // =============================================
@@ -2638,10 +2652,12 @@
       document.getElementById('admin-step-panel').classList.add('hidden');
       document.getElementById('admin-master-modal').classList.remove('hidden');
     }
-    function closeAdminMasterModal() { document.getElementById('admin-master-modal').classList.add('hidden'); }
-    function checkAdminPassword() {
+    function closeAdminMasterModal() { document.getElementById('admin-master-modal').classList.add('hidden'); adminPassword = null; }
+    async function checkAdminPassword() {
       const pwd = document.getElementById('admin-password-input').value;
-      if (pwd === 'admin') {
+      const res = await callAdminAction('verify', pwd, {});
+      if (res.ok) {
+        adminPassword = pwd;
         document.getElementById('admin-password-error').classList.add('hidden');
         document.getElementById('admin-step-password').classList.add('hidden');
         document.getElementById('admin-step-panel').classList.remove('hidden');
@@ -2896,9 +2912,10 @@
       pendingPrintType = null;
       document.getElementById('print-password-modal').classList.add('hidden');
     }
-    function checkPrintPassword() {
+    async function checkPrintPassword() {
       const pwd = document.getElementById('print-password-input').value;
-      if (pwd === PRINT_PASSWORD) {
+      const res = await callAdminAction('verifyPrint', pwd, {});
+      if (res.ok) {
         const type = pendingPrintType;
         closePrintPasswordModal();
         if (type === 'listing') printGradeStatement();
@@ -3199,20 +3216,16 @@
       return data;
     }
     async function cloudSaveExamPeriod(period) {
-      if (period.id) {
-        const { error } = await sb.from('exam_periods').update(period).eq('id', period.id);
-        return !error;
-      }
-      const { error } = await sb.from('exam_periods').insert(period);
-      return !error;
+      const res = await callAdminAction('saveExamPeriod', adminPassword, { period });
+      return res.ok;
     }
     async function cloudDeleteExamPeriod(id) {
-      const { error } = await sb.from('exam_periods').delete().eq('id', id);
-      return !error;
+      const res = await callAdminAction('deleteExamPeriod', adminPassword, { id });
+      return res.ok;
     }
     async function cloudToggleExamPeriod(id, isActive) {
-      const { error } = await sb.from('exam_periods').update({ is_active: isActive }).eq('id', id);
-      return !error;
+      const res = await callAdminAction('toggleExamPeriod', adminPassword, { id, isActive });
+      return res.ok;
     }
     async function cloudLoadMyRegistrations(userKey, periodId) {
       let q = sb.from('exam_registrations').select('*').eq('user_key', userKey);
