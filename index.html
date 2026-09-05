@@ -136,6 +136,9 @@
           <button onclick="requestNotificationPermission()" id="notif-btn" class="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-bold rounded-lg transition shadow-lg text-white">
             <i data-lucide="bell" class="w-4 h-4"></i> <span id="notif-btn-label">Obaveštenja</span>
           </button>
+          <button onclick="openFeedbackModal()" class="flex items-center gap-2 px-3 py-2 bg-amber-500 hover:bg-amber-400 text-xs font-bold rounded-lg transition shadow-lg text-white">
+            <i data-lucide="message-square" class="w-4 h-4"></i> Prijavi problem
+          </button>
           <button onclick="requestEakSync()" class="flex items-center gap-2 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-xs font-bold rounded-lg transition shadow-lg text-white">
             <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync sa eAkademijom
           </button>
@@ -705,6 +708,7 @@
         <button onclick="switchAdminTab('studenti')" id="tab-studenti" class="px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-emerald-500 text-emerald-600 bg-white">👥 Studenti</button>
         <button onclick="switchAdminTab('prijave')" id="tab-prijave" class="relative px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700">📝 Prijave <span id="prijave-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full items-center justify-center">0</span></button>
         <button onclick="switchAdminTab('rokovi')" id="tab-rokovi" class="px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700">📅 Ispitni rokovi</button>
+        <button onclick="switchAdminTab('poruke')" id="tab-poruke" class="relative px-5 py-2 text-xs font-bold rounded-t-lg border-b-2 border-transparent text-slate-500 hover:text-slate-700">💬 Poruke <span id="poruke-badge" class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-black w-4 h-4 rounded-full items-center justify-center">0</span></button>
       </div>
       <div id="admin-tab-studenti" class="p-6 space-y-6 overflow-y-auto flex-grow">
         <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
@@ -822,6 +826,12 @@
           </button>
           <p id="test-notif-result" class="text-[11px] mt-2 hidden"></p>
         </div>
+      </div>
+      <!-- TAB: PORUKE (bug/sugestije od studenata) -->
+      <div id="admin-tab-poruke" class="hidden p-6 space-y-4 overflow-y-auto flex-grow">
+        <h4 class="text-xs font-black text-slate-700 uppercase tracking-widest">💬 Poruke od studenata</h4>
+        <p class="text-[11px] text-slate-500 -mt-2">Prijave grešaka i sugestije koje su studenti poslali preko dugmeta "Prijavi problem".</p>
+        <div id="admin-feedback-list" class="space-y-2"></div>
       </div>
       <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end shrink-0 rounded-b-3xl">
         <button onclick="closeAdminMasterModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Zatvori panel</button>
@@ -994,6 +1004,36 @@
           <button onclick="closePrintPasswordModal()" class="flex-1 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition border border-slate-200">Otkaz</button>
           <button onclick="checkPrintPassword()" class="flex-1 px-4 py-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-md">Potvrdi</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRIJAVI PROBLEM / SUGESTIJA -->
+  <div id="feedback-modal" class="hidden fixed inset-0 z-[400] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <div class="bg-amber-50 p-2 rounded-xl text-amber-600"><i data-lucide="message-square" class="w-5 h-5"></i></div>
+          <h3 class="font-bold text-slate-900 text-base">Prijavi problem / ostavi poruku</h3>
+        </div>
+        <button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-slate-700 font-bold text-xl">✕</button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Vrsta</label>
+          <select id="feedback-type" class="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-900">
+            <option value="bug">🐞 Bug / greška</option>
+            <option value="sugestija">💡 Sugestija</option>
+            <option value="ostalo">💬 Ostalo</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Poruka</label>
+          <textarea id="feedback-message" rows="4" placeholder="Opiši šta se dešava ili šta bi bilo korisno dodati..." class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-900 resize-none"></textarea>
+        </div>
+        <div id="feedback-error" class="hidden text-rose-600 text-xs font-bold bg-rose-50 border border-rose-100 p-2 rounded-lg">Unesi poruku pre slanja.</div>
+        <button onclick="submitFeedback()" class="w-full py-2.5 text-sm font-bold bg-amber-500 hover:bg-amber-400 text-white rounded-lg transition">📨 Pošalji</button>
+        <p class="text-[10px] text-slate-400 text-center">Poruka se šalje zajedno sa tvojim imenom, da admin zna od koga je.</p>
       </div>
     </div>
   </div>
@@ -1226,6 +1266,27 @@
     async function cloudDeleteRegistrationRequest(key) {
       const res = await callAdminAction('deleteRegistrationRequest', adminPassword, { key });
       return res.ok;
+    }
+
+    // =============================================
+    // PRIJAVA PROBLEMA / SUGESTIJE (feedback)
+    // =============================================
+    async function cloudSubmitFeedback(row) {
+      const { error } = await sb.from('feedback').insert(row);
+      return !error;
+    }
+    async function cloudLoadFeedback() {
+      const { data, error } = await sb.from('feedback').select('*').order('created_at', { ascending: false });
+      if (error) { console.error('Greška pri učitavanju poruka:', error); return []; }
+      return data;
+    }
+    async function cloudResolveFeedback(id, resolved) {
+      const { error } = await sb.from('feedback').update({ resolved }).eq('id', id);
+      return !error;
+    }
+    async function cloudDeleteFeedback(id) {
+      const { error } = await sb.from('feedback').delete().eq('id', id);
+      return !error;
     }
 
     // =============================================
@@ -2663,6 +2724,7 @@
         document.getElementById('admin-step-panel').classList.remove('hidden');
         renderAdminUsersList();
         renderRegistrationRequests();
+        renderFeedbackList();
       } else {
         document.getElementById('admin-password-error').classList.remove('hidden');
       }
@@ -2898,6 +2960,60 @@
     }
 
     // =============================================
+    // ADMIN: PORUKE OD STUDENATA (bug / sugestija)
+    // =============================================
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str == null ? '' : String(str);
+      return div.innerHTML;
+    }
+    async function renderFeedbackList() {
+      const container = document.getElementById('admin-feedback-list');
+      const badge = document.getElementById('poruke-badge');
+      const items = await cloudLoadFeedback();
+      const unresolved = items.filter(f => !f.resolved).length;
+      if (badge) {
+        if (unresolved > 0) { badge.textContent = unresolved; badge.classList.remove('hidden'); badge.classList.add('flex'); }
+        else { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+      }
+      if (!container) return;
+      if (items.length === 0) { container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">Još uvek nema poruka.</p>'; return; }
+      const TYPE_LABELS = { bug: '🐞 Bug', sugestija: '💡 Sugestija', ostalo: '💬 Ostalo' };
+      container.innerHTML = '';
+      items.forEach(f => {
+        const dt = f.created_at ? new Date(f.created_at).toLocaleString('sr-RS') : '';
+        const row = document.createElement('div');
+        row.className = `p-3 bg-white border rounded-2xl shadow-sm ${f.resolved ? 'border-slate-200 opacity-60' : 'border-amber-200'}`;
+        row.innerHTML = `
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">${TYPE_LABELS[f.type] || f.type}</span>
+                <span class="text-xs font-bold text-slate-900">${escapeHtml(f.display_name || f.user_key)}</span>
+                <span class="text-[10px] text-slate-400">(${escapeHtml(f.index_number || f.user_key)})</span>
+              </div>
+              <p class="text-xs text-slate-600 mt-1.5 whitespace-pre-wrap break-words">${escapeHtml(f.message)}</p>
+              <p class="text-[10px] text-slate-400 mt-1">${dt}</p>
+            </div>
+            <div class="flex flex-col gap-1.5 shrink-0">
+              <button data-action="toggle" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border ${f.resolved ? 'border-slate-200 text-slate-500 hover:bg-slate-50' : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'}">${f.resolved ? '↺ Vrati' : '✓ Rešeno'}</button>
+              <button data-action="delete" class="text-[10px] font-bold px-2.5 py-1 rounded-lg border border-rose-100 text-rose-500 hover:bg-rose-50">🗑 Obriši</button>
+            </div>
+          </div>`;
+        row.querySelector('[data-action="toggle"]').onclick = async () => {
+          const ok = await cloudResolveFeedback(f.id, !f.resolved);
+          if (ok) renderFeedbackList(); else showToast('Greška pri izmeni.', 'error');
+        };
+        row.querySelector('[data-action="delete"]').onclick = async () => {
+          if (!confirm('Obrisati ovu poruku?')) return;
+          const ok = await cloudDeleteFeedback(f.id);
+          if (ok) { renderFeedbackList(); showToast('Poruka obrisana.', 'info'); } else showToast('Greška pri brisanju.', 'error');
+        };
+        container.appendChild(row);
+      });
+    }
+
+    // =============================================
     // LOZINKA ZA ŠTAMPU
     // =============================================
     let pendingPrintType = null;
@@ -2928,6 +3044,42 @@
       const printPwdInput = document.getElementById('print-password-input');
       if (printPwdInput) printPwdInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPrintPassword(); });
     });
+
+    // =============================================
+    // PRIJAVA PROBLEMA / SUGESTIJA — modal za studente
+    // =============================================
+    function openFeedbackModal() {
+      document.getElementById('feedback-type').value = 'bug';
+      document.getElementById('feedback-message').value = '';
+      document.getElementById('feedback-error').classList.add('hidden');
+      document.getElementById('feedback-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeFeedbackModal() {
+      document.getElementById('feedback-modal').classList.add('hidden');
+    }
+    async function submitFeedback() {
+      const type = document.getElementById('feedback-type').value;
+      const message = document.getElementById('feedback-message').value.trim();
+      const errorDiv = document.getElementById('feedback-error');
+      if (!message) { errorDiv.textContent = 'Unesi poruku pre slanja.'; errorDiv.classList.remove('hidden'); return; }
+      if (!currentUser) { errorDiv.textContent = 'Moraš biti prijavljen da pošalješ poruku.'; errorDiv.classList.remove('hidden'); return; }
+      const ok = await cloudSubmitFeedback({
+        user_key: currentUser.key,
+        display_name: currentUser.name,
+        index_number: currentUser.index,
+        type,
+        message,
+        resolved: false
+      });
+      if (ok) {
+        closeFeedbackModal();
+        showToast('Hvala! Poruka je poslata administratoru.', 'success');
+      } else {
+        errorDiv.textContent = 'Došlo je do greške, pokušaj ponovo.';
+        errorDiv.classList.remove('hidden');
+      }
+    }
 
     // =============================================
     // ŠTAMPANJE 1: LISTING OCENA
@@ -3190,7 +3342,7 @@
     // ADMIN TABS
     // =============================================
     function switchAdminTab(tab) {
-      ['studenti','prijave','rokovi'].forEach(t => {
+      ['studenti','prijave','rokovi','poruke'].forEach(t => {
         const btn = document.getElementById('tab-' + t);
         const content = document.getElementById('admin-tab-' + t);
         if (t === tab) {
