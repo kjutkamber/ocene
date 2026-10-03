@@ -154,11 +154,11 @@
 
     <main class="flex-grow max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between">
+        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-300/60 flex items-center justify-between cursor-pointer select-none" onclick="toggleGpaDisplay()" title="Klikni da prebaciš prikaz">
           <div>
-            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider">Prosek Ocena</p>
+            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider" id="gpa-label">Prosek Ocena</p>
             <h3 class="text-4xl font-extrabold mt-1 text-emerald-600" id="gpa-simple">0.00</h3>
-            <p class="text-xs text-slate-400 mt-1">Aritmetička sredina svih položenih ispita</p>
+            <p class="text-xs text-slate-400 mt-1" id="gpa-sublabel">Aritmetička sredina svih položenih ispita</p>
           </div>
           <div class="bg-emerald-50 text-emerald-600 p-3 rounded-xl border border-emerald-100"><i data-lucide="calculator" class="w-8 h-8"></i></div>
         </div>
@@ -2152,13 +2152,47 @@
         </div>`).join('');
     }
 
+    // Prevod srpske skale (6-10) u orijentacioni americki GPA (0.0-4.0).
+    // Nije zvanican/univerzalan prevod - svaki univerzitet/WES ima svoju tabelu,
+    // ovo je samo najcesce koriscena gruba konverzija.
+    const GRADE_TO_GPA = { 10: 4.0, 9: 3.7, 8: 3.3, 7: 2.7, 6: 2.0 };
+    function gradeToGpa(grade) {
+      return GRADE_TO_GPA[grade] !== undefined ? GRADE_TO_GPA[grade] : null;
+    }
+
+    let gpaDisplayMode = 'srpski'; // 'srpski' | 'us'
+    let lastNumericPassed = []; // cuva poslednji skup za toggle bez ponovnog racunanja
+
+    function toggleGpaDisplay() {
+      gpaDisplayMode = gpaDisplayMode === 'srpski' ? 'us' : 'srpski';
+      renderGpaDisplay();
+    }
+
+    function renderGpaDisplay() {
+      const label = document.getElementById('gpa-label');
+      const sublabel = document.getElementById('gpa-sublabel');
+      const valueEl = document.getElementById('gpa-simple');
+      if (gpaDisplayMode === 'us') {
+        const gpaValues = lastNumericPassed.map(s => gradeToGpa(s.grade)).filter(v => v !== null);
+        const avgGpa = gpaValues.length > 0 ? (gpaValues.reduce((a, b) => a + b, 0) / gpaValues.length).toFixed(2) : "0.00";
+        label.textContent = 'GPA (US)';
+        valueEl.textContent = avgGpa;
+        sublabel.textContent = 'Orijentacioni prevod, nije zvaničan';
+      } else {
+        const sumGrades = lastNumericPassed.reduce((acc, curr) => acc + curr.grade, 0);
+        const simpleAverage = lastNumericPassed.length > 0 ? (sumGrades / lastNumericPassed.length).toFixed(2) : "0.00";
+        label.textContent = 'Prosek Ocena';
+        valueEl.textContent = simpleAverage;
+        sublabel.textContent = 'Aritmetička sredina svih položenih ispita';
+      }
+    }
+
     function calculateStatistics() {
       const numericPassed = subjects.filter(s => typeof s.grade === 'number' && s.grade >= 6);
       const passed = subjects.filter(s => isPassedGrade(s.grade));
       const totalExams = subjects.length;
-      const sumGrades = numericPassed.reduce((acc, curr) => acc + curr.grade, 0);
-      const simpleAverage = numericPassed.length > 0 ? (sumGrades / numericPassed.length).toFixed(2) : "0.00";
-      document.getElementById('gpa-simple').textContent = simpleAverage;
+      lastNumericPassed = numericPassed;
+      renderGpaDisplay();
       const sumESPB = passed.reduce((acc, curr) => acc + curr.espb, 0);
       document.getElementById('total-espb').textContent = sumESPB;
       const percent = Math.min(Math.round((sumESPB / 240) * 100), 100);
@@ -4004,3 +4038,4 @@
   </script>
 </body>
 </html>
+      
