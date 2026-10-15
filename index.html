@@ -2266,6 +2266,7 @@
         const passedSem = semSubjects.filter(sub => isPassedGrade(sub.grade));
         const numericPassedSem = semSubjects.filter(sub => typeof sub.grade === 'number' && sub.grade >= 6);
         const semESPB = passedSem.reduce((acc, curr) => acc + curr.espb, 0);
+        const semESPBTotal = semSubjects.reduce((acc, curr) => acc + (curr.espb || 0), 0);
         const semGradeSum = numericPassedSem.reduce((acc, curr) => acc + curr.grade, 0);
         const semAvg = numericPassedSem.length > 0 ? (semGradeSum / numericPassedSem.length).toFixed(2) : "0.00";
         const hasUrgent = semSubjects.some(sub => sub.color === 'red');
@@ -2277,7 +2278,7 @@
             <h3 class="font-bold text-slate-900 flex items-center gap-2 text-base"><i data-lucide="folder" class="w-5 h-5 text-slate-500"></i>${s}. Semestar <span class="text-xs text-slate-500 font-medium">(${yearOfSemester}. Godina)</span>${urgentBadge}</h3>
             <div class="flex flex-wrap items-center gap-3 text-xs">
               <span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold rounded-full border border-emerald-200 flex items-center gap-1"><i data-lucide="calculator" class="w-3.5 h-3.5"></i> Prosek: ${semAvg}</span>
-              <span class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full border border-blue-200 flex items-center gap-1"><i data-lucide="award" class="w-3.5 h-3.5"></i> ESPB: ${semESPB}</span>
+              <span class="px-3 py-1 bg-blue-100 text-blue-800 font-bold rounded-full border border-blue-200 flex items-center gap-1"><i data-lucide="award" class="w-3.5 h-3.5"></i> ESPB: ${semESPB}/${semESPBTotal}</span>
               <button onclick="event.stopPropagation(); openAddModal(${s})" class="text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-1 ml-2 bg-slate-50 border border-slate-300 rounded px-2 py-1 hover:bg-white transition"><i data-lucide="plus" class="w-4 h-4"></i> Dodaj</button>
             </div>
           </div>
@@ -4110,6 +4111,7 @@ function openScheduleModal() {
   if (!schYear) {
     const mx = Math.max(0, ...subjects.filter(s => s.grade !== null && s.grade !== undefined).map(s => s.semester));
     schYear = mx > 0 ? Math.ceil(mx / 2) : 1;
+    if (allSlots.length && !allSlots.some(x => x.year === schYear)) schYear = allSlots[0].year;
   }
   schWeek = 0; schEditId = null; schTab = 'view';
   document.getElementById('schedule-modal').classList.remove('hidden');
