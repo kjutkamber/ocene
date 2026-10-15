@@ -29,6 +29,12 @@
     .particle { position:fixed;width:8px;height:8px;border-radius:50%;pointer-events:none;z-index:9998;animation:burst 0.8s ease-out forwards; }
     @keyframes burst { 0%{transform:translate(0,0) scale(1);opacity:1;} 100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0;} }
   </style>
+<style>
+@media (max-width: 767px) {
+  #whatif-card { display: none; }
+  #whatif-card.whatif-open { display: block; position: fixed; inset: 0; z-index: 420; overflow-y: auto; border-radius: 0; padding-top: 3.5rem; }
+}
+</style>
 </head>
 <body class="h-full flex flex-col text-slate-800 bg-slate-200">
 
@@ -118,7 +124,7 @@
             <p class="text-xs text-slate-300">Korisnik: <span id="user-display-name" class="text-emerald-400 font-bold">Ime Student</span> (Indeks: <span id="user-display-index" class="text-slate-200">000/00</span>)</p>
           </div>
         </div>
-        <div class="flex flex-wrap gap-2">
+        <div class="hidden md:flex flex-wrap gap-2">
           <!-- Print dropdown -->
           <div class="relative" id="print-dropdown-container">
             <button onclick="togglePrintDropdown()" class="flex items-center justify-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg transition shadow-lg text-white text-xs font-bold">
@@ -151,6 +157,14 @@
           <button onclick="handleLogout()" class="flex items-center gap-2 px-3 py-1.5 bg-rose-600/95 hover:bg-rose-500 text-xs font-bold rounded-lg transition text-white">
             <i data-lucide="log-out" class="w-4 h-4"></i> Odjavi se
           </button>
+        </div>
+        <!-- Phone-only bar (md:hidden) -->
+        <div class="flex md:hidden w-full sm:w-auto items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <button onclick="openSidePanel()" class="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-xs font-bold rounded-lg transition shadow-lg text-white"><i data-lucide="menu" class="w-4 h-4"></i> Meni</button>
+            <button onclick="openScheduleModal()" class="flex items-center gap-2 px-3 py-2 bg-teal-600 hover:bg-teal-500 text-xs font-bold rounded-lg transition shadow-lg text-white"><i data-lucide="calendar-days" class="w-4 h-4"></i> Raspored</button>
+          </div>
+          <button onclick="manualSave()" class="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-xs font-bold rounded-lg transition shadow-lg text-white"><i data-lucide="save" class="w-4 h-4"></i> Sačuvaj</button>
         </div>
       </div>
     </header>
@@ -242,7 +256,8 @@
               <h3 class="text-md font-bold text-slate-900 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2"><i data-lucide="trending-up" class="text-indigo-500"></i> Prosek po Semestrima</h3>
               <div class="h-64"><canvas id="gpaChart"></canvas></div>
             </div>
-            <div class="bg-gradient-to-br from-slate-900 to-slate-850 text-white p-6 rounded-2xl shadow-xl border border-slate-850 relative overflow-hidden">
+            <div id="whatif-card" class="bg-gradient-to-br from-slate-900 to-slate-850 text-white p-6 rounded-2xl shadow-xl border border-slate-850 relative overflow-hidden">
+              <button onclick="closeWhatIfMobile()" class="md:hidden absolute top-3 right-3 z-20 px-3 py-1 text-xs font-bold bg-slate-700 hover:bg-slate-600 rounded-lg text-white">✕ Zatvori</button>
               <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none"><i data-lucide="help-circle" class="w-40 h-40"></i></div>
               <h3 class="text-lg font-bold mb-3 flex items-center gap-2"><i data-lucide="sparkles" class="text-emerald-400"></i> "Šta-Ako" Simulator</h3>
               <!-- Tabs -->
@@ -1080,15 +1095,46 @@
     </div>
   </div>
 
-<!-- MODAL: RASPORED + PRISUSTVO -->
+<!-- SIDE PANEL (samo telefon) -->
+  <div id="side-panel-overlay" class="hidden md:hidden fixed inset-0 z-[400] bg-slate-950/60 backdrop-blur-sm" onclick="closeSidePanel()"></div>
+  <aside id="side-panel" class="md:hidden fixed top-0 left-0 bottom-0 w-72 max-w-[85vw] bg-white z-[410] shadow-2xl flex flex-col transform -translate-x-full transition-transform duration-300">
+    <div class="bg-slate-900 text-white px-5 py-4 flex items-start justify-between shrink-0">
+      <div class="min-w-0">
+        <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Korisnik</p>
+        <p id="side-user-name" class="font-black text-emerald-400 truncate"></p>
+        <p class="text-xs text-slate-300">Indeks: <span id="side-user-index"></span></p>
+      </div>
+      <button onclick="closeSidePanel()" class="text-slate-400 hover:text-white font-bold text-xl leading-none">✕</button>
+    </div>
+    <nav class="flex-grow overflow-y-auto py-2">
+      <p class="px-5 pt-2 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Alati</p>
+      <button onclick="sideGo(openScheduleModal)" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="calendar-days" class="w-5 h-5 text-teal-600"></i> Raspored i prisustvo</button>
+      <button onclick="openWhatIfMobile()" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="sparkles" class="w-5 h-5 text-emerald-500"></i> „Šta-Ako" simulator</button>
+      <button onclick="sideGo(requestEakSync)" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="refresh-cw" class="w-5 h-5 text-sky-600"></i> Sync sa eAkademijom</button>
+      <p class="px-5 pt-4 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Štampa</p>
+      <button onclick="sideGo(() => requestPrintAuth('listing'))" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="list" class="w-5 h-5 text-indigo-500"></i> Listing ocena</button>
+      <button onclick="sideGo(() => requestPrintAuth('uverenje'))" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="file-text" class="w-5 h-5 text-emerald-500"></i> Zvanično uverenje</button>
+      <p class="px-5 pt-4 pb-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ostalo</p>
+      <button onclick="sideGo(requestNotificationPermission)" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="bell" class="w-5 h-5 text-slate-500"></i> <span id="side-notif-label">Obaveštenja</span></button>
+      <button onclick="sideGo(openFeedbackModal)" class="w-full flex items-center gap-3 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 text-left"><i data-lucide="message-square" class="w-5 h-5 text-amber-500"></i> Prijavi problem</button>
+    </nav>
+    <div class="border-t border-slate-200 p-3 shrink-0">
+      <button onclick="sideGo(handleLogout)" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-lg"><i data-lucide="log-out" class="w-4 h-4"></i> Odjavi se</button>
+    </div>
+  </aside>
+
+  <!-- MODAL: RASPORED + PRISUSTVO -->
 <div id="schedule-modal" class="hidden fixed inset-0 z-[450] flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-sm">
   <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl border border-slate-200 flex flex-col max-h-[92vh]">
     <div class="bg-slate-900 px-5 py-3 flex justify-between items-center text-white rounded-t-2xl shrink-0">
       <div class="flex items-center gap-2"><i data-lucide="calendar-days" class="text-teal-400 w-5 h-5"></i><h3 class="font-black text-base">Raspored i prisustvo</h3></div>
-      <button onclick="closeScheduleModal()" class="text-slate-400 hover:text-white font-bold text-xl">✕</button>
+      <div class="flex items-center gap-1 relative">
+        <button onclick="schToggleGear()" id="sch-gear-btn" class="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition" title="Podešavanja rasporeda"><i data-lucide="settings" class="w-5 h-5"></i></button>
+        <div id="sch-gear" class="hidden absolute right-0 top-full mt-2 w-64 bg-white text-slate-900 rounded-xl shadow-2xl border border-slate-200 p-3 z-10"></div>
+        <button onclick="closeScheduleModal()" class="text-slate-400 hover:text-white font-bold text-xl ml-1">✕</button>
+      </div>
     </div>
-    <div class="px-4 pt-3 flex flex-wrap gap-2 shrink-0" id="sch-years"></div>
-    <div class="px-4 pt-2 flex flex-wrap gap-2 shrink-0" id="sch-tabs"></div>
+    <div class="px-4 pt-3 flex flex-wrap gap-2 shrink-0" id="sch-tabs"></div>
     <div id="sch-body" class="p-4 overflow-y-auto flex-grow"></div>
   </div>
 </div>
@@ -4064,7 +4110,9 @@ const SCH_DEFAULT_LIMIT = 3;  // dozvoljen broj izostanaka (menja se po predmetu
 const SCH_WARN_BEFORE = 1;    // crveno ime kad je do limita ostalo ovoliko izostanaka ili manje
 let allSlots = [];            // termini rasporeda ulogovanog studenta
 let att = {};                 // prisustvo: 'slotId|YYYY-MM-DD' -> { sid, status }
-let schYear = 0, schTab = 'view', schWeek = 0, schEditId = null;
+let schYear = 0, schTab = 'today', schWeek = 0, schEditId = null;
+let schGearOpen = false, schSkipped = false, schFillDates = [];
+const SCH_BACKFILL_DAYS = 14;  // koliko dana unazad se traži neoznačeno prisustvo
 
 const schPad = n => String(n).padStart(2, '0');
 const schDstr = d => `${d.getFullYear()}-${schPad(d.getMonth() + 1)}-${schPad(d.getDate())}`;
@@ -4113,24 +4161,27 @@ function openScheduleModal() {
     schYear = mx > 0 ? Math.ceil(mx / 2) : 1;
     if (allSlots.length && !allSlots.some(x => x.year === schYear)) schYear = allSlots[0].year;
   }
-  schWeek = 0; schEditId = null; schTab = 'view';
+  schWeek = 0; schEditId = null; schTab = 'today'; schSkipped = false; schGearOpen = false;
   document.getElementById('schedule-modal').classList.remove('hidden');
   renderSchedule();
 }
 function closeScheduleModal() { document.getElementById('schedule-modal').classList.add('hidden'); }
-function schSetYear(y) { schYear = y; schEditId = null; renderSchedule(); }
-function schSetTab(t) { schTab = t; if (t !== 'edit') schEditId = null; renderSchedule(); }
+function schSetYear(y) { schYear = y; schEditId = null; schGearOpen = false; if (schTab === 'fill') schTab = 'today'; renderSchedule(); }
+function schSetTab(t) { schTab = t; if (t !== 'edit') schEditId = null; schGearOpen = false; renderSchedule(); }
 function schShift(n) { schWeek += n; renderSchedule(); }
 function schToday() { schWeek = 0; renderSchedule(); }
 
 function renderSchedule() {
   const btn = (on, label, click) => `<button onclick="${click}" class="px-3 py-1.5 text-xs font-bold rounded-lg border-2 ${on ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}">${label}</button>`;
-  document.getElementById('sch-years').innerHTML = [1, 2, 3, 4].map(y => btn(y === schYear, y + '. godina', `schSetYear(${y})`)).join('');
+  const pend = schPending(schYear);
   document.getElementById('sch-tabs').innerHTML =
-    btn(schTab === 'view', '📅 Pregled', `schSetTab('view')`) +
-    btn(schTab === 'stats', '📊 Prisustvo', `schSetTab('stats')`) +
-    btn(schTab === 'edit', '✏️ Napravi / uredi', `schSetTab('edit')`);
-  if (schTab === 'view') renderSchView();
+    btn(schTab === 'today' || schTab === 'fill', '☀️ Danas', `schSetTab('today')`) +
+    btn(schTab === 'view', '🗓 Ceo raspored', `schSetTab('view')`) +
+    btn(schTab === 'stats', '📊 Prisustvo' + (pend.length ? ' ❗' : ''), `schSetTab('stats')`);
+  schRenderGear();
+  if (schTab === 'today') renderSchToday(pend);
+  else if (schTab === 'fill') renderSchFill();
+  else if (schTab === 'view') renderSchView();
   else if (schTab === 'stats') renderSchStats();
   else renderSchEdit();
   lucide.createIcons();
@@ -4143,7 +4194,7 @@ const schSubjName = sl => (schSubj(sl.sid) || {}).name || sl.name || '?';
 
 function renderSchView() {
   const slots = schYearSlots();
-  const today = schDstr(new Date());
+  const today = schDstr(new Date()), cutoff = schWindowStart(), noCls = schGetNoClass();
   let h = `<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
     <div class="flex items-center gap-2">
       <button onclick="schShift(-1)" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50">‹</button>
@@ -4151,7 +4202,7 @@ function renderSchView() {
       <button onclick="schShift(1)" class="px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold hover:bg-slate-50">›</button>
       ${schWeek !== 0 ? `<button onclick="schToday()" class="px-3 py-1.5 text-xs font-bold bg-slate-100 rounded-lg hover:bg-slate-200">Ova nedelja</button>` : ''}
     </div>
-    <p class="text-[11px] text-slate-500">✓ bio/la · ✗ izostao/la (klik ponovo poništava)</p>
+    <p class="text-[11px] text-slate-500">✓ bio/la · ✗ izostao/la · O opravdano (klik ponovo poništava)</p>
   </div>`;
   if (!slots.length) {
     h += `<p class="text-sm text-slate-500 py-6 text-center">Raspored za ${schYear}. godinu je prazan. Otvori „Napravi / uredi" da dodaš termine.</p>`;
@@ -4170,12 +4221,13 @@ function renderSchView() {
       if (sl.end > maxEnd) maxEnd = sl.end;
       const st = (att[sl.id + '|' + date] || {}).status || '';
       h += `<div class="mb-1.5 rounded-lg bg-slate-50 p-1.5 text-[11px] border-l-4" style="border-left-color:${schColor(sl.sid)}">
-        <div class="font-bold">${sl.start}–${sl.end}${conflict ? ' <span class="text-rose-600">⚠</span>' : ''}</div>
+        <div class="font-bold">${sl.start}–${sl.end}${conflict ? ' <span class="text-rose-600">⚠</span>' : ''}${(date < today && date >= cutoff && !st && !noCls.has(date)) ? ' <span title="Neoznačeno prisustvo">❗</span>' : ''}</div>
         <div class="${schIsWarn(sl.sid) ? 'text-rose-600 font-black' : 'text-slate-800'}">${escapeHtml(schSubjName(sl))}</div>
         ${sl.note ? `<div class="text-slate-500">${escapeHtml(sl.note)}</div>` : ''}
         <div class="flex gap-1 mt-1">
           <button onclick="schMark('${sl.id}','${date}','present')" class="flex-1 py-1 rounded border text-xs font-bold ${st === 'present' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-500'}">✓</button>
           <button onclick="schMark('${sl.id}','${date}','absent')" class="flex-1 py-1 rounded border text-xs font-bold ${st === 'absent' ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white border-slate-300 text-slate-500'}">✗</button>
+          <button onclick="schMark('${sl.id}','${date}','excused')" title="Opravdano" class="flex-1 py-1 rounded border text-xs font-bold ${st === 'excused' ? 'bg-sky-500 border-sky-500 text-white' : 'bg-white border-slate-300 text-slate-500'}">O</button>
         </div></div>`;
     });
     h += '</div></div>';
@@ -4206,19 +4258,23 @@ async function schMark(slotId, date, status) {
 
 function renderSchStats() {
   const rows = schYearSubjects().filter(s => allSlots.some(x => x.sid === s.id) || schCount(s.id, 'absent') || schCount(s.id, 'present'));
+  const pend = schPending(schYear), pendBy = {};
+  pend.forEach(x => { pendBy[x.sl.sid] = (pendBy[x.sl.sid] || 0) + 1; });
   if (!rows.length) {
     document.getElementById('sch-body').innerHTML = `<p class="text-sm text-slate-500 py-6 text-center">Nema predmeta sa terminima za ${schYear}. godinu.</p>`; return;
   }
   document.getElementById('sch-body').innerHTML =
-    `<p class="text-[11px] text-slate-500 mb-3">Izostanci se broje iz rasporeda (tab Pregled). Limit možeš da promeniš po predmetu.</p>` +
+    (pend.length ? `<div class="mb-3 flex items-center justify-between gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-900"><span>❗ Ima <b>${pend.length}</b> neoznačenih termina u poslednjih ${SCH_BACKFILL_DAYS} dana — statistika možda nije tačna.</span><button onclick="schStartFill()" class="font-bold underline shrink-0">Popuni</button></div>` : '') +
+    `<p class="text-[11px] text-slate-500 mb-3">Izostanci se broje iz rasporeda (tabovi Danas i Ceo raspored). Opravdano se ne računa kao izostanak. Limit možeš da promeniš po predmetu.</p>` +
     rows.map(s => {
-      const ab = schCount(s.id, 'absent'), pr = schCount(s.id, 'present'), lim = schLimit(s.id), warn = schIsWarn(s.id);
+      const ab = schCount(s.id, 'absent'), pr = schCount(s.id, 'present'), ex = schCount(s.id, 'excused'), lim = schLimit(s.id), warn = schIsWarn(s.id);
       const pct = Math.min(100, Math.round(ab / lim * 100));
       return `<div class="flex items-center gap-3 py-2.5 border-b border-slate-100">
         <div class="flex-1 min-w-0">
           <p class="text-sm font-bold ${warn ? 'text-rose-600' : 'text-slate-900'} truncate">${escapeHtml(s.name)}</p>
-          <p class="text-[11px] text-slate-500">Bio/la: ${pr} · Izostanci: <b class="${warn ? 'text-rose-600' : ''}">${ab} / ${lim}</b>${ab > lim ? ' · <b class="text-rose-600">prekoračen limit!</b>' : ''}</p>
+          <p class="text-[11px] text-slate-500">Bio/la: ${pr} · ${ex ? 'Opravdano: ' + ex + ' · ' : ''}Izostanci: <b class="${warn ? 'text-rose-600' : ''}">${ab} / ${lim}</b>${ab > lim ? ' · <b class="text-rose-600">prekoračen limit!</b>' : ''}</p>
           <div class="w-full bg-slate-100 rounded-full h-1.5 mt-1.5"><div class="${warn ? 'bg-rose-500' : 'bg-emerald-500'} h-full rounded-full" style="width:${pct}%"></div></div>
+          ${pendBy[s.id] ? `<p class="text-[11px] font-bold text-amber-700 mt-1">❗ ${pendBy[s.id]} neoznačenih dana</p>` : ''}
         </div>
         <div class="shrink-0 text-right"><p class="text-[10px] font-bold text-slate-400 uppercase mb-0.5">limit</p>
           <select onchange="schSetLimit('${s.id}', this.value)" class="text-sm border border-slate-300 rounded-lg px-2 py-1 bg-white">
@@ -4243,6 +4299,7 @@ function renderSchEdit() {
   const ed = schEditId ? allSlots.find(s => s.id === schEditId) : null;
   const inp = 'w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg text-slate-900';
   document.getElementById('sch-body').innerHTML = `
+    <div class="flex items-center justify-between mb-3"><p class="text-xs font-bold text-slate-500 uppercase">Uređivanje rasporeda · ${schYear}. godina</p><button onclick="schSetTab('today')" class="px-3 py-1.5 text-xs font-bold bg-slate-100 hover:bg-slate-200 rounded-lg">← Nazad</button></div>
     <div class="rounded-xl p-4 mb-5 border-2 ${ed ? 'border-amber-400' : 'border-slate-200'}">
       <h4 class="font-bold text-slate-900 mb-3">${ed ? 'Izmena termina' : 'Novi termin'}</h4>
       <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Predmet</label>
@@ -4324,6 +4381,176 @@ async function schDelete(id) {
   if (schEditId === id) schEditId = null;
   renderSchedule(); schRefreshApp();
 }
+
+
+// =============================================
+// RASPORED v2: zupcanik, pogled "Danas", popunjavanje propustenog prisustva
+// =============================================
+function schWindowStart() {
+  const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - SCH_BACKFILL_DAYS); return schDstr(d);
+}
+function schNoClassKey() { return 'schNoClass_' + (currentUser ? currentUser.key : ''); }
+function schGetNoClass() {
+  try { return new Set(JSON.parse(localStorage.getItem(schNoClassKey()) || '[]')); } catch (e) { return new Set(); }
+}
+function schToggleNoClass(date) {
+  const set = schGetNoClass();
+  if (set.has(date)) set.delete(date); else set.add(date);
+  try { localStorage.setItem(schNoClassKey(), JSON.stringify([...set])); } catch (e) {}
+  renderSchedule();
+}
+// termini iz poslednjih SCH_BACKFILL_DAYS dana (bez danas) za koje prisustvo nije oznaceno
+function schPending(year) {
+  const out = [];
+  const slots = allSlots.filter(s => s.year === year);
+  if (!slots.length) return out;
+  const noCls = schGetNoClass();
+  const now = new Date(); now.setHours(12, 0, 0, 0);
+  for (let i = 1; i <= SCH_BACKFILL_DAYS; i++) {
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const dow = (d.getDay() + 6) % 7;
+    if (dow > 5) continue;
+    const ds = schDstr(d);
+    if (noCls.has(ds)) continue;
+    slots.filter(s => s.day === dow).forEach(sl => { if (!att[sl.id + '|' + ds]) out.push({ sl, date: ds }); });
+  }
+  return out;
+}
+
+// ---- zupcanik ----
+function schToggleGear() { schGearOpen = !schGearOpen; schRenderGear(); }
+function schRenderGear() {
+  const el = document.getElementById('sch-gear'); if (!el) return;
+  el.classList.toggle('hidden', !schGearOpen);
+  if (!schGearOpen) return;
+  el.innerHTML = `<p class="text-[10px] font-bold text-slate-500 uppercase mb-1.5">Godina</p>
+    <div class="grid grid-cols-4 gap-1.5 mb-3">${[1, 2, 3, 4].map(y => `<button onclick="schSetYear(${y})" class="py-1.5 text-xs font-bold rounded-lg border-2 ${y === schYear ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'}">${y}.</button>`).join('')}</div>
+    <button onclick="schSetTab('edit')" class="w-full py-2 text-xs font-bold text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-lg">✏️ Napravi / uredi raspored</button>`;
+}
+document.addEventListener('click', e => {
+  if (!schGearOpen) return;
+  if (e.target.closest && (e.target.closest('#sch-gear') || e.target.closest('#sch-gear-btn'))) return;
+  schGearOpen = false; schRenderGear();
+});
+
+// ---- red termina (Danas + Popuni) ----
+function schSlotRow(sl, date) {
+  const st = (att[sl.id + '|' + date] || {}).status || '';
+  const warn = schIsWarn(sl.sid);
+  return `<div class="flex items-center gap-3 p-2.5 mb-2 rounded-lg bg-slate-50 border-l-4" style="border-left-color:${schColor(sl.sid)}">
+    <div class="flex-1 min-w-0">
+      <p class="text-[11px] font-bold text-slate-500">${sl.start}–${sl.end}</p>
+      <p class="text-sm font-bold truncate ${warn ? 'text-rose-600' : 'text-slate-900'}">${escapeHtml(schSubjName(sl))}</p>
+      ${sl.note ? `<p class="text-[11px] text-slate-500 truncate">${escapeHtml(sl.note)}</p>` : ''}
+      <p class="text-[11px] text-slate-500">Izostanci: <b class="${warn ? 'text-rose-600' : ''}">${schCount(sl.sid, 'absent')} / ${schLimit(sl.sid)}</b></p>
+    </div>
+    <div class="flex gap-1.5 shrink-0">
+      <button onclick="schMark('${sl.id}','${date}','present')" class="px-3 py-2 rounded-lg border text-sm font-bold ${st === 'present' ? 'bg-emerald-600 border-emerald-600 text-white' : 'bg-white border-slate-300 text-slate-500'}">✓<span class="hidden sm:inline"> Bio/la</span></button>
+      <button onclick="schMark('${sl.id}','${date}','absent')" class="px-3 py-2 rounded-lg border text-sm font-bold ${st === 'absent' ? 'bg-rose-600 border-rose-600 text-white' : 'bg-white border-slate-300 text-slate-500'}">✗<span class="hidden sm:inline"> Izostao/la</span></button>
+      <button onclick="schMark('${sl.id}','${date}','excused')" title="Opravdano — ne računa se kao izostanak" class="px-3 py-2 rounded-lg border text-sm font-bold ${st === 'excused' ? 'bg-sky-500 border-sky-500 text-white' : 'bg-white border-slate-300 text-slate-500'}">O<span class="hidden sm:inline">pravdano</span></button>
+    </div></div>`;
+}
+
+// ---- pogled "Danas" ----
+function renderSchToday(pend) {
+  const now = new Date(), ds = schDstr(now), dow = (now.getDay() + 6) % 7;
+  let h = '';
+  if (pend.length) {
+    if (!schSkipped) {
+      h += `<div class="mb-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-3">
+        <p class="text-sm font-bold text-amber-900">❗ Imaš ${pend.length} neoznačenih termina u poslednjih ${SCH_BACKFILL_DAYS} dana.</p>
+        <p class="text-xs text-amber-800 mb-2">Želiš li da sada označiš da li si bio/la prisutan/na? Možeš i da preskočiš, ali će u Prisustvu ostati uzvičnik.</p>
+        <div class="flex gap-2">
+          <button onclick="schStartFill()" class="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg">Popuni sada</button>
+          <button onclick="schSkipFill()" class="px-3 py-1.5 text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50 rounded-lg">Preskoči</button>
+        </div></div>`;
+    } else {
+      h += `<div class="mb-3 flex items-center justify-between gap-2 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-900"><span>❗ Neoznačenih termina: <b>${pend.length}</b></span><button onclick="schStartFill()" class="font-bold underline">Popuni</button></div>`;
+    }
+  }
+  h += `<div class="mb-3"><p class="text-lg font-black text-slate-900">${dow <= 5 ? SCH_DAYS_FULL[dow] : 'Nedelja'}</p><p class="text-xs text-slate-500">${schShort(now)}${now.getFullYear()}. · ${schYear}. godina</p></div>`;
+  const yearSlots = schYearSlots();
+  const list = dow <= 5 ? yearSlots.filter(s => s.day === dow).sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end)) : [];
+  if (dow > 5) h += `<p class="text-sm text-slate-500 py-6 text-center">Nedelja je — nema nastave. 🎉</p>`;
+  else if (!yearSlots.length) h += `<p class="text-sm text-slate-500 py-6 text-center">Raspored za ${schYear}. godinu je prazan. Klikni na ⚙ pa „Napravi / uredi" da dodaš termine.</p>`;
+  else if (!list.length) h += `<p class="text-sm text-slate-500 py-6 text-center">Danas nema termina. Ceo raspored možeš da vidiš u tabu „Ceo raspored".</p>`;
+  else h += list.map(sl => schSlotRow(sl, ds)).join('');
+  document.getElementById('sch-body').innerHTML = h;
+}
+
+// ---- popunjavanje propustenog prisustva ----
+function schSkipFill() { schSkipped = true; renderSchedule(); }
+function schStartFill() {
+  const pend = schPending(schYear);
+  if (!pend.length) { showToast('Nema neoznačenih termina.'); return; }
+  schFillDates = [...new Set(pend.map(x => x.date))];   // od najnovijeg ka starijem
+  schTab = 'fill'; schGearOpen = false; renderSchedule();
+}
+function renderSchFill() {
+  const noCls = schGetNoClass();
+  let h = `<div class="flex items-center justify-between gap-2 mb-3 flex-wrap">
+    <div><p class="text-sm font-black text-slate-900">Popuni prisustvo</p><p class="text-[11px] text-slate-500">Termini iz poslednjih ${SCH_BACKFILL_DAYS} dana. „Nije bilo nastave" izbacuje taj dan iz računice (pamti se na ovom uređaju).</p></div>
+    <button onclick="schSetTab('today')" class="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg">Gotovo</button></div>`;
+  if (!schFillDates.length) h += '<p class="text-sm text-slate-500 py-6 text-center">Nema neoznačenih termina. 👍</p>';
+  schFillDates.forEach(date => {
+    const d = new Date(date + 'T12:00:00'), dow = (d.getDay() + 6) % 7;
+    const list = schYearSlots().filter(s => s.day === dow).sort((a, b) => a.start.localeCompare(b.start));
+    const none = noCls.has(date);
+    const unmarked = list.filter(sl => !att[sl.id + '|' + date]).length;
+    h += `<div class="border border-slate-200 rounded-xl mb-3 overflow-hidden">
+      <div class="px-3 py-2 bg-slate-900 text-white flex items-center justify-between gap-2 flex-wrap">
+        <span class="text-xs font-bold">${SCH_DAYS_FULL[dow]} <span class="font-normal opacity-80">${schShort(d)}${d.getFullYear()}.</span></span>
+        <span class="flex gap-1">
+          ${unmarked && !none ? `<button onclick="schMarkDayPresent('${date}')" class="px-2 py-1 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-500 rounded">Sve ✓</button>` : ''}
+          <button onclick="schToggleNoClass('${date}')" class="px-2 py-1 text-[11px] font-bold rounded ${none ? 'bg-amber-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}">${none ? '✓ Nije bilo nastave' : 'Nije bilo nastave'}</button>
+        </span></div>
+      <div class="p-2">${none ? '<p class="text-xs text-slate-500 p-1">Ovaj dan se ne računa.</p>' : list.map(sl => schSlotRow(sl, date)).join('')}</div></div>`;
+  });
+  document.getElementById('sch-body').innerHTML = h;
+}
+async function schMarkDayPresent(date) {
+  const dow = (new Date(date + 'T12:00:00').getDay() + 6) % 7;
+  const rows = schYearSlots().filter(s => s.day === dow && !att[s.id + '|' + date]);
+  if (!rows.length) return;
+  rows.forEach(sl => { att[sl.id + '|' + date] = { sid: sl.sid, status: 'present' }; });
+  renderSchedule(); schRefreshApp();
+  const { error } = await sb.from('attendance').upsert(
+    rows.map(sl => ({ user_key: currentUser.key, slot_id: sl.id, subject_id: sl.sid, lesson_date: date, status: 'present', updated_at: new Date().toISOString() })),
+    { onConflict: 'user_key,slot_id,lesson_date' });
+  if (error) {
+    rows.forEach(sl => { delete att[sl.id + '|' + date]; });
+    renderSchedule(); schRefreshApp(); showToast('Greška pri čuvanju!', 'error');
+  }
+}
+
+
+// =============================================
+// SIDE PANEL (samo telefon, < 768px) + simulator preko celog ekrana
+// =============================================
+function openSidePanel() {
+  const n = document.getElementById('user-display-name'), i = document.getElementById('user-display-index');
+  document.getElementById('side-user-name').textContent = n ? n.textContent : '';
+  document.getElementById('side-user-index').textContent = i ? i.textContent : '';
+  const lbl = document.getElementById('side-notif-label');
+  if (lbl && 'Notification' in window) {
+    lbl.textContent = Notification.permission === 'granted' ? 'Obaveštenja: uključena ✓'
+      : Notification.permission === 'denied' ? 'Obaveštenja: blokirana' : 'Uključi obaveštenja';
+  }
+  document.getElementById('side-panel-overlay').classList.remove('hidden');
+  requestAnimationFrame(() => document.getElementById('side-panel').classList.remove('-translate-x-full'));
+  lucide.createIcons();
+}
+function closeSidePanel() {
+  document.getElementById('side-panel').classList.add('-translate-x-full');
+  document.getElementById('side-panel-overlay').classList.add('hidden');
+}
+function sideGo(fn) { closeSidePanel(); fn(); }
+function openWhatIfMobile() {
+  closeSidePanel();
+  const c = document.getElementById('whatif-card');
+  c.classList.add('whatif-open'); c.scrollTop = 0;
+}
+function closeWhatIfMobile() { document.getElementById('whatif-card').classList.remove('whatif-open'); }
 
   </script>
 </body>
